@@ -7,9 +7,10 @@
           <template #header-extra>
             <n-button type="error" @click="handleAddTodo(1)">添加</n-button>
           </template>
-          <div class="todo-list">
+          <div class="todo-list" @dragover.prevent @drop="(event) => handleDrop(event, 'urgent_important')">
             <n-empty v-if="todoList1.length === 0" description="暂无待办事项" />
-            <div v-for="todo in todoList1" :key="todo.id" class="todo-item">
+            <div v-for="todo in todoList1" :key="todo.id" class="todo-item" draggable="true"
+              @dragstart="(event) => handleDragStart(event, todo)">
               <n-checkbox v-model:checked="todo.is_completed" @update:checked="handleTodoComplete(todo)" />
               <div class="todo-content">
                 <div class="todo-title">{{ todo.title }}</div>
@@ -34,9 +35,10 @@
           <template #header-extra>
             <n-button type="warning" @click="handleAddTodo(2)">添加</n-button>
           </template>
-          <div class="todo-list">
+          <div class="todo-list" @dragover.prevent @drop="(event) => handleDrop(event, 'urgent_not_important')">
             <n-empty v-if="todoList2.length === 0" description="暂无待办事项" />
-            <div v-for="todo in todoList2" :key="todo.id" class="todo-item">
+            <div v-for="todo in todoList2" :key="todo.id" class="todo-item" draggable="true"
+              @dragstart="(event) => handleDragStart(event, todo)">
               <n-checkbox v-model:checked="todo.is_completed" @update:checked="handleTodoComplete(todo)" />
               <div class="todo-content">
                 <div class="todo-title">{{ todo.title }}</div>
@@ -54,25 +56,22 @@
           </div>
         </n-card>
       </n-gi>
-    </n-grid>
 
-    <div style="height: 20px"></div>
-
-    <n-grid :cols="2" :x-gap="20">
       <!-- 重要不紧急 -->
       <n-gi>
         <n-card title="重要不紧急" class="quadrant-card important-not-urgent">
           <template #header-extra>
             <n-button type="primary" @click="handleAddTodo(3)">添加</n-button>
           </template>
-          <div class="todo-list">
+          <div class="todo-list" @dragover.prevent @drop="(event) => handleDrop(event, 'important_not_urgent')">
             <n-empty v-if="todoList3.length === 0" description="暂无待办事项" />
-            <div v-for="todo in todoList3" :key="todo.id" class="todo-item">
+            <div v-for="todo in todoList3" :key="todo.id" class="todo-item" draggable="true"
+              @dragstart="(event) => handleDragStart(event, todo)">
               <n-checkbox v-model:checked="todo.is_completed" @update:checked="handleTodoComplete(todo)" />
               <div class="todo-content">
                 <div class="todo-title">{{ todo.title }}</div>
                 <div class="todo-meta">
-                  <n-tag type="info" size="small" v-if="todo.due_date">
+                  <n-tag type="primary" size="small" v-if="todo.due_date">
                     截止: {{ todo.due_date }}
                   </n-tag>
                 </div>
@@ -90,16 +89,17 @@
       <n-gi>
         <n-card title="不紧急不重要" class="quadrant-card not-urgent-not-important">
           <template #header-extra>
-            <n-button type="default" @click="handleAddTodo(4)">添加</n-button>
+            <n-button type="info" @click="handleAddTodo(4)">添加</n-button>
           </template>
-          <div class="todo-list">
+          <div class="todo-list" @dragover.prevent @drop="(event) => handleDrop(event, 'not_urgent_not_important')">
             <n-empty v-if="todoList4.length === 0" description="暂无待办事项" />
-            <div v-for="todo in todoList4" :key="todo.id" class="todo-item">
+            <div v-for="todo in todoList4" :key="todo.id" class="todo-item" draggable="true"
+              @dragstart="(event) => handleDragStart(event, todo)">
               <n-checkbox v-model:checked="todo.is_completed" @update:checked="handleTodoComplete(todo)" />
               <div class="todo-content">
                 <div class="todo-title">{{ todo.title }}</div>
                 <div class="todo-meta">
-                  <n-tag type="default" size="small" v-if="todo.due_date">
+                  <n-tag type="info" size="small" v-if="todo.due_date">
                     截止: {{ todo.due_date }}
                   </n-tag>
                 </div>
@@ -113,6 +113,8 @@
         </n-card>
       </n-gi>
     </n-grid>
+
+    <div style="height: 20px"></div>
 
     <!-- 添加/编辑待办对话框 -->
     <n-modal v-model:show="dialogVisible" :title="dialogType === 'add' ? '添加待办事项' : '编辑待办事项'" preset="card">
@@ -183,6 +185,9 @@ const todoList3 = ref([])
 const todoList4 = ref([])
 const loading = ref(false)
 
+// 拖拽相关变量
+const draggedTodo = ref(null)
+
 // 获取待办列表
 const fetchTodos = async () => {
   loading.value = true
@@ -193,16 +198,6 @@ const fetchTodos = async () => {
     const response = await todoApi.getTodos(params)
     // 根据后端返回数据结构进行处理
     const todos = response.data || []
-
-    // 调试日期值
-    console.log('待办列表原始数据:', todos)
-
-    // 预处理日期格式
-    todos.forEach(todo => {
-      if (todo.due_date) {
-        console.log(`待办项 ${todo.id} 的日期值:`, todo.due_date, typeof todo.due_date)
-      }
-    })
 
     // 分配到不同象限
     todoList1.value = todos.filter(todo => todo.quadrant_type === 'urgent_important')
@@ -281,8 +276,6 @@ const handleSubmitTodo = async () => {
 
     // 处理日期格式
     if (todoData.due_date) {
-      console.log('提交前原始日期值:', todoData.due_date, typeof todoData.due_date)
-
       try {
         // 如果是 Date 对象，转换为 ISO 格式字符串并截取到 yyyy-MM-dd
         if (todoData.due_date instanceof Date) {
@@ -331,11 +324,7 @@ const handleSubmitTodo = async () => {
         console.error('日期处理错误:', error)
         todoData.due_date = null
       }
-
-      console.log('处理后的日期值:', todoData.due_date)
     }
-
-    console.log('提交的数据:', todoData)
 
     if (dialogType.value === 'add') {
       await todoApi.createTodo(todoData)
@@ -388,6 +377,59 @@ const handleDeleteTodo = async (todo) => {
       }
     }
   })
+}
+
+// 处理拖拽开始
+const handleDragStart = (event, todo) => {
+  draggedTodo.value = todo
+  event.dataTransfer.effectAllowed = 'move'
+  // 设置拖拽图像和数据
+  event.dataTransfer.setData('text/plain', todo.id)
+
+  // 添加拖拽样式
+  event.target.classList.add('dragging')
+}
+
+// 处理拖拽放下
+const handleDrop = async (event, targetQuadrant) => {
+  event.preventDefault()
+
+  // 恢复样式
+  document.querySelectorAll('.dragging').forEach(el => {
+    el.classList.remove('dragging')
+  })
+
+  if (!draggedTodo.value || draggedTodo.value.quadrant_type === targetQuadrant) {
+    return
+  }
+
+  try {
+    message.info(`正在将待办从 ${getQuadrantLabel(draggedTodo.value.quadrant_type)} 移动到 ${getQuadrantLabel(targetQuadrant)}`)
+
+    // 更新待办事项象限
+    await todoApi.updateTodo(draggedTodo.value.id, {
+      ...draggedTodo.value,
+      quadrant_type: targetQuadrant
+    })
+
+    // 刷新列表
+    fetchTodos()
+    message.success('移动成功')
+  } catch (error) {
+    console.error('移动待办事项失败:', error)
+    message.error('移动待办事项失败')
+  }
+}
+
+// 获取象限的中文名称
+const getQuadrantLabel = (type) => {
+  const labels = {
+    urgent_important: '重要且紧急',
+    urgent_not_important: '紧急不重要',
+    important_not_urgent: '重要不紧急',
+    not_urgent_not_important: '不紧急不重要'
+  }
+  return labels[type] || type
 }
 
 onMounted(() => {
@@ -462,5 +504,27 @@ onMounted(() => {
 
 .not-urgent-not-important :deep(.n-card-header) {
   background-color: rgba(144, 156, 170, 0.1);
+}
+
+/* 添加拖拽相关样式 */
+.todo-item {
+  cursor: move;
+  transition: all 0.2s;
+}
+
+.todo-item.dragging {
+  opacity: 0.5;
+  transform: scale(0.98);
+  box-shadow: 0 0 5px rgba(0, 0, 0, 0.2);
+}
+
+.todo-list {
+  min-height: 50px;
+  padding: 8px;
+  border-radius: 4px;
+}
+
+.todo-list.drag-over {
+  background-color: rgba(0, 0, 0, 0.05);
 }
 </style>

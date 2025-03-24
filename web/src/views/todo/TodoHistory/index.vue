@@ -157,9 +157,6 @@ const initCharts = async () => {
   await nextTick()
 
   try {
-    console.log('dailyChartRef:', dailyChartRef.value)
-    console.log('quadrantChartRef:', quadrantChartRef.value)
-
     if (dailyChartRef.value) {
       if (dailyChart) {
         dailyChart.dispose()
@@ -422,7 +419,6 @@ const handleDelete = async (row) => {
 
 // 生命周期钩子
 onMounted(async () => {
-  console.log('组件挂载完成')
   // 设置默认日期范围：最近一周
   const end = new Date()
   const start = new Date()
