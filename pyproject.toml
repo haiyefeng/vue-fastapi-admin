@@ -3,7 +3,7 @@ name = "vue-fastapi-admin"
 version = "0.1.0"
 description = "Vue Fastapi admin"
 authors = [
-    {name = "mizhexiaoxiao", email = "mizhexiaoxiao@gmail.com"},
+    { name = "mizhexiaoxiao", email = "mizhexiaoxiao@gmail.com" },
 ]
 requires-python = ">=3.11"
 dependencies = [
@@ -73,12 +73,17 @@ dependencies = [
 
 [tool.black]
 line-length = 120
-target-version = ["py310", "py311"]
+target-version = [
+    "py310",
+    "py311",
+]
 
 [tool.ruff]
 line-length = 120
-lint.extend-select = []
-lint.ignore = [
+
+[tool.ruff.lint]
+extend-select = []
+ignore = [
     "F403",
     "F405",
 ]

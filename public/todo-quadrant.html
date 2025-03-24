@@ -1,0 +1,429 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>四象限待办事项</title>
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css">
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.10.0/font/bootstrap-icons.css">
+    <style>
+        :root {
+            --primary-color: #4e73df;
+            --success-color: #1cc88a;
+            --warning-color: #f6c23e;
+            --danger-color: #e74a3b;
+            --light-color: #f8f9fc;
+            --dark-color: #5a5c69;
+        }
+
+        body {
+            font-family: 'Nunito', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif;
+            background-color: #f8f9fc;
+            color: #5a5c69;
+        }
+
+        .app-container {
+            max-width: 1200px;
+            margin: 2rem auto;
+            padding: 0 15px;
+        }
+
+        .header {
+            margin-bottom: 2rem;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+        }
+
+        .quadrant-container {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            grid-template-rows: 1fr 1fr;
+            gap: 1.5rem;
+            height: 650px;
+            margin-bottom: 2rem;
+        }
+
+        .quadrant {
+            background-color: white;
+            border-radius: 0.5rem;
+            box-shadow: 0 0.15rem 1.75rem rgba(0, 0, 0, 0.15);
+            padding: 1rem;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .quadrant-header {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            padding-bottom: 0.5rem;
+            border-bottom: 1px solid #e3e6f0;
+            margin-bottom: 1rem;
+        }
+
+        .quadrant-1 .quadrant-header {
+            color: var(--danger-color);
+        }
+
+        .quadrant-2 .quadrant-header {
+            color: var(--warning-color);
+        }
+
+        .quadrant-3 .quadrant-header {
+            color: var(--primary-color);
+        }
+
+        .quadrant-4 .quadrant-header {
+            color: var(--success-color);
+        }
+
+        .todo-list {
+            list-style: none;
+            padding: 0;
+            height: calc(100% - 60px);
+            overflow-y: auto;
+        }
+
+        .todo-item {
+            background-color: var(--light-color);
+            padding: 0.75rem 1rem;
+            border-radius: 0.35rem;
+            margin-bottom: 0.75rem;
+            position: relative;
+            display: flex;
+            align-items: center;
+            transition: all 0.2s;
+        }
+
+        .todo-item:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 0.125rem 0.25rem rgba(0, 0, 0, 0.075);
+        }
+
+        .todo-checkbox {
+            margin-right: 0.5rem;
+        }
+
+        .todo-text {
+            flex-grow: 1;
+        }
+
+        .todo-done {
+            text-decoration: line-through;
+            color: #b7b9cc;
+        }
+
+        .todo-actions {
+            display: flex;
+            gap: 0.5rem;
+        }
+
+        .move-btn {
+            background: none;
+            border: none;
+            color: var(--dark-color);
+            cursor: pointer;
+            font-size: 0.875rem;
+        }
+
+        .create-todo {
+            background-color: white;
+            border-radius: 0.5rem;
+            box-shadow: 0 0.15rem 1.75rem rgba(0, 0, 0, 0.15);
+            padding: 1.5rem;
+        }
+
+        .btn-icon {
+            margin-right: 0.5rem;
+        }
+
+        .quadrant-badge {
+            display: inline-block;
+            padding: 0.25rem 0.5rem;
+            border-radius: 0.25rem;
+            font-size: 0.75rem;
+            font-weight: 700;
+            margin-left: 0.5rem;
+        }
+
+        .badge-1 {
+            background-color: rgba(231, 74, 59, 0.1);
+            color: var(--danger-color);
+        }
+
+        .badge-2 {
+            background-color: rgba(246, 194, 62, 0.1);
+            color: var(--warning-color);
+        }
+
+        .badge-3 {
+            background-color: rgba(78, 115, 223, 0.1);
+            color: var(--primary-color);
+        }
+
+        .badge-4 {
+            background-color: rgba(28, 200, 138, 0.1);
+            color: var(--success-color);
+        }
+    </style>
+</head>
+
+<body>
+    <div class="app-container">
+        <div class="header">
+            <h1><i class="bi bi-kanban me-2"></i>四象限待办事项</h1>
+            <div>
+                <a href="todo-history.html" class="btn btn-outline-primary me-2">
+                    <i class="bi bi-bar-chart-line btn-icon"></i>历史统计
+                </a>
+                <button class="btn btn-primary" data-bs-toggle="modal" data-bs-target="#createTodoModal">
+                    <i class="bi bi-plus-circle btn-icon"></i>新建待办
+                </button>
+            </div>
+        </div>
+
+        <div class="quadrant-container">
+            <!-- 象限1: 紧急且重要 -->
+            <div class="quadrant quadrant-1">
+                <div class="quadrant-header">
+                    <h4><i class="bi bi-exclamation-diamond me-2"></i>紧急且重要</h4>
+                    <span class="badge bg-danger">5项</span>
+                </div>
+                <ul class="todo-list">
+                    <li class="todo-item">
+                        <input type="checkbox" class="todo-checkbox form-check-input">
+                        <span class="todo-text">完成项目提案</span>
+                        <div class="todo-actions">
+                            <button class="move-btn" title="移动到其他象限"><i class="bi bi-arrows-move"></i></button>
+                            <button class="move-btn text-danger" title="删除"><i class="bi bi-trash"></i></button>
+                        </div>
+                    </li>
+                    <li class="todo-item">
+                        <input type="checkbox" class="todo-checkbox form-check-input">
+                        <span class="todo-text">准备明天的演示文稿</span>
+                        <div class="todo-actions">
+                            <button class="move-btn" title="移动到其他象限"><i class="bi bi-arrows-move"></i></button>
+                            <button class="move-btn text-danger" title="删除"><i class="bi bi-trash"></i></button>
+                        </div>
+                    </li>
+                    <li class="todo-item">
+                        <input type="checkbox" class="todo-checkbox form-check-input" checked>
+                        <span class="todo-text todo-done">处理客户投诉</span>
+                        <div class="todo-actions">
+                            <button class="move-btn" title="移动到其他象限"><i class="bi bi-arrows-move"></i></button>
+                            <button class="move-btn text-danger" title="删除"><i class="bi bi-trash"></i></button>
+                        </div>
+                    </li>
+                </ul>
+            </div>
+
+            <!-- 象限2: 紧急但不重要 -->
+            <div class="quadrant quadrant-2">
+                <div class="quadrant-header">
+                    <h4><i class="bi bi-clock-history me-2"></i>紧急但不重要</h4>
+                    <span class="badge bg-warning">3项</span>
+                </div>
+                <ul class="todo-list">
+                    <li class="todo-item">
+                        <input type="checkbox" class="todo-checkbox form-check-input">
+                        <span class="todo-text">回复邮件</span>
+                        <div class="todo-actions">
+                            <button class="move-btn" title="移动到其他象限"><i class="bi bi-arrows-move"></i></button>
+                            <button class="move-btn text-danger" title="删除"><i class="bi bi-trash"></i></button>
+                        </div>
+                    </li>
+                    <li class="todo-item">
+                        <input type="checkbox" class="todo-checkbox form-check-input">
+                        <span class="todo-text">打电话给供应商</span>
+                        <div class="todo-actions">
+                            <button class="move-btn" title="移动到其他象限"><i class="bi bi-arrows-move"></i></button>
+                            <button class="move-btn text-danger" title="删除"><i class="bi bi-trash"></i></button>
+                        </div>
+                    </li>
+                </ul>
+            </div>
+
+            <!-- 象限3: 重要但不紧急 -->
+            <div class="quadrant quadrant-3">
+                <div class="quadrant-header">
+                    <h4><i class="bi bi-graph-up me-2"></i>重要但不紧急</h4>
+                    <span class="badge bg-primary">4项</span>
+                </div>
+                <ul class="todo-list">
+                    <li class="todo-item">
+                        <input type="checkbox" class="todo-checkbox form-check-input">
+                        <span class="todo-text">研究新技术</span>
+                        <div class="todo-actions">
+                            <button class="move-btn" title="移动到其他象限"><i class="bi bi-arrows-move"></i></button>
+                            <button class="move-btn text-danger" title="删除"><i class="bi bi-trash"></i></button>
+                        </div>
+                    </li>
+                    <li class="todo-item">
+                        <input type="checkbox" class="todo-checkbox form-check-input">
+                        <span class="todo-text">制定长期计划</span>
+                        <div class="todo-actions">
+                            <button class="move-btn" title="移动到其他象限"><i class="bi bi-arrows-move"></i></button>
+                            <button class="move-btn text-danger" title="删除"><i class="bi bi-trash"></i></button>
+                        </div>
+                    </li>
+                    <li class="todo-item">
+                        <input type="checkbox" class="todo-checkbox form-check-input">
+                        <span class="todo-text">学习新知识</span>
+                        <div class="todo-actions">
+                            <button class="move-btn" title="移动到其他象限"><i class="bi bi-arrows-move"></i></button>
+                            <button class="move-btn text-danger" title="删除"><i class="bi bi-trash"></i></button>
+                        </div>
+                    </li>
+                </ul>
+            </div>
+
+            <!-- 象限4: 不紧急也不重要 -->
+            <div class="quadrant quadrant-4">
+                <div class="quadrant-header">
+                    <h4><i class="bi bi-cup-hot me-2"></i>不紧急也不重要</h4>
+                    <span class="badge bg-success">2项</span>
+                </div>
+                <ul class="todo-list">
+                    <li class="todo-item">
+                        <input type="checkbox" class="todo-checkbox form-check-input">
+                        <span class="todo-text">整理桌面</span>
+                        <div class="todo-actions">
+                            <button class="move-btn" title="移动到其他象限"><i class="bi bi-arrows-move"></i></button>
+                            <button class="move-btn text-danger" title="删除"><i class="bi bi-trash"></i></button>
+                        </div>
+                    </li>
+                    <li class="todo-item">
+                        <input type="checkbox" class="todo-checkbox form-check-input" checked>
+                        <span class="todo-text todo-done">浏览新闻</span>
+                        <div class="todo-actions">
+                            <button class="move-btn" title="移动到其他象限"><i class="bi bi-arrows-move"></i></button>
+                            <button class="move-btn text-danger" title="删除"><i class="bi bi-trash"></i></button>
+                        </div>
+                    </li>
+                </ul>
+            </div>
+        </div>
+
+        <!-- 创建待办对话框 -->
+        <div class="modal fade" id="createTodoModal" tabindex="-1" aria-labelledby="createTodoModalLabel"
+            aria-hidden="true">
+            <div class="modal-dialog">
+                <div class="modal-content">
+                    <div class="modal-header">
+                        <h5 class="modal-title" id="createTodoModalLabel">创建新待办</h5>
+                        <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                    </div>
+                    <div class="modal-body">
+                        <form>
+                            <div class="mb-3">
+                                <label for="todoText" class="form-label">待办内容</label>
+                                <input type="text" class="form-control" id="todoText" placeholder="请输入待办事项...">
+                            </div>
+                            <div class="mb-3">
+                                <label class="form-label">选择象限</label>
+                                <div class="d-flex gap-2 flex-wrap">
+                                    <div class="form-check">
+                                        <input class="form-check-input" type="radio" name="quadrantOptions"
+                                            id="quadrant1" value="1" checked>
+                                        <label class="form-check-label" for="quadrant1">
+                                            <span class="quadrant-badge badge-1">紧急且重要</span>
+                                        </label>
+                                    </div>
+                                    <div class="form-check">
+                                        <input class="form-check-input" type="radio" name="quadrantOptions"
+                                            id="quadrant2" value="2">
+                                        <label class="form-check-label" for="quadrant2">
+                                            <span class="quadrant-badge badge-2">紧急但不重要</span>
+                                        </label>
+                                    </div>
+                                    <div class="form-check">
+                                        <input class="form-check-input" type="radio" name="quadrantOptions"
+                                            id="quadrant3" value="3">
+                                        <label class="form-check-label" for="quadrant3">
+                                            <span class="quadrant-badge badge-3">重要但不紧急</span>
+                                        </label>
+                                    </div>
+                                    <div class="form-check">
+                                        <input class="form-check-input" type="radio" name="quadrantOptions"
+                                            id="quadrant4" value="4">
+                                        <label class="form-check-label" for="quadrant4">
+                                            <span class="quadrant-badge badge-4">不紧急也不重要</span>
+                                        </label>
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="mb-3">
+                                <label for="todoDueDate" class="form-label">截止日期（可选）</label>
+                                <input type="date" class="form-control" id="todoDueDate">
+                            </div>
+                        </form>
+                    </div>
+                    <div class="modal-footer">
+                        <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">取消</button>
+                        <button type="button" class="btn btn-primary">保存</button>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- 移动待办对话框 -->
+    <div class="modal fade" id="moveTodoModal" tabindex="-1" aria-labelledby="moveTodoModalLabel" aria-hidden="true">
+        <div class="modal-dialog modal-sm">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title" id="moveTodoModalLabel">移动到其他象限</h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                </div>
+                <div class="modal-body">
+                    <div class="list-group">
+                        <button type="button" class="list-group-item list-group-item-action">
+                            <i class="bi bi-exclamation-diamond me-2 text-danger"></i>紧急且重要
+                        </button>
+                        <button type="button" class="list-group-item list-group-item-action">
+                            <i class="bi bi-clock-history me-2 text-warning"></i>紧急但不重要
+                        </button>
+                        <button type="button" class="list-group-item list-group-item-action">
+                            <i class="bi bi-graph-up me-2 text-primary"></i>重要但不紧急
+                        </button>
+                        <button type="button" class="list-group-item list-group-item-action">
+                            <i class="bi bi-cup-hot me-2 text-success"></i>不紧急也不重要
+                        </button>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+    <script>
+        // 为待办事项添加事件监听
+        document.addEventListener('DOMContentLoaded', function () {
+            // 复选框点击事件
+            document.querySelectorAll('.todo-checkbox').forEach(checkbox => {
+                checkbox.addEventListener('change', function () {
+                    const todoText = this.nextElementSibling;
+                    if (this.checked) {
+                        todoText.classList.add('todo-done');
+                    } else {
+                        todoText.classList.remove('todo-done');
+                    }
+                });
+            });
+
+            // 移动按钮点击事件
+            document.querySelectorAll('.move-btn').forEach(button => {
+                if (button.title === '移动到其他象限') {
+                    button.addEventListener('click', function () {
+                        const moveTodoModal = new bootstrap.Modal(document.getElementById('moveTodoModal'));
+                        moveTodoModal.show();
+                    });
+                }
+            });
+        });
+    </script>
+</body>
+
+</html>
