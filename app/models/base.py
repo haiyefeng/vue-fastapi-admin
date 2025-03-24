@@ -19,6 +19,8 @@ class BaseModel(models.Model):
                 value = getattr(self, field)
                 if isinstance(value, datetime):
                     value = value.strftime(settings.DATETIME_FORMAT)
+                elif hasattr(value, "isoformat"):  # 处理 date 和其他有 isoformat 方法的类型
+                    value = value.isoformat()
                 d[field] = value
 
         if m2m:
@@ -43,6 +45,8 @@ class BaseModel(models.Model):
                 if k not in exclude_fields:
                     if isinstance(v, datetime):
                         formatted_value[k] = v.strftime(settings.DATETIME_FORMAT)
+                    elif hasattr(v, "isoformat"):  # 处理 date 和其他有 isoformat 方法的类型
+                        formatted_value[k] = v.isoformat()
                     else:
                         formatted_value[k] = v
             formatted_values.append(formatted_value)

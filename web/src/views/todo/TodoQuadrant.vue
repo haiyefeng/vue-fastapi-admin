@@ -170,10 +170,10 @@ const rules = {
 
 // 象限选项
 const quadrantOptions = [
-  { label: '重要且紧急', value: 'URGENT_IMPORTANT' },
-  { label: '紧急不重要', value: 'URGENT_NOT_IMPORTANT' },
-  { label: '重要不紧急', value: 'IMPORTANT_NOT_URGENT' },
-  { label: '不紧急不重要', value: 'NOT_URGENT_NOT_IMPORTANT' }
+  { label: '重要且紧急', value: 'urgent_important' },
+  { label: '紧急不重要', value: 'urgent_not_important' },
+  { label: '重要不紧急', value: 'important_not_urgent' },
+  { label: '不紧急不重要', value: 'not_urgent_not_important' }
 ]
 
 // 待办事项相关
@@ -191,13 +191,24 @@ const fetchTodos = async () => {
       is_completed: false
     }
     const response = await todoApi.getTodos(params)
-    const todos = response.items || []
+    // 根据后端返回数据结构进行处理
+    const todos = response.data || []
+
+    // 调试日期值
+    console.log('待办列表原始数据:', todos)
+
+    // 预处理日期格式
+    todos.forEach(todo => {
+      if (todo.due_date) {
+        console.log(`待办项 ${todo.id} 的日期值:`, todo.due_date, typeof todo.due_date)
+      }
+    })
 
     // 分配到不同象限
-    todoList1.value = todos.filter(todo => todo.quadrant_type === 'URGENT_IMPORTANT')
-    todoList2.value = todos.filter(todo => todo.quadrant_type === 'URGENT_NOT_IMPORTANT')
-    todoList3.value = todos.filter(todo => todo.quadrant_type === 'IMPORTANT_NOT_URGENT')
-    todoList4.value = todos.filter(todo => todo.quadrant_type === 'NOT_URGENT_NOT_IMPORTANT')
+    todoList1.value = todos.filter(todo => todo.quadrant_type === 'urgent_important')
+    todoList2.value = todos.filter(todo => todo.quadrant_type === 'urgent_not_important')
+    todoList3.value = todos.filter(todo => todo.quadrant_type === 'important_not_urgent')
+    todoList4.value = todos.filter(todo => todo.quadrant_type === 'not_urgent_not_important')
   } catch (error) {
     console.error('获取待办列表失败:', error)
     message.error('获取待办列表失败')
@@ -209,10 +220,10 @@ const fetchTodos = async () => {
 // 获取象限类型
 const getQuadrantType = (index) => {
   switch (index) {
-    case 1: return 'URGENT_IMPORTANT'
-    case 2: return 'URGENT_NOT_IMPORTANT'
-    case 3: return 'IMPORTANT_NOT_URGENT'
-    case 4: return 'NOT_URGENT_NOT_IMPORTANT'
+    case 1: return 'urgent_important'
+    case 2: return 'urgent_not_important'
+    case 3: return 'important_not_urgent'
+    case 4: return 'not_urgent_not_important'
     default: return null
   }
 }
@@ -220,6 +231,7 @@ const getQuadrantType = (index) => {
 // 添加待办
 const handleAddTodo = (quadrantIndex) => {
   dialogType.value = 'add'
+  // 重置表单，确保所有字段有默认值
   todoForm.value = {
     title: '',
     quadrant_type: getQuadrantType(quadrantIndex),
@@ -232,7 +244,28 @@ const handleAddTodo = (quadrantIndex) => {
 // 编辑待办
 const handleEditTodo = (todo) => {
   dialogType.value = 'edit'
-  todoForm.value = { ...todo }
+
+  // 创建一个新对象，避免直接修改原对象
+  const todoData = { ...todo }
+
+  // 处理日期，将字符串日期转换为 Date 对象
+  if (todoData.due_date) {
+    try {
+      // 如果是字符串日期，需要转换为 Date 对象
+      if (typeof todoData.due_date === 'string') {
+        // 添加时间部分如果只有日期
+        if (!todoData.due_date.includes('T')) {
+          todoData.due_date = `${todoData.due_date}T00:00:00`
+        }
+        todoData.due_date = new Date(todoData.due_date)
+      }
+    } catch (error) {
+      console.error('日期转换错误:', error)
+      todoData.due_date = null
+    }
+  }
+
+  todoForm.value = todoData
   dialogVisible.value = true
 }
 
@@ -243,11 +276,72 @@ const handleSubmitTodo = async () => {
   try {
     await todoFormRef.value.validate()
 
+    // 创建一个新对象来存储处理后的数据
+    const todoData = { ...todoForm.value }
+
+    // 处理日期格式
+    if (todoData.due_date) {
+      console.log('提交前原始日期值:', todoData.due_date, typeof todoData.due_date)
+
+      try {
+        // 如果是 Date 对象，转换为 ISO 格式字符串并截取到 yyyy-MM-dd
+        if (todoData.due_date instanceof Date) {
+          if (isNaN(todoData.due_date.getTime())) {
+            // 无效日期
+            console.error('无效的日期对象')
+            todoData.due_date = null
+          } else {
+            todoData.due_date = todoData.due_date.toISOString().split('T')[0]
+          }
+        } else if (typeof todoData.due_date === 'number') {
+          // 如果是时间戳，先转换为 Date 对象，再转换为 ISO 格式字符串
+          const date = new Date(todoData.due_date)
+          if (isNaN(date.getTime())) {
+            // 无效时间戳
+            console.error('无效的时间戳')
+            todoData.due_date = null
+          } else {
+            todoData.due_date = date.toISOString().split('T')[0]
+          }
+        } else if (typeof todoData.due_date === 'string') {
+          // 如果已经是字符串，确保格式正确
+          if (todoData.due_date.includes('T')) {
+            // 带有时间部分的 ISO 字符串，截取日期部分
+            todoData.due_date = todoData.due_date.split('T')[0]
+          } else if (!/^\d{4}-\d{2}-\d{2}$/.test(todoData.due_date)) {
+            // 不是 yyyy-MM-dd 格式
+            try {
+              const date = new Date(todoData.due_date)
+              if (isNaN(date.getTime())) {
+                throw new Error('无法解析日期字符串')
+              }
+              todoData.due_date = date.toISOString().split('T')[0]
+            } catch (error) {
+              console.error('日期字符串解析错误:', error)
+              todoData.due_date = null
+            }
+          }
+          // 如果已经是 yyyy-MM-dd 格式，保持不变
+        } else {
+          // 其他类型，置为 null
+          console.error('未知的日期类型')
+          todoData.due_date = null
+        }
+      } catch (error) {
+        console.error('日期处理错误:', error)
+        todoData.due_date = null
+      }
+
+      console.log('处理后的日期值:', todoData.due_date)
+    }
+
+    console.log('提交的数据:', todoData)
+
     if (dialogType.value === 'add') {
-      await todoApi.createTodo(todoForm.value)
+      await todoApi.createTodo(todoData)
       message.success('添加成功')
     } else {
-      await todoApi.updateTodo(todoForm.value.id, todoForm.value)
+      await todoApi.updateTodo(todoData.id, todoData)
       message.success('更新成功')
     }
 
@@ -260,19 +354,19 @@ const handleSubmitTodo = async () => {
 }
 
 // 完成待办
-const handleTodoComplete = async (isChecked, todo) => {
+const handleTodoComplete = async (todo) => {
   try {
     await todoApi.updateTodo(todo.id, {
-      is_completed: isChecked,
-      completed_at: isChecked ? new Date().toISOString() : null
+      is_completed: todo.is_completed,
+      completed_at: todo.is_completed ? new Date().toISOString().split('T')[0] : null
     })
-    message.success(isChecked ? '已完成' : '已取消完成')
+    message.success(todo.is_completed ? '已完成' : '已取消完成')
     fetchTodos()
   } catch (error) {
     console.error('更新待办状态失败:', error)
     message.error('更新状态失败')
     // 恢复原状态
-    todo.is_completed = !isChecked
+    todo.is_completed = !todo.is_completed
   }
 }
 

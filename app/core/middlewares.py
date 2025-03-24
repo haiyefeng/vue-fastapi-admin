@@ -105,7 +105,10 @@ class HttpAuditLogMiddleware(BaseHTTPMiddleware):
             except Exception:
                 return None
 
-        return self.lenient_json(body)
+        try:
+            return self.lenient_json(body)
+        except Exception:
+            return None
 
     def lenient_json(self, v: Any) -> Any:
         if isinstance(v, (str, bytes)):
@@ -159,8 +162,17 @@ class HttpAuditLogMiddleware(BaseHTTPMiddleware):
             data: dict = await self.get_request_log(request=request, response=response)
             data["response_time"] = process_time
 
-            data["request_args"] = request.state.request_args
-            data["response_body"] = await self.get_response_body(request, response)
+            # 确保 request_args 和 response_body 是有效的 JSON 值
+            request_args = request.state.request_args
+            if not isinstance(request_args, (dict, list, str, int, float, bool, type(None))):
+                request_args = None
+            data["request_args"] = request_args
+
+            response_body = await self.get_response_body(request, response)
+            if not isinstance(response_body, (dict, list, str, int, float, bool, type(None))):
+                response_body = None
+            data["response_body"] = response_body
+
             await AuditLog.create(**data)
 
         return response

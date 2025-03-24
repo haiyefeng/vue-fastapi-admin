@@ -43,7 +43,8 @@ async def list_todos(
     result = []
     for todo in todos:
         todo_dict = await todo.to_dict()
-        result.append(TodoItemOut(**todo_dict))
+        todo_out = TodoItemOut(**todo_dict)
+        result.append(todo_out.model_dump())
 
     return SuccessExtra(data=result, total=total, page=page, page_size=page_size)
 
@@ -58,8 +59,9 @@ async def create_todo(
     """
     todo = await todo_controller.create_todo(todo_in, current_user.id)
     todo_dict = await todo.to_dict()
+    todo_out = TodoItemOut(**todo_dict)
 
-    return Success(data=TodoItemOut(**todo_dict))
+    return Success(data=todo_out.model_dump())
 
 
 @router.get("/{todo_id}", summary="获取指定ID的待办事项")
@@ -73,7 +75,8 @@ async def get_todo(
     try:
         todo = await TodoItem.get(id=todo_id, user_id=current_user.id)
         todo_dict = await todo.to_dict()
-        return Success(data=TodoItemOut(**todo_dict))
+        todo_out = TodoItemOut(**todo_dict)
+        return Success(data=todo_out.model_dump())
     except DoesNotExist:
         raise HTTPException(status_code=404, detail="待办事项不存在")
 
@@ -92,7 +95,8 @@ async def update_todo(
         raise HTTPException(status_code=404, detail="待办事项不存在")
 
     todo_dict = await todo.to_dict()
-    return Success(data=TodoItemOut(**todo_dict))
+    todo_out = TodoItemOut(**todo_dict)
+    return Success(data=todo_out.model_dump())
 
 
 @router.delete("/{todo_id}", summary="删除指定ID的待办事项")
@@ -123,7 +127,10 @@ async def get_daily_statistics(
         user_id=current_user.id, start_date=start_date, end_date=end_date
     )
 
-    return Success(data=statistics)
+    # 将统计对象转换为字典列表
+    result = [stat.model_dump() for stat in statistics]
+
+    return Success(data=result)
 
 
 @router.get("/statistics/quadrant", summary="获取按象限统计的待办事项数量")
@@ -135,4 +142,4 @@ async def get_quadrant_statistics(
     """
     statistics = await todo_controller.get_quadrant_statistics(user_id=current_user.id)
 
-    return Success(data=statistics)
+    return Success(data=statistics.model_dump())

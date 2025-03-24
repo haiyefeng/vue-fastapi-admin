@@ -21,7 +21,7 @@ class TodoItem(BaseModel, TimestampMixin):
     due_date = fields.DateField(null=True, description="截止日期")
     is_completed = fields.BooleanField(default=False, description="是否已完成", index=True)
     completed_at = fields.DatetimeField(null=True, description="完成时间")
-    user = fields.ForeignKeyField("models.User", related_name="todo_items", description="关联用户")
+    user_id = fields.IntField(description="用户ID", index=True)
 
     class Meta:
         table = "todo_item"

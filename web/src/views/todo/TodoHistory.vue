@@ -215,18 +215,31 @@ const updateQuadrantChart = (data) => {
 const fetchCompletedTodos = async () => {
   loading.value = true
   try {
+    // 处理日期格式
+    let startDate = null
+    let endDate = null
+
+    if (filterForm.value.dateRange && filterForm.value.dateRange.length === 2) {
+      if (filterForm.value.dateRange[0]) {
+        startDate = filterForm.value.dateRange[0].toISOString().split('T')[0]
+      }
+      if (filterForm.value.dateRange[1]) {
+        endDate = filterForm.value.dateRange[1].toISOString().split('T')[0]
+      }
+    }
+
     const params = {
       is_completed: true,
       page: currentPage.value,
       page_size: pageSize.value,
-      start_date: filterForm.value.dateRange[0],
-      end_date: filterForm.value.dateRange[1],
+      start_date: startDate,
+      end_date: endDate,
       sort_by: sortConfig.value.prop,
       sort_order: sortConfig.value.order
     }
     const response = await todoApi.getTodos(params)
-    completedTodos.value = response.items
-    total.value = response.total
+    completedTodos.value = response.data || []
+    total.value = response.total || 0
   } catch (error) {
     console.error('获取已完成待办列表失败:', error)
     ElMessage.error('获取已完成待办列表失败')
@@ -238,15 +251,28 @@ const fetchCompletedTodos = async () => {
 // 获取统计数据
 const fetchStatistics = async () => {
   try {
+    // 处理日期格式
+    let startDate = null
+    let endDate = null
+
+    if (filterForm.value.dateRange && filterForm.value.dateRange.length === 2) {
+      if (filterForm.value.dateRange[0]) {
+        startDate = filterForm.value.dateRange[0].toISOString().split('T')[0]
+      }
+      if (filterForm.value.dateRange[1]) {
+        endDate = filterForm.value.dateRange[1].toISOString().split('T')[0]
+      }
+    }
+
     const [dailyStats, quadrantStats] = await Promise.all([
       todoApi.getDailyStatistics({
-        start_date: filterForm.value.dateRange[0],
-        end_date: filterForm.value.dateRange[1]
+        start_date: startDate,
+        end_date: endDate
       }),
       todoApi.getQuadrantStatistics()
     ])
-    updateDailyChart(dailyStats)
-    updateQuadrantChart(quadrantStats)
+    updateDailyChart(dailyStats.data || [])
+    updateQuadrantChart(quadrantStats.data || {})
   } catch (error) {
     console.error('获取统计数据失败:', error)
     ElMessage.error('获取统计数据失败')
@@ -308,20 +334,20 @@ const handleDelete = async (row) => {
 // 象限标签相关
 const getQuadrantLabel = (type) => {
   const labels = {
-    URGENT_IMPORTANT: '重要且紧急',
-    URGENT_NOT_IMPORTANT: '紧急不重要',
-    IMPORTANT_NOT_URGENT: '重要不紧急',
-    NOT_URGENT_NOT_IMPORTANT: '不紧急不重要'
+    urgent_important: '重要且紧急',
+    urgent_not_important: '紧急不重要',
+    important_not_urgent: '重要不紧急',
+    not_urgent_not_important: '不紧急不重要'
   }
   return labels[type] || type
 }
 
 const getQuadrantTagType = (type) => {
   const types = {
-    URGENT_IMPORTANT: 'danger',
-    URGENT_NOT_IMPORTANT: 'warning',
-    IMPORTANT_NOT_URGENT: 'primary',
-    NOT_URGENT_NOT_IMPORTANT: 'info'
+    urgent_important: 'danger',
+    urgent_not_important: 'warning',
+    important_not_urgent: 'primary',
+    not_urgent_not_important: 'info'
   }
   return types[type] || 'info'
 }

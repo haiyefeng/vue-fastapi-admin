@@ -13,6 +13,11 @@ class TodoItemBase(BaseModel):
     quadrant_type: QuadrantType = Field(..., description="象限类型")
     due_date: Optional[date] = Field(None, description="截止日期")
 
+    class Config:
+        json_encoders = {
+            date: lambda v: v.isoformat() if v else None
+        }
+
 
 class TodoItemCreate(TodoItemBase):
     """创建待办事项的请求体"""

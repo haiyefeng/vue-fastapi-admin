@@ -207,12 +207,12 @@ async def init_menus():
             Menu(
                 menu_type=MenuType.MENU,
                 name="待办统计",
-                path="statistics",
+                path="history",
                 order=2,
                 parent_id=todo_parent_menu.id,
                 icon="icon-park-outline:chart-line",
                 is_hidden=False,
-                component="/todo/TodoStatistics",
+                component="/todo/TodoHistory",
                 keepalive=True,
             ),
         ]
