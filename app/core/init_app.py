@@ -174,7 +174,6 @@ async def init_menus():
             keepalive=False,
             redirect="",
         )
-
     # 检查待办事项菜单是否存在
     todo_menu = await Menu.filter(name="待办事项").first()
     if not todo_menu:
@@ -185,7 +184,7 @@ async def init_menus():
             path="/todo",
             order=3,
             parent_id=0,
-            icon="icon-park-outline:task-list",
+            icon="material-symbols:featured-play-list-outline",
             is_hidden=False,
             component="Layout",
             keepalive=False,

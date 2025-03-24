@@ -28,39 +28,6 @@ export const basicRoutes = [
     meta: { order: 1 },
   },
   {
-    name: 'Todo',
-    path: '/todo',
-    component: Layout,
-    redirect: '/todo/quadrant',
-    meta: {
-      title: '待办事项',
-      icon: 'icon-park-outline:task-list',
-      order: 2,
-    },
-    children: [
-      {
-        name: 'TodoQuadrant',
-        path: 'quadrant',
-        component: () => import('@/views/todo/TodoQuadrant.vue'),
-        meta: {
-          title: '四象限待办',
-          icon: 'icon-park-outline:grid-four',
-          keepAlive: true,
-        }
-      },
-      {
-        name: 'TodoHistory',
-        path: 'history',
-        component: () => import('@/views/todo/TodoHistory.vue'),
-        meta: {
-          title: '待办统计',
-          icon: 'icon-park-outline:chart-line',
-          keepAlive: true,
-        }
-      }
-    ]
-  },
-  {
     name: t('views.profile.label_profile'),
     path: '/profile',
     component: Layout,
