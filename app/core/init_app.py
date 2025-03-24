@@ -175,6 +175,49 @@ async def init_menus():
             redirect="",
         )
 
+    # 检查待办事项菜单是否存在
+    todo_menu = await Menu.filter(name="待办事项").first()
+    if not todo_menu:
+        # 添加待办事项菜单
+        todo_parent_menu = await Menu.create(
+            menu_type=MenuType.CATALOG,
+            name="待办事项",
+            path="/todo",
+            order=3,
+            parent_id=0,
+            icon="icon-park-outline:task-list",
+            is_hidden=False,
+            component="Layout",
+            keepalive=False,
+            redirect="/todo/quadrant",
+        )
+
+        todo_children_menu = [
+            Menu(
+                menu_type=MenuType.MENU,
+                name="四象限待办",
+                path="quadrant",
+                order=1,
+                parent_id=todo_parent_menu.id,
+                icon="icon-park-outline:grid-four",
+                is_hidden=False,
+                component="/todo/TodoQuadrant",
+                keepalive=True,
+            ),
+            Menu(
+                menu_type=MenuType.MENU,
+                name="待办统计",
+                path="statistics",
+                order=2,
+                parent_id=todo_parent_menu.id,
+                icon="icon-park-outline:chart-line",
+                is_hidden=False,
+                component="/todo/TodoStatistics",
+                keepalive=True,
+            ),
+        ]
+        await Menu.bulk_create(todo_children_menu)
+
 
 async def init_apis():
     apis = await api_controller.model.exists()
