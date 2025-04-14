@@ -7,7 +7,7 @@
       mr-8
       max-w-150
       flex-shrink-0
-      text-16
+      text-22
       font-bold
       color-primary
     >

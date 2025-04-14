@@ -15,7 +15,7 @@ export default {
      * @param {String} params.end_date - 结束日期
      * @returns {Promise} - 返回待办事项列表
      */
-    getTodos: (params = {}) => request.get('/todo', { params }),
+    getTodos: (params = {}) => request.get('/todo/list', { params }),
 
     /**
      * 创建新待办事项
@@ -25,14 +25,14 @@ export default {
      * @param {String} data.due_date - 截止日期（可选）
      * @returns {Promise} - 返回创建的待办事项
      */
-    createTodo: (data = {}) => request.post('/todo', data),
+    createTodo: (data = {}) => request.post('/todo/create', data),
 
     /**
      * 获取指定ID的待办事项
      * @param {Number} id - 待办事项ID
      * @returns {Promise} - 返回待办事项详情
      */
-    getTodoById: (id) => request.get(`/todo/${id}`),
+    getTodoById: (id) => request.get('/todo/get', { params: { todo_id: id } }),
 
     /**
      * 更新待办事项
@@ -44,14 +44,14 @@ export default {
      * @param {Boolean} data.is_completed - 是否已完成（可选）
      * @returns {Promise} - 返回更新后的待办事项
      */
-    updateTodo: (id, data = {}) => request.put(`/todo/${id}`, data),
+    updateTodo: (id, data = {}) => request.post('/todo/update', { ...data, id }),
 
     /**
      * 删除待办事项
      * @param {Number} id - 待办事项ID
      * @returns {Promise} - 返回删除结果
      */
-    deleteTodo: (id) => request.delete(`/todo/${id}`),
+    deleteTodo: (id) => request.delete('/todo/delete', { params: { todo_id: id } }),
 
     /**
      * 获取按日期统计的已完成待办事项数量

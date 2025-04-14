@@ -17,7 +17,7 @@ logger = logging.getLogger(__name__)
 router = APIRouter()
 
 
-@router.get("/", summary="获取待办事项列表")
+@router.get("/list", summary="获取待办事项列表")
 async def list_todos(
     page: int = Query(1, description="页码"),
     page_size: int = Query(10, description="每页数量"),
@@ -49,7 +49,7 @@ async def list_todos(
     return SuccessExtra(data=result, total=total, page=page, page_size=page_size)
 
 
-@router.post("/", summary="创建待办事项")
+@router.post("/create", summary="创建待办事项")
 async def create_todo(
     todo_in: TodoItemCreate,
     current_user: User = Depends(AuthControl.is_authed),
@@ -64,9 +64,9 @@ async def create_todo(
     return Success(data=todo_out.model_dump())
 
 
-@router.get("/{todo_id}", summary="获取指定ID的待办事项")
+@router.get("/get", summary="获取指定ID的待办事项")
 async def get_todo(
-    todo_id: int = Path(..., description="待办事项ID"),
+    todo_id: int = Query(..., description="待办事项ID"),
     current_user: User = Depends(AuthControl.is_authed),
 ):
     """
@@ -81,16 +81,15 @@ async def get_todo(
         raise HTTPException(status_code=404, detail="待办事项不存在")
 
 
-@router.put("/{todo_id}", summary="更新指定ID的待办事项")
+@router.post("/update", summary="更新指定ID的待办事项")
 async def update_todo(
     todo_in: TodoItemUpdate,
-    todo_id: int = Path(..., description="待办事项ID"),
     current_user: User = Depends(AuthControl.is_authed),
 ):
     """
     更新指定ID的待办事项
     """
-    todo = await todo_controller.update_todo(todo_id, todo_in, current_user.id)
+    todo = await todo_controller.update_todo(todo_in.id, todo_in, current_user.id)
     if not todo:
         raise HTTPException(status_code=404, detail="待办事项不存在")
 
@@ -99,9 +98,9 @@ async def update_todo(
     return Success(data=todo_out.model_dump())
 
 
-@router.delete("/{todo_id}", summary="删除指定ID的待办事项")
+@router.delete("/delete", summary="删除指定ID的待办事项")
 async def delete_todo(
-    todo_id: int = Path(..., description="待办事项ID"),
+    todo_id: int = Query(..., description="待办事项ID"),
     current_user: User = Depends(AuthControl.is_authed),
 ):
     """

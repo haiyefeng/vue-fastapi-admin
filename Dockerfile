@@ -18,7 +18,7 @@ RUN --mount=type=cache,target=/var/cache/apt,sharing=locked,id=core-apt \
     && ln -sf /usr/share/zoneinfo/Asia/Shanghai /etc/localtime \
     && echo "Asia/Shanghai" > /etc/timezone \
     && apt-get update \
-    && apt-get install -y --no-install-recommends gcc python3-dev bash nginx vim curl procps net-tools
+    && apt-get install -y --no-install-recommends gcc python3-dev bash nginx vim curl procps net-tools default-mysql-client
 
 RUN pip install -r requirements.txt -i https://pypi.tuna.tsinghua.edu.cn/simple
 
@@ -27,7 +27,11 @@ ADD /deploy/web.conf /etc/nginx/sites-available/web.conf
 RUN rm -f /etc/nginx/sites-enabled/default \ 
     && ln -s /etc/nginx/sites-available/web.conf /etc/nginx/sites-enabled/ 
 
+# 确保entrypoint脚本有正确的换行符和权限
+RUN sed -i 's/\r$//' entrypoint.sh && \
+    chmod +x entrypoint.sh
+
 ENV LANG=zh_CN.UTF-8
 EXPOSE 80
 
-ENTRYPOINT [ "sh", "entrypoint.sh" ]
+ENTRYPOINT [ "bash", "entrypoint.sh" ]

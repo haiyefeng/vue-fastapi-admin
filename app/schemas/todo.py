@@ -14,9 +14,7 @@ class TodoItemBase(BaseModel):
     due_date: Optional[date] = Field(None, description="截止日期")
 
     class Config:
-        json_encoders = {
-            date: lambda v: v.isoformat() if v else None
-        }
+        json_encoders = {date: lambda v: v.isoformat() if v else None}
 
 
 class TodoItemCreate(TodoItemBase):
@@ -28,6 +26,7 @@ class TodoItemCreate(TodoItemBase):
 class TodoItemUpdate(BaseModel):
     """更新待办事项的请求体"""
 
+    id: int = Field(..., description="待办事项ID")
     title: Optional[str] = Field(None, description="待办事项标题")
     quadrant_type: Optional[QuadrantType] = Field(None, description="象限类型")
     due_date: Optional[date] = Field(None, description="截止日期")
