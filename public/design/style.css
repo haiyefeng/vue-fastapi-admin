@@ -738,3 +738,34 @@ textarea.form-control {
     /* Example width, set by JS */
     border-radius: 4px;
 }
+
+/* --- Quadrant palette (统一优先级模型，色值与 TodoQuadrant.vue 一致) --- */
+:root {
+    --q-ui: #f5222d;   /* 重要且紧急 */
+    --q-uni: #faad14;  /* 紧急不重要 */
+    --q-inu: #1890ff;  /* 重要不紧急 */
+    --q-nn: #909399;   /* 不紧急不重要 */
+}
+
+.quadrant-dot {
+    display: inline-block;
+    width: 8px;
+    height: 8px;
+    border-radius: 50%;
+    margin-right: 5px;
+    vertical-align: middle;
+}
+
+.quadrant-dot.q-ui { background-color: var(--q-ui); }
+.quadrant-dot.q-uni { background-color: var(--q-uni); }
+.quadrant-dot.q-inu { background-color: var(--q-inu); }
+.quadrant-dot.q-nn { background-color: var(--q-nn); }
+
+.quadrant-options label {
+    display: inline-flex;
+    align-items: center;
+    gap: 4px;
+    margin-right: 14px;
+    cursor: pointer;
+    font-size: 0.95em;
+}
