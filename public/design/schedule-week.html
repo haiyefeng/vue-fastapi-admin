@@ -178,7 +178,99 @@
             renderGrid();
         });
 
-        function refreshSelection() { /* Task 7 实现，此处先占位保证不报错 */ }
+        function refreshSelection() {
+            document.querySelectorAll('.slot-cell').forEach(c => {
+                c.classList.toggle('selected', selected.has(key(Number(c.dataset.day), Number(c.dataset.min))));
+            });
+            const summary = document.getElementById('selection-summary');
+            if (selected.size === 0) {
+                summary.textContent = '';
+            } else {
+                const ranges = mergedRanges();
+                const hours = (selected.size * granularity / 60).toFixed(1).replace(/\.0$/, '');
+                summary.textContent = '已选 ' + ranges.length + ' 个时间段，合计 ' + hours + ' 小时';
+            }
+            document.getElementById('clear-select').style.display = selected.size ? '' : 'none';
+            document.getElementById('finish-select').style.display = (mode === 'multi' && selected.size) ? '' : 'none';
+        }
+
+        function mergedRanges() {
+            const byDay = {};
+            selected.forEach(k => {
+                const [d, m] = k.split('-').map(Number);
+                (byDay[d] = byDay[d] || []).push(m);
+            });
+            const out = [];
+            Object.keys(byDay).map(Number).sort((a, b) => a - b).forEach(d => {
+                const mins = byDay[d].sort((a, b) => a - b);
+                let start = mins[0], prev = mins[0];
+                for (let i = 1; i <= mins.length; i++) {
+                    if (i === mins.length || mins[i] !== prev + granularity) {
+                        out.push({ day: d, start: start, end: prev + granularity });
+                        start = mins[i];
+                    }
+                    prev = mins[i];
+                }
+            });
+            return out;
+        }
+
+        function openCreateModal() { /* Task 8 实现 */ }
+
+        let dragging = false, dragDay = null, dragAnchor = null;
+        const gridEl = document.getElementById('schedule-grid');
+
+        gridEl.addEventListener('mousedown', e => {
+            if (mode !== 'drag') return;
+            const c = e.target.closest('.slot-cell');
+            if (!c) return;
+            dragging = true;
+            dragDay = Number(c.dataset.day);
+            dragAnchor = Number(c.dataset.min);
+            applyDragRange(dragAnchor);
+            e.preventDefault();
+        });
+
+        gridEl.addEventListener('mouseover', e => {
+            if (!dragging) return;
+            const c = e.target.closest('.slot-cell');
+            if (!c || Number(c.dataset.day) !== dragDay) return;
+            applyDragRange(Number(c.dataset.min));
+        });
+
+        document.addEventListener('mouseup', () => {
+            if (!dragging) return;
+            dragging = false;
+            if (selected.size) openCreateModal();
+        });
+
+        function applyDragRange(cur) {
+            selected.clear();
+            const lo = Math.min(dragAnchor, cur), hi = Math.max(dragAnchor, cur);
+            for (let m = lo; m <= hi; m += granularity) selected.add(key(dragDay, m));
+            refreshSelection();
+        }
+
+        gridEl.addEventListener('click', e => {
+            if (mode !== 'multi') return;
+            const c = e.target.closest('.slot-cell');
+            if (!c) return;
+            const k = key(Number(c.dataset.day), Number(c.dataset.min));
+            selected.has(k) ? selected.delete(k) : selected.add(k);
+            refreshSelection();
+        });
+
+        function setMode(next) {
+            mode = next;
+            selected.clear();
+            document.getElementById('mode-drag').classList.toggle('active', next === 'drag');
+            document.getElementById('mode-multi').classList.toggle('active', next === 'multi');
+            refreshSelection();
+        }
+        document.getElementById('mode-drag').addEventListener('click', () => setMode('drag'));
+        document.getElementById('mode-multi').addEventListener('click', () => setMode('multi'));
+        document.getElementById('clear-select').addEventListener('click', () => { selected.clear(); refreshSelection(); });
+        document.getElementById('finish-select').addEventListener('click', () => { if (selected.size) openCreateModal(); });
 
         renderGrid();
     </script>
