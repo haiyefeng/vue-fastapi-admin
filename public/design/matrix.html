@@ -39,18 +39,25 @@
             <p style="color: var(--text-muted); margin-top: -1.5em; margin-bottom: 2em;">拖拽任务可在象限间移动</p>
 
             <div class="matrix-grid">
-                <section class="matrix-quadrant" id="quadrant1">
-                    <h4><i class="fas fa-exclamation-circle" style="color: #dc3545;"></i> 重要且紧急 (Do)</h4>
+                <section class="matrix-quadrant" id="quadrant1" style="border-top: 4px solid var(--q-ui);">
+                    <h4><i class="fas fa-exclamation-circle" style="color: var(--q-ui);"></i> 重要且紧急 (Do)</h4>
                     <ul>
-                        <!-- Tasks draggable via JS -->
                         <li draggable="true">完成项目报告初稿</li>
                         <li draggable="true">回复 David 的邮件</li>
                         <li draggable="true">联系供应商确认物料</li>
                     </ul>
                 </section>
 
-                <section class="matrix-quadrant" id="quadrant2">
-                    <h4><i class="fas fa-calendar-check" style="color: #ffc107;"></i> 重要不紧急 (Schedule)</h4>
+                <section class="matrix-quadrant" id="quadrant2" style="border-top: 4px solid var(--q-uni);">
+                    <h4><i class="fas fa-user-friends" style="color: var(--q-uni);"></i> 紧急不重要 (Delegate)</h4>
+                    <ul>
+                        <li draggable="true">预定会议室</li>
+                        <li draggable="true">回复非紧急群消息</li>
+                    </ul>
+                </section>
+
+                <section class="matrix-quadrant" id="quadrant3" style="border-top: 4px solid var(--q-inu);">
+                    <h4><i class="fas fa-calendar-check" style="color: var(--q-inu);"></i> 重要不紧急 (Schedule)</h4>
                     <ul>
                         <li draggable="true">设计宣传海报 V1</li>
                         <li draggable="true">规划下季度目标</li>
@@ -58,16 +65,8 @@
                     </ul>
                 </section>
 
-                <section class="matrix-quadrant" id="quadrant3">
-                    <h4><i class="fas fa-user-friends" style="color: #17a2b8;"></i> 不重要但紧急 (Delegate)</h4>
-                    <ul>
-                        <li draggable="true">预定会议室</li>
-                        <li draggable="true">回复非紧急群消息</li>
-                    </ul>
-                </section>
-
-                <section class="matrix-quadrant" id="quadrant4">
-                    <h4><i class="fas fa-trash-alt" style="color: #6c757d;"></i> 不重要不紧急 (Eliminate/Later)</h4>
+                <section class="matrix-quadrant" id="quadrant4" style="border-top: 4px solid var(--q-nn);">
+                    <h4><i class="fas fa-trash-alt" style="color: var(--q-nn);"></i> 不紧急不重要 (Eliminate)</h4>
                     <ul>
                         <li draggable="true">整理桌面文件</li>
                         <li draggable="true">浏览行业资讯（非必需）</li>
