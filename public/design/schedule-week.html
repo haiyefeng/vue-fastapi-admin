@@ -1,0 +1,187 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>周视图排程 - 我的效率应用</title>
+    <link rel="stylesheet" href="style.css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <style>
+        .schedule-toolbar { display: flex; align-items: center; gap: 0.8em; margin-bottom: 0.8em; flex-wrap: wrap; }
+        .schedule-toolbar .week-label { font-size: 1.1em; font-weight: 500; }
+        .schedule-toolbar select.form-control { width: auto; display: inline-block; padding: 0.4em 0.6em; }
+        .mode-toggle .button.active, .view-toggle .button.active { background: var(--primary-light); color: var(--primary-color); border-color: var(--primary-color); }
+        .selection-summary { min-height: 1.5em; margin-bottom: 0.6em; font-size: 0.9em; color: var(--text-muted); }
+        .schedule-grid { display: flex; border: 1px solid var(--border-color); user-select: none; }
+        .time-gutter { width: 56px; flex-shrink: 0; border-right: 1px solid var(--border-color); background: var(--bg-alt); }
+        .day-col { flex: 1; min-width: 0; border-right: 1px solid var(--border-light); }
+        .day-col:last-child { border-right: none; }
+        .day-head { height: 2.2em; line-height: 2.2em; text-align: center; font-size: 0.88em; font-weight: 500; border-bottom: 1px solid var(--border-color); background: var(--bg-alt); white-space: nowrap; overflow: hidden; }
+        .day-col.today .day-head { background: var(--primary-light); color: var(--primary-color); }
+        .col-body { position: relative; }
+        .slot-cell { border-bottom: 1px dashed var(--border-light); cursor: pointer; box-sizing: border-box; }
+        .slot-cell.hour-end { border-bottom: 1px solid var(--border-color); }
+        .slot-cell:hover { background: var(--hover-bg); }
+        .slot-cell.selected { background: var(--primary-light); box-shadow: inset 0 0 0 1px var(--primary-color); }
+        .gutter-cell { position: relative; box-sizing: border-box; }
+        .gutter-cell span { position: absolute; top: -0.55em; right: 6px; font-size: 0.72em; color: var(--text-muted); background: var(--bg-alt); padding: 0 2px; }
+        .now-line { position: absolute; left: 0; right: 0; height: 2px; background: var(--danger-color); z-index: 3; pointer-events: none; }
+        .event-block { position: absolute; left: 2px; right: 2px; border-radius: 4px; padding: 1px 4px; font-size: 0.76em; color: #fff; overflow: hidden; white-space: nowrap; text-overflow: ellipsis; z-index: 2; box-sizing: border-box; }
+    </style>
+</head>
+
+<body>
+    <header>
+        <h1><a href="/"><i class="fas fa-check-double"></i> 我的效率应用</a></h1>
+        <nav>
+            <span><i class="fas fa-user"></i> 用户名</span>
+            <a href="settings.html"><i class="fas fa-cog"></i> 设置</a>
+            <a href="#"><i class="fas fa-sign-out-alt"></i> 退出</a>
+        </nav>
+    </header>
+
+    <div class="main-container">
+        <aside class="sidebar">
+            <nav>
+                <ul>
+                    <li><a href="dashboard.html"><i class="fas fa-calendar-day"></i> 今日</a></li>
+                    <li><a href="tasks.html"><i class="fas fa-tasks"></i> 任务</a></li>
+                    <li><a href="schedule-week.html" class="active"><i class="fas fa-calendar-week"></i> 日历</a></li>
+                    <li><a href="matrix.html"><i class="fas fa-th-large"></i> 四象限</a></li>
+                    <li><a href="habits.html"><i class="fas fa-sync-alt"></i> 习惯</a></li>
+                    <li><a href="goals.html"><i class="fas fa-flag-checkered"></i> 计划</a></li>
+                    <li><a href="summary.html"><i class="fas fa-glasses"></i> 回顾总结</a></li>
+                </ul>
+            </nav>
+        </aside>
+
+        <main class="content">
+            <div class="schedule-toolbar">
+                <button class="button"><i class="fas fa-chevron-left"></i></button>
+                <span class="week-label">2026年 第32周 (8月3日 - 8月9日)</span>
+                <button class="button"><i class="fas fa-chevron-right"></i></button>
+                <select id="granularity" class="form-control" title="时间粒度">
+                    <option value="15">15 分钟</option>
+                    <option value="30" selected>30 分钟</option>
+                    <option value="60">1 小时</option>
+                </select>
+                <span class="mode-toggle">
+                    <button class="button active" id="mode-drag">拖拽选择</button>
+                    <button class="button" id="mode-multi">多选格子</button>
+                </span>
+                <button class="button button-primary" id="finish-select" style="display: none;">完成选择</button>
+                <button class="button" id="clear-select" style="display: none;">清空选择</button>
+                <span class="view-toggle" style="margin-left: auto;">
+                    <a href="calendar-day.html" class="button">日</a>
+                    <a href="schedule-week.html" class="button active">周</a>
+                </span>
+            </div>
+            <div class="selection-summary" id="selection-summary"></div>
+            <div class="schedule-grid" id="schedule-grid"></div>
+        </main>
+    </div>
+
+    <script>
+        const GRAN_HEIGHT = { 15: 16, 30: 26, 60: 44 };
+        const DAY_LABELS = ['周一 8/3', '周二 8/4', '周三 8/5', '周四 8/6', '周五 8/7', '周六 8/8', '周日 8/9'];
+        const TODAY_INDEX = 1;
+        const QUADRANTS = {
+            urgent_important: { color: '#f5222d', label: '重要且紧急' },
+            urgent_not_important: { color: '#faad14', label: '紧急不重要' },
+            important_not_urgent: { color: '#1890ff', label: '重要不紧急' },
+            not_urgent_not_important: { color: '#909399', label: '不紧急不重要' },
+        };
+
+        let granularity = 30;
+        let mode = 'drag'; // 'drag' | 'multi'
+        let selected = new Set(); // "day-minute"
+        let events = [];
+
+        function el(tag, cls, html) {
+            const node = document.createElement(tag);
+            if (cls) node.className = cls;
+            if (html) node.innerHTML = html;
+            return node;
+        }
+
+        function key(day, min) { return day + '-' + min; }
+
+        function fmt(min) {
+            return String(Math.floor(min / 60)).padStart(2, '0') + ':' + String(min % 60).padStart(2, '0');
+        }
+
+        function renderGrid() {
+            const grid = document.getElementById('schedule-grid');
+            grid.innerHTML = '';
+            const h = GRAN_HEIGHT[granularity];
+            const rows = 1440 / granularity;
+
+            const gutter = el('div', 'time-gutter');
+            gutter.appendChild(el('div', 'day-head', ''));
+            const gbody = el('div', 'col-body');
+            for (let r = 0; r < rows; r++) {
+                const min = r * granularity;
+                const cell = el('div', 'gutter-cell');
+                cell.style.height = h + 'px';
+                if (min % 60 === 0 && min > 0) cell.innerHTML = '<span>' + fmt(min) + '</span>';
+                gbody.appendChild(cell);
+            }
+            gutter.appendChild(gbody);
+            grid.appendChild(gutter);
+
+            for (let d = 0; d < 7; d++) {
+                const col = el('div', 'day-col' + (d === TODAY_INDEX ? ' today' : ''));
+                col.appendChild(el('div', 'day-head', DAY_LABELS[d]));
+                const body = el('div', 'col-body');
+                for (let r = 0; r < rows; r++) {
+                    const min = r * granularity;
+                    const cell = el('div', 'slot-cell');
+                    cell.style.height = h + 'px';
+                    if ((min + granularity) % 60 === 0) cell.classList.add('hour-end');
+                    cell.dataset.day = d;
+                    cell.dataset.min = min;
+                    if (selected.has(key(d, min))) cell.classList.add('selected');
+                    body.appendChild(cell);
+                }
+                renderEventsForDay(body, d, h);
+                if (d === TODAY_INDEX) {
+                    const now = new Date();
+                    const nowMin = now.getHours() * 60 + now.getMinutes();
+                    const line = el('div', 'now-line');
+                    line.style.top = (nowMin * h / granularity) + 'px';
+                    body.appendChild(line);
+                }
+                col.appendChild(body);
+                grid.appendChild(col);
+            }
+        }
+
+        function renderEventsForDay(body, day, h) {
+            events.forEach(ev => {
+                ev.ranges.filter(r => r.day === day).forEach(r => {
+                    const block = el('div', 'event-block');
+                    block.style.top = (r.start * h / granularity) + 'px';
+                    block.style.height = ((r.end - r.start) * h / granularity - 2) + 'px';
+                    block.style.backgroundColor = QUADRANTS[ev.quadrant].color;
+                    block.title = ev.title + ' ' + fmt(r.start) + '–' + fmt(r.end);
+                    block.textContent = fmt(r.start) + ' ' + ev.title;
+                    body.appendChild(block);
+                });
+            });
+        }
+
+        document.getElementById('granularity').addEventListener('change', e => {
+            granularity = Number(e.target.value);
+            selected.clear();
+            refreshSelection();
+            renderGrid();
+        });
+
+        function refreshSelection() { /* Task 7 实现，此处先占位保证不报错 */ }
+
+        renderGrid();
+    </script>
+</body>
+
+</html>
