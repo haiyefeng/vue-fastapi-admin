@@ -245,4 +245,6 @@ pnpm dev
 
 
 ### 构建镜像
+
 `docker build -t vue-fastapi-admin-app:latest .`
+`docker save -o vue-fastapi-admin-app.tar vue-fastapi-admin-app:latest`

@@ -1,0 +1,257 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>回顾总结 - 我的效率应用</title>
+    <link rel="stylesheet" href="style.css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <style>
+        /* 为回顾步骤添加一些间距和样式 */
+        .reflection-step {
+            margin-bottom: 2em;
+            padding: 1.5em;
+            background-color: var(--bg-alt);
+            border-radius: 8px;
+            border: 1px solid var(--border-light);
+        }
+
+        .reflection-step h4 {
+            margin-top: 0;
+            margin-bottom: 0.8em;
+            color: var(--primary-color);
+            border-bottom: none; /* 移除默认的 h3/h4 下划线 */
+            padding-bottom: 0;
+        }
+
+        .step-guidance {
+            color: var(--text-muted);
+            font-size: 0.9em;
+            margin-bottom: 1em;
+            line-height: 1.7;
+        }
+
+        #generated-goals-list li {
+            padding: 0.5em 0;
+            border-bottom: 1px dashed var(--border-light);
+        }
+        #generated-goals-list li:last-child {
+             border-bottom: none;
+        }
+
+        .metrics-section p {
+            margin-bottom: 0.5em;
+            font-size: 0.95em;
+        }
+        .metrics-section strong {
+            display: inline-block;
+            min-width: 120px; /* 对齐标签 */
+        }
+    </style>
+</head>
+
+<body>
+    <header>
+        <h1><a href="/"><i class="fas fa-check-double"></i> 我的效率应用</a></h1>
+        <nav>
+            <span><i class="fas fa-user"></i> 用户名</span>
+            <a href="settings.html"><i class="fas fa-cog"></i> 设置</a>
+            <a href="#"><i class="fas fa-sign-out-alt"></i> 退出</a>
+        </nav>
+    </header>
+
+    <div class="main-container">
+        <aside class="sidebar">
+            <nav>
+                <ul>
+                    <li><a href="dashboard.html"><i class="fas fa-calendar-day"></i> 今日</a></li>
+                    <li><a href="#"><i class="fas fa-inbox"></i> 收件箱</a></li>
+                    <li><a href="calendar-week.html"><i class="fas fa-calendar-week"></i> 日历</a></li>
+                    <li><a href="matrix.html"><i class="fas fa-th-large"></i> 四象限</a></li>
+                    <li><a href="habits.html"><i class="fas fa-sync-alt"></i> 习惯</a></li>
+                    <li><a href="goals.html"><i class="fas fa-flag-checkered"></i> 计划</a></li>
+                    <li><a href="#" class="active"><i class="fas fa-glasses"></i> 回顾总结</a></li> {/* 新增导航项 */}
+                    <li><span><i class="fas fa-folder"></i> 分类/项目</span></li>
+                    <li><a href="tasks.html"><i class="fas fa-briefcase"></i> 工作</a></li>
+                    <li><a href="#"><i class="fas fa-graduation-cap"></i> 学习</a></li>
+                    <li><a href="#"><i class="fas fa-list"></i> 我的清单</a></li>
+                </ul>
+            </nav>
+        </aside>
+
+        <main class="content">
+            <!-- 动态标题：周/月/季度/年回顾 -->
+            <h2><i class="fas fa-glasses"></i> 周回顾与总结</h2>
+            <p style="color: var(--text-muted); margin-top: -1.5em; margin-bottom: 2em;">
+                周期: 2023年12月11日 - 2023年12月17日
+            </p>
+
+            <!-- 阶段一：数据回顾 -->
+            <section id="data-review" class="metrics-section">
+                <h3><i class="fas fa-chart-bar"></i> 数据回顾</h3>
+                <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(250px, 1fr)); gap: 1.5em;">
+                    <div>
+                        <h4><i class="fas fa-check"></i> 任务完成情况</h4>
+                        <p><strong>总任务完成:</strong> 18 / 25 (72%)</p>
+                        <p><strong>工作类完成:</strong> 10 / 14</p>
+                        <p><strong>学习类完成:</strong> 5 / 7</p>
+                        <p><strong>高优先级完成:</strong> 4 / 5</p>
+                    </div>
+                    <div>
+                        <h4><i class="fas fa-sync-alt"></i> 习惯打卡情况</h4>
+                        <p><strong>晨间阅读:</strong> 完成 6 / 7 天 (连续 21 天)</p>
+                        <p><strong>运动健身:</strong> 完成 2 / 3 次 (本周达标率 66%)</p>
+                        <p><strong>喝够8杯水:</strong> 完成 7 / 7 天</p>
+                    </div>
+                    <div>
+                        <h4><i class="fas fa-flag-checkered"></i> 计划进展</h4>
+                        <p><strong>提升 React 技能:</strong> +5% (完成 2 个关联任务)</p>
+                        <p><strong>完成毕业论文:</strong> 无明显进展</p>
+                    </div>
+                </div>
+                <hr style="margin: 2em 0;">
+            </section>
+
+            <!-- 阶段二：引导式反思（七步提问法） -->
+            <section id="guided-reflection">
+                <h3><i class="fas fa-lightbulb"></i> 引导式反思 (七步提问法)</h3>
+
+                <div class="reflection-step">
+                    <h4>第一步：负面 -> 正面</h4>
+                    <p class="step-guidance">回顾本周，有哪些方面让你感觉**不满意**、效率不高或遇到了**挑战**？从这些挑战中，你观察到了哪些**积极的信号、学习到的经验**或**值得肯定的地方**？</p>
+                    <textarea class="form-control" rows="4" placeholder="例如：挑战是论文进展缓慢，感觉无从下手。但积极的是，我坚持完成了所有的日常习惯，并且工作任务完成度还不错..."></textarea>
+                </div>
+
+                <div class="reflection-step">
+                    <h4>第二步：封闭 -> 开放</h4>
+                    <p class="step-guidance">针对你提到的[某个亮点，如“工作任务完成度不错”]，具体是什么**关键因素**促成了它？除了这个因素，还有哪些**其他可能的原因或条件**帮助了你？</p>
+                    <textarea class="form-control" rows="4" placeholder="例如：关键因素是周一提前规划了任务优先级。其他原因可能包括本周会议较少，干扰少..."></textarea>
+                </div>
+
+                <div class="reflection-step">
+                    <h4>第三步：单一 -> 复数</h4>
+                    <p class="step-guidance">为了在下周继续保持[某个亮点，如“高任务完成度”]，或者改进[某个挑战，如“论文进展”]，有哪些**不同的方法、策略或途径**可以尝试？（至少想出2-3种）</p>
+                    <textarea class="form-control" rows="4" placeholder="例如：保持任务完成度：1. 继续周一规划；2. 尝试番茄工作法；3. 预留特定时间处理邮件。 改进论文进展：1. 每天固定投入1小时；2. 找导师讨论卡点；3. 阅读相关文献寻找思路..."></textarea>
+                </div>
+
+                <div class="reflection-step">
+                    <h4>第四步：现实 -> 可能性</h4>
+                    <p class="step-guidance">想象一下，如果[某个挑战，如“论文卡点”]完全不成问题，或者[某个亮点，如“习惯坚持”]能发挥到极致，未来可能会出现哪些**令人兴奋的新机会或可能性**？</p>
+                    <textarea class="form-control" rows="4" placeholder="例如：如果论文顺利，可以提前开始找实习，或者有更多时间学习新技术。如果习惯非常好，身体状态和精神面貌会更好，能支撑更高强度的工作..."></textarea>
+                </div>
+
+                <div class="reflection-step">
+                    <h4>第五步：发散 -> 聚焦</h4>
+                    <p class="step-guidance">在所有这些可能性和你想改进的方面中，**下周你最想集中精力去突破或改进的一个具体领域是什么？** 明确你的**核心焦点**。</p>
+                    <textarea class="form-control" rows="4" placeholder="例如：下周的核心焦点是：切实推进毕业论文的写作进度..."></textarea>
+                </div>
+
+                <div class="reflection-step">
+                    <h4>第六步：静态 -> 动态</h4>
+                    <p class="step-guidance">为了在你选择的[核心焦点]上取得**看得见的、持续的进步**，下周你可以采取哪些**非常具体的、可衡量的行动步骤**？（将它们转化为计划或任务）</p>
+                    <textarea class="form-control" rows="4" placeholder="例如：1. 周一上午与导师预约时间讨论论文框架； 2. 周二至周五，每天上午9-10点固定为论文写作时间； 3. 周五下午完成文献综述部分的初稿..."></textarea>
+                </div>
+
+                <div class="reflection-step">
+                    <h4>第七步：个体 -> 系统</h4>
+                    <p class="step-guidance">从**更宏观或系统的角度**思考，改进[核心焦点]将如何影响你的其他目标（工作/学习）、习惯或整体生活状态？为了更好地支持这项改进，你是否需要调整**外部环境**（如减少干扰）、**内部流程**（如调整作息）或其他**相关系统**？</p>
+                    <textarea class="form-control" rows="4" placeholder="例如：推进论文能减轻焦虑，提升整体幸福感。为支持写作，需要保证充足睡眠，并在写作时段关闭手机通知..."></textarea>
+                </div>
+            </section>
+
+            <!-- 阶段三：生成改进计划 -->
+            <section id="action-plan">
+                <h3><i class="fas fa-flag-checkered"></i> 生成改进计划</h3>
+                <p style="color: var(--text-muted); margin-bottom: 1em;">根据你的反思，特别是第六、七步的思考，将具体的行动步骤转化为下阶段的计划/目标。</p>
+
+                <ul id="generated-goals-list" style="margin-bottom: 1em;">
+                    <!-- JS 会在这里添加用户新创建的计划 -->
+                    <li style="color: var(--text-muted); text-align: center;">暂无新计划</li>
+                </ul>
+
+                <button class="button button-primary" onclick="openModal('add-goal-modal')"> {/* 假设你复用了 goals.html 的 modal */}
+                    <i class="fas fa-plus"></i> 添加新计划/目标...
+                </button>
+                <hr style="margin: 2em 0;">
+            </section>
+
+            <div style="text-align: right;">
+                <button type="button" class="button" style="margin-right: 1em;">保存草稿</button>
+                 {/* 可以加一个成功样式 button-success */}
+                <button type="button" class="button button-primary" style="background-color: #28a745; border-color: #28a745;">
+                    <i class="fas fa-check"></i> 完成本次回顾
+                </button>
+            </div>
+
+        </main>
+    </div>
+
+    <!-- 引入 goals.html 中的添加计划 Modal (假设已存在) -->
+    <!-- 你需要将 goals.html 中的 add-goal-modal 部分代码复制到这里，或者通过JS动态加载 -->
+    <div id="add-goal-modal" class="modal" style="display: none;">
+        <!-- Modal 内容来自 goals.html -->
+         <div class="modal-dialog">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title">添加新计划/目标 (源自回顾)</h5>
+                    <button type="button" class="close" onclick="closeModal('add-goal-modal')" aria-label="Close">
+                        <span aria-hidden="true">×</span>
+                    </button>
+                </div>
+                <div class="modal-body">
+                    <form>
+                        <div class="form-group">
+                            <label for="goal-name">计划/目标名称</label>
+                            <input type="text" id="goal-name" class="form-control" placeholder="例如：完成论文文献综述初稿">
+                        </div>
+                        <div class="form-group">
+                            <label for="goal-description-modal">描述 (可选)</label>
+                            <textarea id="goal-description-modal" class="form-control" rows="3"
+                                placeholder="简要说明这个计划的目标和意义..."></textarea>
+                        </div>
+                        <div class="form-group">
+                            <label for="goal-target-date-modal">目标完成日期 (可选)</label>
+                            <input type="date" id="goal-target-date-modal" class="form-control">
+                        </div>
+                        <div class="form-group">
+                            <label>归属分类 (可选)</label>
+                            <select class="form-control">
+                                <option>学习</option> {/* 默认为相关的分类 */}
+                                <option>工作</option>
+                                <option>个人</option>
+                                <option>无分类</option>
+                            </select>
+                        </div>
+                    </form>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="button" onclick="closeModal('add-goal-modal')">取消</button>
+                    {/* JS 需要处理保存逻辑，并更新 #generated-goals-list */}
+                    <button type="button" class="button button-primary">保存计划</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // 简单的 Modal 开关函数 (复用或独立实现)
+        function openModal(id) {
+            const modal = document.getElementById(id);
+            if (modal) modal.style.display = 'block';
+        }
+        function closeModal(id) {
+             const modal = document.getElementById(id);
+            if (modal) modal.style.display = 'none';
+        }
+
+        // 实际应用中，你需要用 JS 实现：
+        // 1. 动态加载回顾周期的数据。
+        // 2. 保存用户的反思答案。
+        // 3. 处理“添加新计划”按钮的逻辑：
+        //    - 打开模态框。
+        //    - 保存新计划后，关闭模态框，并在 #generated-goals-list 中显示新添加的计划。
+        // 4. 处理“保存草稿”和“完成回顾”的逻辑，更新后端数据。
+    </script>
+</body>
+</html>

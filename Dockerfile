@@ -1,8 +1,20 @@
-FROM node:18.12.0-alpine3.16 AS web
+FROM node:20-alpine AS web
+
+# 安装必要的构建依赖
+RUN apk add --no-cache python3 make g++
 
 WORKDIR /opt/vue-fastapi-admin
 COPY /web ./web
-RUN cd /opt/vue-fastapi-admin/web && npm i --registry=https://registry.npmmirror.com && npm run build
+
+# 设置 npm 镜像源
+RUN npm config set registry https://registry.npmmirror.com
+
+# 安装依赖
+WORKDIR /opt/vue-fastapi-admin/web
+RUN npm install
+
+# 构建项目
+RUN npm run build
 
 
 FROM python:3.11-slim-bullseye

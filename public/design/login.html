@@ -1,0 +1,92 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>登录 - 我的效率应用</title>
+    <link rel="stylesheet" href="style.css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <style>
+        /* Override default layout for auth pages */
+        body {
+            display: block;
+        }
+
+        /* Remove flex */
+        .auth-container {
+            max-width: 400px;
+            margin: 5em auto;
+            /* Center vertically and horizontally */
+            padding: 2.5em;
+            background-color: var(--bg-color);
+            border-radius: 8px;
+            box-shadow: 0 4px 15px rgba(0, 0, 0, 0.1);
+            text-align: center;
+        }
+
+        .auth-container h2 {
+            font-size: 1.6em;
+            margin-bottom: 1.5em;
+        }
+
+        .auth-container .form-group {
+            margin-bottom: 1.5em;
+            text-align: left;
+        }
+
+        .auth-container .button {
+            width: 100%;
+            padding: 0.8em;
+            font-size: 1em;
+        }
+
+        .auth-container p {
+            margin-top: 1.5em;
+            font-size: 0.9em;
+            color: var(--text-muted);
+        }
+
+        .auth-container p a {
+            color: var(--primary-color);
+            text-decoration: none;
+            font-weight: 500;
+        }
+
+        .auth-container p a:hover {
+            text-decoration: underline;
+        }
+
+        .auth-logo {
+            font-size: 2em;
+            color: var(--primary-color);
+            margin-bottom: 0.5em;
+        }
+    </style>
+</head>
+
+<body>
+    <div class="auth-container">
+        <div class="auth-logo"><i class="fas fa-check-double"></i></div>
+        <h2>登录您的账户</h2>
+        <form action="#" method="post"> <!-- Action should point to backend endpoint -->
+            <div class="form-group">
+                <label for="login-email">邮箱地址</label>
+                <input type="email" id="login-email" name="email" class="form-control" required
+                    placeholder="you@example.com">
+            </div>
+            <div class="form-group">
+                <label for="login-password">密码</label>
+                <input type="password" id="login-password" name="password" class="form-control" required
+                    placeholder="输入您的密码">
+            </div>
+            <div style="text-align: right; margin-bottom: 1.5em; font-size: 0.85em;">
+                <a href="#">忘记密码?</a>
+            </div>
+            <button type="submit" class="button button-primary">登录</button>
+        </form>
+        <p>还没有账户? <a href="signup.html">立即注册</a></p>
+    </div>
+</body>
+
+</html>

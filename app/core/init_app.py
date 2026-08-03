@@ -162,18 +162,18 @@ async def init_menus():
             ),
         ]
         await Menu.bulk_create(children_menu)
-        await Menu.create(
-            menu_type=MenuType.MENU,
-            name="一级菜单",
-            path="/top-menu",
-            order=2,
-            parent_id=0,
-            icon="material-symbols:featured-play-list-outline",
-            is_hidden=False,
-            component="/top-menu",
-            keepalive=False,
-            redirect="",
-        )
+        # await Menu.create(
+        #     menu_type=MenuType.MENU,
+        #     name="一级菜单",
+        #     path="/top-menu",
+        #     order=2,
+        #     parent_id=0,
+        #     icon="material-symbols:featured-play-list-outline",
+        #     is_hidden=False,
+        #     component="/top-menu",
+        #     keepalive=False,
+        #     redirect="",
+        # )
     # 检查待办事项菜单是否存在
     todo_menu = await Menu.filter(name="待办事项").first()
     if not todo_menu:

@@ -11,13 +11,19 @@
             <n-empty v-if="todoList1.length === 0" description="暂无待办事项" />
             <div v-for="todo in todoList1" :key="todo.id" class="todo-item" draggable="true"
               @dragstart="(event) => handleDragStart(event, todo)">
-              <n-checkbox v-model:checked="todo.is_completed" @update:checked="handleTodoComplete(todo)" />
+              <n-checkbox v-model:checked="todo.is_completed" @update:checked="(checked, e) => handleTodoComplete(todo, e)" />
               <div class="todo-content">
                 <div class="todo-title">{{ todo.title }}</div>
                 <div class="todo-meta">
                   <n-tag type="error" size="small" v-if="todo.due_date">
-                    截止: {{ todo.due_date }}
+                    截止: {{ formatDateTime(todo.due_date) }}
                   </n-tag>
+                  <n-tooltip v-if="todo.notes" trigger="hover" placement="top">
+                    <template #trigger>
+                      <n-tag size="small">备注</n-tag>
+                    </template>
+                    <span style="white-space: pre-wrap;">{{ todo.notes }}</span>
+                  </n-tooltip>
                 </div>
               </div>
               <div class="todo-actions">
@@ -39,13 +45,19 @@
             <n-empty v-if="todoList2.length === 0" description="暂无待办事项" />
             <div v-for="todo in todoList2" :key="todo.id" class="todo-item" draggable="true"
               @dragstart="(event) => handleDragStart(event, todo)">
-              <n-checkbox v-model:checked="todo.is_completed" @update:checked="handleTodoComplete(todo)" />
+              <n-checkbox v-model:checked="todo.is_completed" @update:checked="(checked, e) => handleTodoComplete(todo, e)" />
               <div class="todo-content">
                 <div class="todo-title">{{ todo.title }}</div>
                 <div class="todo-meta">
                   <n-tag type="warning" size="small" v-if="todo.due_date">
-                    截止: {{ todo.due_date }}
+                    截止: {{ formatDateTime(todo.due_date) }}
                   </n-tag>
+                  <n-tooltip v-if="todo.notes" trigger="hover" placement="top">
+                    <template #trigger>
+                      <n-tag size="small">备注</n-tag>
+                    </template>
+                    <span style="white-space: pre-wrap;">{{ todo.notes }}</span>
+                  </n-tooltip>
                 </div>
               </div>
               <div class="todo-actions">
@@ -61,19 +73,25 @@
       <n-gi>
         <n-card title="重要不紧急" class="quadrant-card important-not-urgent">
           <template #header-extra>
-            <n-button type="primary" @click="handleAddTodo(3)">添加</n-button>
+            <n-button class="btn-blue" @click="handleAddTodo(3)">添加</n-button>
           </template>
           <div class="todo-list" @dragover.prevent @drop="(event) => handleDrop(event, 'important_not_urgent')">
             <n-empty v-if="todoList3.length === 0" description="暂无待办事项" />
             <div v-for="todo in todoList3" :key="todo.id" class="todo-item" draggable="true"
               @dragstart="(event) => handleDragStart(event, todo)">
-              <n-checkbox v-model:checked="todo.is_completed" @update:checked="handleTodoComplete(todo)" />
+              <n-checkbox v-model:checked="todo.is_completed" @update:checked="(checked, e) => handleTodoComplete(todo, e)" />
               <div class="todo-content">
                 <div class="todo-title">{{ todo.title }}</div>
                 <div class="todo-meta">
                   <n-tag type="primary" size="small" v-if="todo.due_date">
-                    截止: {{ todo.due_date }}
+                    截止: {{ formatDateTime(todo.due_date) }}
                   </n-tag>
+                  <n-tooltip v-if="todo.notes" trigger="hover" placement="top">
+                    <template #trigger>
+                      <n-tag size="small">备注</n-tag>
+                    </template>
+                    <span style="white-space: pre-wrap;">{{ todo.notes }}</span>
+                  </n-tooltip>
                 </div>
               </div>
               <div class="todo-actions">
@@ -89,19 +107,25 @@
       <n-gi>
         <n-card title="不紧急不重要" class="quadrant-card not-urgent-not-important">
           <template #header-extra>
-            <n-button type="info" @click="handleAddTodo(4)">添加</n-button>
+            <n-button class="btn-gray" @click="handleAddTodo(4)">添加</n-button>
           </template>
           <div class="todo-list" @dragover.prevent @drop="(event) => handleDrop(event, 'not_urgent_not_important')">
             <n-empty v-if="todoList4.length === 0" description="暂无待办事项" />
             <div v-for="todo in todoList4" :key="todo.id" class="todo-item" draggable="true"
               @dragstart="(event) => handleDragStart(event, todo)">
-              <n-checkbox v-model:checked="todo.is_completed" @update:checked="handleTodoComplete(todo)" />
+              <n-checkbox v-model:checked="todo.is_completed" @update:checked="(checked, e) => handleTodoComplete(todo, e)" />
               <div class="todo-content">
                 <div class="todo-title">{{ todo.title }}</div>
                 <div class="todo-meta">
-                  <n-tag type="info" size="small" v-if="todo.due_date">
-                    截止: {{ todo.due_date }}
+                  <n-tag class="tag-gray" size="small" v-if="todo.due_date">
+                    截止: {{ formatDateTime(todo.due_date) }}
                   </n-tag>
+                  <n-tooltip v-if="todo.notes" trigger="hover" placement="top">
+                    <template #trigger>
+                      <n-tag size="small">备注</n-tag>
+                    </template>
+                    <span style="white-space: pre-wrap;">{{ todo.notes }}</span>
+                  </n-tooltip>
                 </div>
               </div>
               <div class="todo-actions">
@@ -117,7 +141,7 @@
     <div style="height: 20px"></div>
 
     <!-- 添加/编辑待办对话框 -->
-    <n-modal v-model:show="dialogVisible" :title="dialogType === 'add' ? '添加待办事项' : '编辑待办事项'" preset="card">
+    <n-modal v-model:show="dialogVisible" :title="dialogType === 'add' ? '添加待办事项' : '编辑待办事项'" preset="card" style="width: 50%; max-width: 600px;">
       <n-form ref="todoFormRef" :model="todoForm" :rules="rules" label-placement="left" label-width="auto">
         <n-form-item label="标题" path="title">
           <n-input v-model:value="todoForm.title" placeholder="请输入待办事项标题" />
@@ -125,8 +149,16 @@
         <n-form-item label="象限" path="quadrant_type">
           <n-select v-model:value="todoForm.quadrant_type" placeholder="请选择象限" :options="quadrantOptions" />
         </n-form-item>
-        <n-form-item label="截止日期" path="due_date">
-          <n-date-picker v-model:value="todoForm.due_date" type="datetime" placeholder="请选择截止日期" />
+        <n-form-item label="截止时间" path="due_date">
+          <n-date-picker v-model:value="todoForm.due_date" type="datetime" placeholder="请选择截止时间" />
+        </n-form-item>
+        <n-form-item v-if="dialogType === 'edit'" label="备注" path="notes">
+          <n-input
+            v-model:value="todoForm.notes"
+            type="textarea"
+            placeholder="请输入备注信息（可记录完成方法、收获、注意事项等）"
+            :autosize="{ minRows: 3, maxRows: 6 }"
+          />
         </n-form-item>
       </n-form>
       <template #footer>
@@ -155,7 +187,8 @@ const todoForm = ref({
   title: '',
   quadrant_type: null,
   due_date: null,
-  is_completed: false
+  is_completed: false,
+  notes: ''
 })
 const rules = {
   title: {
@@ -231,7 +264,8 @@ const handleAddTodo = (quadrantIndex) => {
     title: '',
     quadrant_type: getQuadrantType(quadrantIndex),
     due_date: null,
-    is_completed: false
+    is_completed: false,
+    notes: ''
   }
   dialogVisible.value = true
 }
@@ -343,19 +377,46 @@ const handleSubmitTodo = async () => {
 }
 
 // 完成待办
-const handleTodoComplete = async (todo) => {
+const handleTodoComplete = async (todo, event) => {
   try {
-    await todoApi.updateTodo(todo.id, {
-      is_completed: todo.is_completed,
-      completed_at: todo.is_completed ? new Date().toISOString().split('T')[0] : null
-    })
-    message.success(todo.is_completed ? '已完成' : '已取消完成')
-    fetchTodos()
+    if (todo.is_completed) {
+      // 随机选择一条励志提示消息
+      const motivationalMessages = [
+        '太棒了！又完成一项任务！🎉',
+        '干得漂亮！继续保持！💪',
+        '任务完成！你真是高效率！⭐',
+        '成就感+1！继续前进！🚀',
+        '又一个目标达成！你真厉害！👍',
+        '进步的每一步都值得庆祝！🌟',
+        '坚持就是胜利，你做到了！🏆',
+        '每完成一个任务都是成长！📈',
+        '优秀！你的努力正在变成成果！💯'
+      ];
+      const randomMessage = motivationalMessages[Math.floor(Math.random() * motivationalMessages.length)];
+      
+      await todoApi.updateTodo(todo.id, {
+        is_completed: true,
+        completed_at: new Date().toISOString()
+      });
+      
+      // 使用更有激励性的消息
+      message.success(randomMessage);
+      
+      // 立即刷新列表
+      fetchTodos();
+    } else {
+      await todoApi.updateTodo(todo.id, {
+        is_completed: false,
+        completed_at: null
+      });
+      message.info('已取消完成状态');
+      fetchTodos();
+    }
   } catch (error) {
-    console.error('更新待办状态失败:', error)
-    message.error('更新状态失败')
+    console.error('更新待办状态失败:', error);
+    message.error('更新状态失败');
     // 恢复原状态
-    todo.is_completed = !todo.is_completed
+    todo.is_completed = !todo.is_completed;
   }
 }
 
@@ -432,99 +493,121 @@ const getQuadrantLabel = (type) => {
   return labels[type] || type
 }
 
+// 格式化日期时间
+const formatDateTime = (dateTime) => {
+  if (!dateTime) return ''
+  const date = new Date(dateTime)
+  return date.toLocaleString()
+}
+
 onMounted(() => {
   fetchTodos()
 })
 </script>
 
-<style scoped>
+<style>
 .todo-quadrant {
-  padding: 20px;
+  padding: 16px;
 }
 
 .quadrant-card {
   height: 100%;
-  min-height: 300px;
+  margin-bottom: 16px;
+}
+
+.urgent-important .n-card__content {
+  border-top: 4px solid #f5222d;
+}
+
+.urgent-not-important .n-card__content {
+  border-top: 4px solid #faad14;
+}
+
+.important-not-urgent .n-card__content {
+  border-top: 4px solid #1890ff;
+}
+
+.not-urgent-not-important .n-card__content {
+  border-top: 4px solid #909399;
 }
 
 .todo-list {
-  display: flex;
-  flex-direction: column;
-  gap: 10px;
-  max-height: 400px;
-  overflow-y: auto;
+  min-height: 300px;
 }
 
 .todo-item {
   display: flex;
-  align-items: flex-start;
-  padding: 10px;
+  align-items: center;
+  margin-bottom: 8px;
+  padding: 8px 12px;
+  background: #f9f9f9;
   border-radius: 4px;
-  background-color: rgba(0, 0, 0, 0.02);
-  transition: all 0.3s;
+  transition: all 0.3s ease;
 }
 
 .todo-item:hover {
-  background-color: rgba(0, 0, 0, 0.05);
+  background: #f0f0f0;
 }
 
 .todo-content {
   flex: 1;
-  margin: 0 10px;
+  margin: 0 12px;
 }
 
 .todo-title {
   font-size: 14px;
-  line-height: 1.4;
-  word-break: break-word;
+  margin-bottom: 4px;
 }
 
 .todo-meta {
-  margin-top: 5px;
   display: flex;
-  gap: 5px;
+  align-items: center;
+  gap: 8px;
 }
 
 .todo-actions {
   display: flex;
-  flex-direction: column;
+  gap: 8px;
 }
 
-.urgent-important :deep(.n-card-header) {
-  background-color: rgba(237, 60, 80, 0.1);
+/* 蓝色按钮样式 - 用于重要不紧急象限 */
+.btn-blue {
+  background-color: #1890ff;
+  border-color: #1890ff;
+  color: #fff;
 }
 
-.urgent-not-important :deep(.n-card-header) {
-  background-color: rgba(250, 173, 20, 0.1);
+.btn-blue:hover {
+  background-color: #40a9ff;
+  border-color: #40a9ff;
 }
 
-.important-not-urgent :deep(.n-card-header) {
-  background-color: rgba(24, 144, 255, 0.1);
+.btn-blue:active {
+  background-color: #096dd9;
+  border-color: #096dd9;
 }
 
-.not-urgent-not-important :deep(.n-card-header) {
-  background-color: rgba(144, 156, 170, 0.1);
+/* 灰色按钮样式 - 用于不紧急不重要象限 */
+.btn-gray {
+  background-color: #909399;
+  border-color: #909399;
+  color: #fff;
 }
 
-/* 添加拖拽相关样式 */
-.todo-item {
-  cursor: move;
-  transition: all 0.2s;
+.btn-gray:hover {
+  background-color: #a6a9ad;
+  border-color: #a6a9ad;
 }
 
-.todo-item.dragging {
-  opacity: 0.5;
-  transform: scale(0.98);
-  box-shadow: 0 0 5px rgba(0, 0, 0, 0.2);
+.btn-gray:active {
+  background-color: #82848a;
+  border-color: #82848a;
 }
 
-.todo-list {
-  min-height: 50px;
-  padding: 8px;
-  border-radius: 4px;
-}
-
-.todo-list.drag-over {
-  background-color: rgba(0, 0, 0, 0.05);
+/* 灰色标签样式 - 用于不紧急不重要象限的标签 */
+.not-urgent-not-important .tag-gray {
+  background-color: #909399;
+  border-color: #909399;
+  color: #fff;
 }
 </style>

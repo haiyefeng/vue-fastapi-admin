@@ -90,6 +90,9 @@ importers:
         specifier: ^4.2.4
         version: 4.4.0(vue@3.4.34(typescript@5.5.4))
     devDependencies:
+      '@vicons/carbon':
+        specifier: ^0.13.0
+        version: 0.13.0
       '@vitejs/plugin-vue':
         specifier: ^4.2.3
         version: 4.6.2(vite@4.5.3(@types/node@22.0.0)(sass@1.77.8)(terser@5.31.3))(vue@3.4.34(typescript@5.5.4))
@@ -562,6 +565,9 @@ packages:
     resolution: {integrity: sha512-xmdyDnt9Ag4o7DGl22/P6MaB+HSjWOQw9qYYzIefSv3SVUvn3cEhIX/PCWqFp8Kts2HyvAoJLbZmygSf1XdZNQ==}
     peerDependencies:
       vite: ^2.9.0 || ^3.0.0-0 || ^4.0.0
+
+  '@vicons/carbon@0.13.0':
+    resolution: {integrity: sha512-Z/jExyyS4gsXJc66oTqV/j98nsaiX2JlQ0IUwu9Ms3rztf8VOHEQRuX8Jey1/zbxJpFY/tU+bWvKPRFYGIvCWQ==}
 
   '@vitejs/plugin-vue@4.6.2':
     resolution: {integrity: sha512-kqf7SGFoG+80aZG6Pf+gsZIVvGSCKE98JbiWqcCV9cThtg91Jav0yvYFC9Zb+jKetNGF6ZKeoaxgZfND21fWKw==}
@@ -3079,6 +3085,8 @@ snapshots:
       vite: 4.5.3(@types/node@22.0.0)(sass@1.77.8)(terser@5.31.3)
     transitivePeerDependencies:
       - rollup
+
+  '@vicons/carbon@0.13.0': {}
 
   '@vitejs/plugin-vue@4.6.2(vite@4.5.3(@types/node@22.0.0)(sass@1.77.8)(terser@5.31.3))(vue@3.4.34(typescript@5.5.4))':
     dependencies:

@@ -29,15 +29,20 @@
       <n-data-table :loading="loading" :columns="columns" :data="completedTodos" :pagination="pagination"
         @update:page="handlePageChange" @update:page-size="handlePageSizeChange" @update:sorter="handleSortChange" />
     </n-card>
+
+    <!-- 待办详情对话框 -->
+    <client-only>
+      <component :is="renderDetailModal()" />
+    </client-only>
   </AppPage>
 </template>
 
 <script setup>
 import { ref, onMounted, onUnmounted, nextTick, h } from 'vue'
-import { useMessage } from 'naive-ui'
+import { useMessage, NPopover, NSpace, NModal, NButton, NPopconfirm, NTag } from 'naive-ui'
 import todoApi from '@/api/todo'
 import * as echarts from 'echarts'
-import { NButton, NPopconfirm, NTag, useDialog } from 'naive-ui'
+import { useDialog } from 'naive-ui'
 
 const message = useMessage()
 const dialog = useDialog()
@@ -69,88 +74,85 @@ const sortConfig = ref({
 })
 
 // 表格列定义
-const columns = [
+const columns = ref([
   {
     title: '标题',
     key: 'title',
-    width: 200
+    sorter: true
   },
   {
     title: '象限',
     key: 'quadrant_type',
-    width: 120,
     render(row) {
       const typeMap = {
-        urgent_important: {
-          type: 'error',
-          label: '重要且紧急'
-        },
-        urgent_not_important: {
-          type: 'warning',
-          label: '紧急不重要'
-        },
-        important_not_urgent: {
-          type: 'primary',
-          label: '重要不紧急'
-        },
-        not_urgent_not_important: {
-          type: 'info',
-          label: '不紧急不重要'
+        urgent_important: { text: '重要且紧急', color: '#f5222d' },
+        urgent_not_important: { text: '紧急不重要', color: '#faad14' },
+        important_not_urgent: { text: '重要不紧急', color: '#1890ff' },
+        not_urgent_not_important: { text: '不紧急不重要', color: '#909399' }
+      };
+      const config = typeMap[row.quadrant_type] || { text: row.quadrant_type, color: '#909399' };
+      return h(NTag, { 
+        type: 'default',
+        style: { 
+          backgroundColor: config.color,
+          borderColor: config.color,
+          color: '#fff'
         }
-      }
-      const quadrant = typeMap[row.quadrant_type] || { type: 'default', label: row.quadrant_type }
-      return h(NTag, { type: quadrant.type }, { default: () => quadrant.label })
+      }, { default: () => config.text });
     }
   },
   {
-    title: '截止日期',
+    title: '截止时间',
     key: 'due_date',
-    width: 120,
+    render(row) {
+      return row.due_date ? new Date(row.due_date).toLocaleString() : '无';
+    },
     sorter: true
   },
   {
     title: '完成时间',
     key: 'completed_at',
-    width: 180,
+    render(row) {
+      return row.completed_at ? new Date(row.completed_at).toLocaleString() : '无';
+    },
     sorter: true
   },
   {
     title: '操作',
     key: 'actions',
-    width: 120,
     render(row) {
-      return [
-        h(
-          NButton,
-          {
-            text: true,
-            type: 'primary',
-            onClick: () => handleViewDetail(row)
-          },
-          { default: () => '查看' }
-        ),
-        h(
-          NPopconfirm,
-          {
-            onPositiveClick: () => handleDelete(row)
-          },
-          {
-            default: () => '确定要删除这条待办记录吗？',
-            trigger: () => h(
-              NButton,
-              {
-                text: true,
-                type: 'error',
-                style: 'margin-left: 10px;'
-              },
-              { default: () => '删除' }
-            )
-          }
-        )
-      ]
+      return h(
+        'div',
+        { class: 'operations-column' },
+        [
+          h(
+            NButton,
+            {
+              text: true,
+              type: 'primary',
+              onClick: () => handleViewDetail(row)
+            },
+            { default: () => '查看' }
+          ),
+          h(
+            NPopconfirm,
+            {
+              onPositiveClick: () => handleDelete(row.id)
+            },
+            {
+              trigger: () => h(NButton, { text: true, type: 'error' }, { default: () => '删除' }),
+              default: () => '确定删除吗？'
+            }
+          )
+        ]
+      );
     }
   }
-]
+]);
+
+// 查看待办详情
+const detailModalVisible = ref(false)
+const currentTodo = ref(null)
 
 // 初始化图表
 const initCharts = async () => {
@@ -283,7 +285,7 @@ const updateQuadrantChart = (data) => {
         data: [
           { value: data.urgent_important || 0, name: '重要且紧急', itemStyle: { color: '#d03050' } },
           { value: data.urgent_not_important || 0, name: '紧急不重要', itemStyle: { color: '#f0a020' } },
-          { value: data.important_not_urgent || 0, name: '重要不紧急', itemStyle: { color: '#2080f0' } },
+          { value: data.important_not_urgent || 0, name: '重要不紧急', itemStyle: { color: '#1890ff' } },
           { value: data.not_urgent_not_important || 0, name: '不紧急不重要', itemStyle: { color: '#909399' } }
         ],
         emphasis: {
@@ -401,14 +403,14 @@ const handleSortChange = (sorter) => {
   fetchCompletedTodos()
 }
 
-const handleViewDetail = (row) => {
-  // TODO: 实现查看详情功能
-  console.log('查看详情:', row)
+const handleViewDetail = (todo) => {
+  currentTodo.value = todo
+  detailModalVisible.value = true
 }
 
-const handleDelete = async (row) => {
+const handleDelete = async (id) => {
   try {
-    await todoApi.deleteTodo(row.id)
+    await todoApi.deleteTodo(id)
     message.success('删除成功')
     fetchCompletedTodos()
   } catch (error) {
@@ -417,12 +419,98 @@ const handleDelete = async (row) => {
   }
 }
 
+// 渲染详情对话框
+const renderDetailModal = () => {
+  return h(
+    NModal,
+    {
+      show: detailModalVisible.value,
+      preset: 'card',
+      title: '待办详情',
+      style: { width: '500px' },
+      onUpdateShow: (v) => { detailModalVisible.value = v }
+    },
+    {
+      default: () => [
+        h('div', { class: 'p-4 detail-modal-content' }, [
+          // 标题
+          h('div', { class: 'detail-item' }, [
+            h('div', { class: 'detail-label' }, '标题'),
+            h('div', { class: 'detail-value font-bold text-16' }, currentTodo.value?.title || '')
+          ]),
+          
+          // 象限
+          h('div', { class: 'detail-item' }, [
+            h('div', { class: 'detail-label' }, '象限'),
+            h('div', { class: 'detail-value' }, [
+              (() => {
+                const config = getQuadrantTypeConfig(currentTodo.value?.quadrant_type);
+                return h(NTag, 
+                  { 
+                    type: 'default',
+                    size: 'medium',
+                    style: { 
+                      backgroundColor: config.color,
+                      borderColor: config.color,
+                      color: '#fff'
+                    }
+                  },
+                  { default: () => config.text }
+                );
+              })()
+            ])
+          ]),
+          
+          // 截止时间
+          h('div', { class: 'detail-item' }, [
+            h('div', { class: 'detail-label' }, '截止时间'),
+            h('div', { class: 'detail-value' }, currentTodo.value?.due_date ? new Date(currentTodo.value.due_date).toLocaleString() : '无')
+          ]),
+          
+          // 创建时间
+          h('div', { class: 'detail-item' }, [
+            h('div', { class: 'detail-label' }, '创建时间'),
+            h('div', { class: 'detail-value' }, currentTodo.value?.created_at ? new Date(currentTodo.value.created_at).toLocaleString() : '无')
+          ]),
+          
+          // 完成时间
+          h('div', { class: 'detail-item' }, [
+            h('div', { class: 'detail-label' }, '完成时间'),
+            h('div', { class: 'detail-value' }, currentTodo.value?.completed_at ? new Date(currentTodo.value.completed_at).toLocaleString() : '无')
+          ]),
+        ])
+      ],
+      footer: () => h(
+        NButton,
+        {
+          type: 'primary',
+          onClick: () => { detailModalVisible.value = false }
+        },
+        { default: () => '关闭' }
+      )
+    }
+  )
+}
+
+// 获取象限类型配置
+const getQuadrantTypeConfig = (type) => {
+  const typeMap = {
+    urgent_important: { text: '重要且紧急', color: '#f5222d' },
+    urgent_not_important: { text: '紧急不重要', color: '#faad14' },
+    important_not_urgent: { text: '重要不紧急', color: '#1890ff' },
+    not_urgent_not_important: { text: '不紧急不重要', color: '#909399' }
+  };
+  return typeMap[type] || { text: type || '未知', color: '#909399' };
+}
+
 // 生命周期钩子
 onMounted(async () => {
-  // 设置默认日期范围：最近一周
+  // 设置默认日期范围：最近一周，包含当天
   const end = new Date()
+  end.setHours(23, 59, 59, 999) // 设置为当天的最后一毫秒
   const start = new Date()
-  start.setTime(start.getTime() - 3600 * 1000 * 24 * 7)
+  start.setDate(start.getDate() - 6) // 从今天开始往前7天（包含今天）
+  start.setHours(0, 0, 0, 0) // 设置为起始日的第一毫秒
   filterForm.value.dateRange = [start, end]
 
   await initCharts()
@@ -439,3 +527,35 @@ onUnmounted(() => {
   window.removeEventListener('resize', handleResize)
 })
 </script>
+
+<style>
+.detail-modal-content {
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+}
+
+.detail-item {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+
+.detail-label {
+  color: #555;
+  font-size: 14px;
+  font-weight: 500;
+}
+
+.detail-value {
+  color: #333;
+  font-size: 15px;
+}
+
+/* 表格操作栏居中对齐 */
+.operations-column {
+  display: flex;
+  justify-content: flex-start;
+  gap: 12px;
+}
+</style>

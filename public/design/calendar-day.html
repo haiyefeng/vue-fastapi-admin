@@ -1,0 +1,52 @@
+<!-- (Include <!DOCTYPE>, <head>, <body>, <header>, .main-container, <aside>) -->
+<main class="content">
+    <div class="calendar-controls">
+        <button class="button"><i class="fas fa-chevron-left"></i></button>
+        <span>2023年12月13日, 星期三</span>
+        <button class="button"><i class="fas fa-chevron-right"></i></button>
+        <input type="date" class="form-control" style="width: auto;">
+        <div style="margin-left: auto;">
+            <a href="calendar-day.html" class="button active">日</a>
+            <a href="calendar-week.html" class="button">周</a>
+            <a href="#" class="button">月</a> <!-- Month view not prototyped here -->
+        </div>
+    </div>
+
+    <div class="daily-timeline">
+        <!-- Events are positioned absolutely based on time by JS -->
+        <!-- Example Event Block -->
+        <div class="daily-event" style="top: 60px; height: 90px;"> <!-- 9:00 start, 1.5 hours duration -->
+            <strong>团队会议</strong><br>
+            <span style="font-size: 0.9em; color: #3170a7;"><i class="fas fa-map-marker-alt"></i> 会议室 A</span>
+        </div>
+        <div class="daily-event"
+            style="top: 360px; height: 60px; background-color: #ffeeba; border-color: #ffc107; color: #856404;">
+            <!-- 14:00 start, 1 hour duration, different color -->
+            <strong>准备报告</strong><br>
+            <span style="font-size: 0.9em;"><i class="fas fa-briefcase"></i> 工作 / Q4 营销</span>
+        </div>
+
+        <!-- Timeline slots (generated or static) -->
+        <div class="time-slot" data-time="08:00"></div>
+        <div class="time-slot" data-time="09:00"></div>
+        <div class="time-slot" data-time="10:00"></div>
+        <div class="time-slot" data-time="11:00"></div>
+        <div class="time-slot" data-time="12:00"></div>
+        <div class="time-slot" data-time="13:00"></div>
+        <div class="time-slot" data-time="14:00"></div>
+        <div class="time-slot" data-time="15:00"></div>
+        <div class="time-slot" data-time="16:00"></div>
+        <div class="time-slot" data-time="17:00"></div>
+        <div class="time-slot" data-time="18:00"></div>
+        <!-- More slots -->
+    </div>
+
+    <section style="margin-top: 2em;">
+        <h3><i class="far fa-calendar-times"></i> 未安排的任务</h3>
+        <ul class="task-list">
+            <!-- List unscheduled tasks for the day -->
+            <li class="task-item"> Drag & Drop enabled via JS </li>
+        </ul>
+    </section>
+</main>
+<!-- (Include closing .main-container, <footer>, modals, <script>) -->

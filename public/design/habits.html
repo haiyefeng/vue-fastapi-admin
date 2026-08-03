@@ -1,0 +1,190 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>习惯 - 我的效率应用</title>
+    <link rel="stylesheet" href="style.css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+</head>
+
+<body>
+    <header>
+        <h1><a href="/"><i class="fas fa-check-double"></i> 我的效率应用</a></h1>
+        <nav>
+            <span><i class="fas fa-user"></i> 用户名</span>
+            <a href="settings.html"><i class="fas fa-cog"></i> 设置</a>
+            <a href="#"><i class="fas fa-sign-out-alt"></i> 退出</a>
+        </nav>
+    </header>
+
+    <div class="main-container">
+        <aside class="sidebar">
+            <nav>
+                <ul>
+                    <li><a href="dashboard.html"><i class="fas fa-calendar-day"></i> 今日</a></li>
+                    <li><a href="#"><i class="fas fa-inbox"></i> 收件箱</a></li>
+                    <li><a href="calendar-week.html"><i class="fas fa-calendar-week"></i> 日历</a></li>
+                    <li><a href="matrix.html"><i class="fas fa-th-large"></i> 四象限</a></li>
+                    <li><a href="habits.html" class="active"><i class="fas fa-sync-alt"></i> 习惯</a></li>
+                    <li><a href="goals.html"><i class="fas fa-flag-checkered"></i> 计划</a></li>
+                    <li><span><i class="fas fa-folder"></i> 分类/项目</span></li>
+                    <li><a href="tasks.html"><i class="fas fa-briefcase"></i> 工作</a></li>
+                    <li><a href="#"><i class="fas fa-graduation-cap"></i> 学习</a></li>
+                    <li><a href="#"><i class="fas fa-list"></i> 我的清单</a></li>
+                </ul>
+            </nav>
+        </aside>
+
+        <main class="content">
+            <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 1.5em;">
+                <h2><i class="fas fa-sync-alt"></i> 习惯追踪</h2>
+                <button class="button button-primary" onclick="openModal('add-habit-modal')"><i class="fas fa-plus"></i>
+                    添加习惯</button>
+            </div>
+
+            <section id="habit-list">
+                <h3>进行中的习惯</h3>
+                <ul class="item-list">
+                    <li class="item-list-item">
+                        <div class="item-content">
+                            <span class="item-title"><i class="fas fa-book-open"
+                                    style="color: #52c41a; margin-right: 8px;"></i> 晨间阅读</span>
+                            <div class="item-meta">每天 | 目标: 30分钟 | 连续坚持 <span class="streak-counter">15</span> 天</div>
+                            <div class="progress-bar">
+                                <div class="progress-bar-inner" style="width: 100%;"></div>
+                            </div> <!-- Example full progress -->
+                        </div>
+                        <div class="item-actions">
+                            <button class="button button-primary button-sm">今日打卡</button>
+                            <button class="button-icon" title="编辑"><i class="fas fa-edit"></i></button>
+                            <button class="button-icon" title="统计"><i class="fas fa-chart-line"></i></button>
+                            <button class="button-icon" title="更多"><i class="fas fa-ellipsis-v"></i></button>
+                        </div>
+                    </li>
+                    <li class="item-list-item">
+                        <div class="item-content">
+                            <span class="item-title"><i class="fas fa-dumbbell"
+                                    style="color: #1890ff; margin-right: 8px;"></i> 运动健身</span>
+                            <div class="item-meta">每周3次 | 目标: 1小时/次 | 本周: <span
+                                    style="color: var(--primary-color)">1</span>/3 | 最长连续 <span
+                                    class="streak-counter">8</span> 周</div>
+                            <div class="progress-bar">
+                                <div class="progress-bar-inner" style="width: 33%;"></div>
+                            </div>
+                        </div>
+                        <div class="item-actions">
+                            <button class="button button-primary button-sm">今日打卡</button>
+                            <button class="button-icon" title="编辑"><i class="fas fa-edit"></i></button>
+                            <button class="button-icon" title="统计"><i class="fas fa-chart-line"></i></button>
+                            <button class="button-icon" title="更多"><i class="fas fa-ellipsis-v"></i></button>
+                        </div>
+                    </li>
+                    <li class="item-list-item">
+                        <div class="item-content">
+                            <span class="item-title"><i class="fas fa-tint"
+                                    style="color: #13c2c2; margin-right: 8px;"></i> 喝够8杯水</span>
+                            <div class="item-meta">每天 | 目标: 8杯 | 连续坚持 <span class="streak-counter">5</span> 天</div>
+                            <div class="progress-bar">
+                                <div class="progress-bar-inner" style="width: 75%;"></div>
+                            </div> <!-- Example partial progress -->
+                        </div>
+                        <div class="item-actions">
+                            <button class="button button-primary button-sm">今日打卡</button>
+                            <button class="button-icon" title="编辑"><i class="fas fa-edit"></i></button>
+                            <button class="button-icon" title="统计"><i class="fas fa-chart-line"></i></button>
+                            <button class="button-icon" title="更多"><i class="fas fa-ellipsis-v"></i></button>
+                        </div>
+                    </li>
+                </ul>
+            </section>
+
+            <section id="habit-archived" style="margin-top: 3em;">
+                <h3 style="color: var(--text-muted);">已归档/暂停的习惯</h3>
+                <ul class="item-list">
+                    <li class="item-list-item" style="opacity: 0.6;">
+                        <div class="item-content">
+                            <span class="item-title"><i class="fas fa-leaf" style="margin-right: 8px;"></i> 练习冥想
+                                (已暂停)</span>
+                            <div class="item-meta">曾坚持 30 天</div>
+                        </div>
+                        <div class="item-actions">
+                            <button class="button button-sm">恢复</button>
+                            <button class="button-icon" title="删除"><i class="fas fa-trash-alt"></i></button>
+                        </div>
+                    </li>
+                </ul>
+            </section>
+        </main>
+    </div>
+
+    <!-- Add/Edit Habit Modal -->
+    <div id="add-habit-modal" class="modal">
+        <div class="modal-dialog">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title">添加新习惯</h5>
+                    <button type="button" class="close" onclick="closeModal('add-habit-modal')" aria-label="Close">
+                        <span aria-hidden="true">×</span>
+                    </button>
+                </div>
+                <div class="modal-body">
+                    <form>
+                        <div class="form-group">
+                            <label for="habit-name">习惯名称</label>
+                            <input type="text" id="habit-name" class="form-control" placeholder="例如：每天阅读">
+                        </div>
+                        <div class="form-group">
+                            <label for="habit-icon-color">图标和颜色 (可选)</label>
+                            <div style="display: flex; gap: 10px;">
+                                <button class="button-icon" style="font-size: 1.5em;"><i
+                                        class="fas fa-book"></i></button> <!-- Icon Picker JS needed -->
+                                <input type="color" value="#52c41a" style="height: 30px; border: none; padding: 0;">
+                                <!-- Simple Color Picker -->
+                            </div>
+                        </div>
+                        <div class="form-group">
+                            <label for="habit-frequency">重复频率</label>
+                            <select id="habit-frequency" class="form-control">
+                                <option>每天</option>
+                                <option>每周特定几天</option> <!-- Complex options need JS -->
+                                <option>每周 N 次</option>
+                                <option>每隔 N 天</option>
+                            </select>
+                            <!-- JS would show specific day pickers etc. based on selection -->
+                        </div>
+                        <div class="form-group">
+                            <label for="habit-goal-desc">目标描述 (可选)</label>
+                            <input type="text" id="habit-goal-desc" class="form-control"
+                                placeholder="例如：30分钟, 1小时/次, 完成1节课">
+                        </div>
+                        <div class="form-group">
+                            <label for="habit-reminder-time">提醒时间 (可选)</label>
+                            <input type="time" id="habit-reminder-time" class="form-control">
+                        </div>
+                        <div class="form-group">
+                            <label for="habit-link-goal-modal">关联到计划 (可选)</label>
+                            <select id="habit-link-goal-modal" class="form-control">
+                                <option>无</option>
+                                <option>提升编程技能</option>
+                                <option>保持健康生活</option>
+                            </select>
+                        </div>
+                    </form>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="button" onclick="closeModal('add-habit-modal')">取消</button>
+                    <button type="button" class="button button-primary">保存习惯</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        function openModal(id) { document.getElementById(id).style.display = 'block'; }
+        function closeModal(id) { document.getElementById(id).style.display = 'none'; }
+    </script>
+</body>
+
+</html>

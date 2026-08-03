@@ -1,0 +1,110 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>注册 - 我的效率应用</title>
+    <link rel="stylesheet" href="style.css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <style>
+        /* Reuse styles from login.html */
+        body {
+            display: block;
+        }
+
+        .auth-container {
+            max-width: 400px;
+            margin: 4em auto;
+            padding: 2.5em;
+            background-color: var(--bg-color);
+            border-radius: 8px;
+            box-shadow: 0 4px 15px rgba(0, 0, 0, 0.1);
+            text-align: center;
+        }
+
+        .auth-container h2 {
+            font-size: 1.6em;
+            margin-bottom: 1.5em;
+        }
+
+        .auth-container .form-group {
+            margin-bottom: 1.2em;
+            text-align: left;
+        }
+
+        /* Slightly less margin */
+        .auth-container .button {
+            width: 100%;
+            padding: 0.8em;
+            font-size: 1em;
+        }
+
+        .auth-container p {
+            margin-top: 1.5em;
+            font-size: 0.9em;
+            color: var(--text-muted);
+        }
+
+        .auth-container p a {
+            color: var(--primary-color);
+            text-decoration: none;
+            font-weight: 500;
+        }
+
+        .auth-container p a:hover {
+            text-decoration: underline;
+        }
+
+        .auth-logo {
+            font-size: 2em;
+            color: var(--primary-color);
+            margin-bottom: 0.5em;
+        }
+
+        .terms {
+            font-size: 0.8em;
+            color: var(--text-muted);
+            margin-top: 1.5em;
+        }
+
+        .terms a {
+            color: var(--text-muted);
+            text-decoration: underline;
+        }
+    </style>
+</head>
+
+<body>
+    <div class="auth-container">
+        <div class="auth-logo"><i class="fas fa-check-double"></i></div>
+        <h2>创建新账户</h2>
+        <form action="#" method="post"> <!-- Action should point to backend endpoint -->
+            <div class="form-group">
+                <label for="signup-username">用户名</label>
+                <input type="text" id="signup-username" name="username" class="form-control" required
+                    placeholder="您的昵称">
+            </div>
+            <div class="form-group">
+                <label for="signup-email">邮箱地址</label>
+                <input type="email" id="signup-email" name="email" class="form-control" required
+                    placeholder="you@example.com">
+            </div>
+            <div class="form-group">
+                <label for="signup-password">设置密码</label>
+                <input type="password" id="signup-password" name="password" class="form-control" required
+                    placeholder="至少8个字符">
+            </div>
+            <div class="form-group">
+                <label for="signup-confirm-password">确认密码</label>
+                <input type="password" id="signup-confirm-password" name="confirm_password" class="form-control"
+                    required placeholder="再次输入密码">
+            </div>
+            <button type="submit" class="button button-primary">注册</button>
+        </form>
+        <p class="terms">点击“注册”即表示您同意我们的 <a href="#">服务条款</a> 和 <a href="#">隐私政策</a>。</p>
+        <p>已有账户? <a href="login.html">直接登录</a></p>
+    </div>
+</body>
+
+</html>

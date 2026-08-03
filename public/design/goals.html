@@ -1,0 +1,200 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>计划与目标 - 我的效率应用</title>
+    <link rel="stylesheet" href="style.css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+</head>
+
+<body>
+    <header>
+        <h1><a href="/"><i class="fas fa-check-double"></i> 我的效率应用</a></h1>
+        <nav>
+            <span><i class="fas fa-user"></i> 用户名</span>
+            <a href="settings.html"><i class="fas fa-cog"></i> 设置</a>
+            <a href="#"><i class="fas fa-sign-out-alt"></i> 退出</a>
+        </nav>
+    </header>
+
+    <div class="main-container">
+        <aside class="sidebar">
+            <nav>
+                <ul>
+                    <li><a href="dashboard.html"><i class="fas fa-calendar-day"></i> 今日</a></li>
+                    <li><a href="#"><i class="fas fa-inbox"></i> 收件箱</a></li>
+                    <li><a href="calendar-week.html"><i class="fas fa-calendar-week"></i> 日历</a></li>
+                    <li><a href="matrix.html"><i class="fas fa-th-large"></i> 四象限</a></li>
+                    <li><a href="habits.html"><i class="fas fa-sync-alt"></i> 习惯</a></li>
+                    <li><a href="goals.html" class="active"><i class="fas fa-flag-checkered"></i> 计划</a></li>
+                    <li><span><i class="fas fa-folder"></i> 分类/项目</span></li>
+                    <li><a href="tasks.html"><i class="fas fa-briefcase"></i> 工作</a></li>
+                    <li><a href="#"><i class="fas fa-graduation-cap"></i> 学习</a></li>
+                    <li><a href="#"><i class="fas fa-list"></i> 我的清单</a></li>
+                </ul>
+            </nav>
+        </aside>
+
+        <main class="content">
+            <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 1.5em;">
+                <h2><i class="fas fa-flag-checkered"></i> 计划与目标</h2>
+                <button class="button button-primary" onclick="openModal('add-goal-modal')"><i class="fas fa-plus"></i>
+                    添加计划</button>
+            </div>
+
+            <section id="goal-list">
+                <h3>进行中的计划</h3>
+                <ul class="item-list">
+                    <li class="item-list-item" style="align-items: flex-start;"> <!-- Align top for progress bar -->
+                        <div class="item-content">
+                            <span class="item-title" style="font-size: 1.1em;">提升 React 编程技能</span>
+                            <div class="item-meta" style="margin-bottom: 5px;">目标日期: 2024-06-30 | 关联任务: 5/12 | 关联习惯: 1
+                            </div>
+                            <div class="progress-bar">
+                                <div class="progress-bar-inner" style="width: 42%;"></div>
+                            </div>
+                        </div>
+                        <div class="item-actions">
+                            <button class="button button-sm" onclick="showGoalDetail('goal-detail-react')">查看详情</button>
+                            <button class="button-icon" title="编辑"><i class="fas fa-edit"></i></button>
+                            <button class="button-icon" title="归档"><i class="fas fa-archive"></i></button>
+                        </div>
+                    </li>
+                    <li class="item-list-item" style="align-items: flex-start;">
+                        <div class="item-content">
+                            <span class="item-title" style="font-size: 1.1em;">完成毕业论文</span>
+                            <div class="item-meta" style="margin-bottom: 5px;">目标日期: 2024-05-31 | 关联任务: 1/8 | 关联习惯: 0
+                            </div>
+                            <div class="progress-bar">
+                                <div class="progress-bar-inner" style="width: 12%;"></div>
+                            </div>
+                        </div>
+                        <div class="item-actions">
+                            <button class="button button-sm"
+                                onclick="showGoalDetail('goal-detail-thesis')">查看详情</button>
+                            <button class="button-icon" title="编辑"><i class="fas fa-edit"></i></button>
+                            <button class="button-icon" title="归档"><i class="fas fa-archive"></i></button>
+                        </div>
+                    </li>
+                </ul>
+            </section>
+
+            <!-- Goal Detail Section (Initially Hidden) -->
+            <section id="goal-detail-react" class="goal-detail-section"
+                style="display: none; margin-top: 3em; border-top: 1px solid var(--border-color); padding-top: 2em;">
+                <h3>计划详情: 提升 React 编程技能</h3>
+                <p style="color: var(--text-muted);">目标日期: 2024-06-30</p>
+                <p>通过完成在线课程、实践项目和阅读文档，熟练掌握 React 核心概念及生态。</p>
+
+                <h4>关联任务 (5/12 完成)</h4>
+                <ul class="task-list" style="max-height: 200px; overflow-y: auto;">
+                    <li class="task-item">
+                        <label class="checkbox-custom task-checkbox"><input type="checkbox" checked><span
+                                class="checkmark"></span></label>
+                        <div class="task-content"><span class="task-title">完成 React 基础课程 Ch1-3</span>
+                            <div class="task-meta">学习 / React</div>
+                        </div>
+                    </li>
+                    <li class="task-item">
+                        <label class="checkbox-custom task-checkbox"><input type="checkbox" checked><span
+                                class="checkmark"></span></label>
+                        <div class="task-content"><span class="task-title">搭建 Todolist 实践项目 V1</span>
+                            <div class="task-meta">学习 / React</div>
+                        </div>
+                    </li>
+                    <li class="task-item">
+                        <label class="checkbox-custom task-checkbox"><input type="checkbox"><span
+                                class="checkmark"></span></label>
+                        <div class="task-content"><span class="task-title">学习 React Router</span>
+                            <div class="task-meta">学习 / React</div>
+                        </div>
+                    </li>
+                    <!-- More tasks -->
+                </ul>
+                <button class="button button-sm" style="margin-top: 0.5em;"><i class="fas fa-plus"></i> 添加关联任务</button>
+
+                <h4 style="margin-top: 1.5em;">关联习惯</h4>
+                <ul class="item-list">
+                    <li class="item-list-item">
+                        <div class="item-content"><span class="item-title"><i class="fas fa-code"></i> 每日练习 LeetCode
+                                (前端题)</span>
+                            <div class="item-meta">连续坚持 <span class="streak-counter">8</span> 天</div>
+                        </div>
+                        <div class="item-actions"><button class="button button-sm">查看习惯</button></div>
+                    </li>
+                </ul>
+                <button class="button button-sm" style="margin-top: 0.5em;"><i class="fas fa-link"></i> 关联现有习惯</button>
+
+            </section>
+            <!-- Placeholder for other goal details -->
+            <section id="goal-detail-thesis" class="goal-detail-section"
+                style="display: none; margin-top: 3em; border-top: 1px solid var(--border-color); padding-top: 2em;">
+                <h3>计划详情: 完成毕业论文</h3>
+                <!-- Details for thesis -->
+            </section>
+
+        </main>
+    </div>
+
+    <!-- Add/Edit Goal Modal -->
+    <div id="add-goal-modal" class="modal">
+        <div class="modal-dialog">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title">添加新计划/目标</h5>
+                    <button type="button" class="close" onclick="closeModal('add-goal-modal')" aria-label="Close">
+                        <span aria-hidden="true">×</span>
+                    </button>
+                </div>
+                <div class="modal-body">
+                    <form>
+                        <div class="form-group">
+                            <label for="goal-name">计划/目标名称</label>
+                            <input type="text" id="goal-name" class="form-control" placeholder="例如：学习新语言, 完成XX项目">
+                        </div>
+                        <div class="form-group">
+                            <label for="goal-description-modal">描述 (可选)</label>
+                            <textarea id="goal-description-modal" class="form-control" rows="3"
+                                placeholder="简要说明这个计划的目标和意义..."></textarea>
+                        </div>
+                        <div class="form-group">
+                            <label for="goal-target-date-modal">目标完成日期 (可选)</label>
+                            <input type="date" id="goal-target-date-modal" class="form-control">
+                        </div>
+                        <div class="form-group">
+                            <label>归属分类 (可选)</label>
+                            <select class="form-control">
+                                <option>工作</option>
+                                <option>学习</option>
+                                <option>个人</option>
+                                <option>无分类</option>
+                            </select>
+                        </div>
+                    </form>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="button" onclick="closeModal('add-goal-modal')">取消</button>
+                    <button type="button" class="button button-primary">保存计划</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        function openModal(id) { document.getElementById(id).style.display = 'block'; }
+        function closeModal(id) { document.getElementById(id).style.display = 'none'; }
+        // Basic JS to show/hide goal details
+        function showGoalDetail(idToShow) {
+            document.querySelectorAll('.goal-detail-section').forEach(el => el.style.display = 'none');
+            const detailEl = document.getElementById(idToShow);
+            if (detailEl) {
+                detailEl.style.display = 'block';
+                detailEl.scrollIntoView({ behavior: 'smooth' });
+            }
+        }
+    </script>
+</body>
+
+</html>

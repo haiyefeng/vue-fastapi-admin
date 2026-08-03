@@ -1,0 +1,192 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>设置 - 我的效率应用</title>
+    <link rel="stylesheet" href="style.css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+</head>
+
+<body>
+    <header>
+        <h1><a href="/"><i class="fas fa-check-double"></i> 我的效率应用</a></h1>
+        <nav>
+            <span><i class="fas fa-user"></i> 用户名</span>
+            <a href="settings.html" class="active"><i class="fas fa-cog"></i> 设置</a>
+            <a href="#"><i class="fas fa-sign-out-alt"></i> 退出</a>
+        </nav>
+    </header>
+
+    <div class="main-container">
+        <!-- Settings page might have its own sidebar or tabs -->
+        <aside class="sidebar" style="width: 200px;">
+            <nav>
+                <ul style="padding-top: 1em;">
+                    <li><a href="#profile" class="active"><i class="fas fa-user-circle"></i> 个人资料</a></li>
+                    <li><a href="#preferences"><i class="fas fa-sliders-h"></i> 偏好设置</a></li>
+                    <li><a href="#notifications"><i class="fas fa-bell"></i> 通知</a></li>
+                    <li><a href="#data"><i class="fas fa-database"></i> 数据管理</a></li>
+                    <li><a href="#account"><i class="fas fa-shield-alt"></i> 账户安全</a></li>
+                </ul>
+            </nav>
+        </aside>
+
+        <main class="content">
+            <section id="profile">
+                <h2><i class="fas fa-user-circle"></i> 个人资料</h2>
+                <form style="max-width: 500px;">
+                    <div class="form-group">
+                        <label for="username">用户名</label>
+                        <input type="text" id="username" class="form-control" value="当前用户名">
+                    </div>
+                    <div class="form-group">
+                        <label for="email">邮箱地址 (不可修改)</label>
+                        <input type="email" id="email" class="form-control" value="user@example.com" disabled>
+                    </div>
+                    <div class="form-group">
+                        <label for="avatar">头像</label>
+                        <div style="display: flex; align-items: center; gap: 15px;">
+                            <img src="https://via.placeholder.com/60" alt="User Avatar"
+                                style="border-radius: 50%; width: 60px; height: 60px;">
+                            <input type="file" id="avatar" style="display: none;">
+                            <button type="button" class="button"
+                                onclick="document.getElementById('avatar').click();">上传新头像</button>
+                        </div>
+                    </div>
+                    <button type="submit" class="button button-primary">保存资料</button>
+                </form>
+            </section>
+
+            <section id="preferences" style="margin-top: 3em;">
+                <h2><i class="fas fa-sliders-h"></i> 偏好设置</h2>
+                <form style="max-width: 500px;">
+                    <div class="form-group">
+                        <label for="theme">应用主题</label>
+                        <select id="theme" class="form-control">
+                            <option value="light">浅色模式</option>
+                            <option value="dark">深色模式</option>
+                            <option value="system">跟随系统</option>
+                        </select>
+                    </div>
+                    <div class="form-group">
+                        <label for="default-view">默认启动视图</label>
+                        <select id="default-view" class="form-control">
+                            <option value="today">今日</option>
+                            <option value="inbox">收件箱</option>
+                            <option value="week">周视图</option>
+                        </select>
+                    </div>
+                    <div class="form-group">
+                        <label for="week-start">每周开始于</label>
+                        <select id="week-start" class="form-control">
+                            <option value="mon">星期一</option>
+                            <option value="sun">星期日</option>
+                        </select>
+                    </div>
+                    <button type="submit" class="button button-primary">保存偏好</button>
+                </form>
+            </section>
+
+            <section id="notifications" style="margin-top: 3em;">
+                <h2><i class="fas fa-bell"></i> 通知设置</h2>
+                <form style="max-width: 500px;">
+                    <div class="form-group">
+                        <label class="checkbox-custom">
+                            <input type="checkbox" checked> 启用任务截止提醒
+                            <span class="checkmark"></span>
+                        </label>
+                    </div>
+                    <div class="form-group">
+                        <label class="checkbox-custom">
+                            <input type="checkbox" checked> 启用习惯打卡提醒
+                            <span class="checkmark"></span>
+                        </label>
+                    </div>
+                    <div class="form-group">
+                        <label class="checkbox-custom">
+                            <input type="checkbox"> 启用邮件通知 (例如：周报总结)
+                            <span class="checkmark"></span>
+                        </label>
+                    </div>
+                    <button type="submit" class="button button-primary">保存通知设置</button>
+                </form>
+            </section>
+
+            <section id="data" style="margin-top: 3em;">
+                <h2><i class="fas fa-database"></i> 数据管理</h2>
+                <div style="max-width: 500px;">
+                    <div class="form-group">
+                        <label>导出数据</label>
+                        <p style="font-size: 0.9em; color: var(--text-muted);">将您的所有任务、项目、习惯等数据导出为 CSV 或 JSON 文件。</p>
+                        <button class="button"><i class="fas fa-download"></i> 导出为 CSV</button>
+                        <button class="button"><i class="fas fa-download"></i> 导出为 JSON</button>
+                    </div>
+                    <div class="form-group" style="margin-top: 2em;">
+                        <label for="import-file">导入数据</label>
+                        <p style="font-size: 0.9em; color: var(--text-muted);">从其他应用或备份文件导入数据 (支持 CSV, TickTick备份等 -
+                            功能待实现)。</p>
+                        <input type="file" id="import-file" class="form-control" style="padding: 5px;">
+                        <button type="button" class="button button-primary" style="margin-top: 0.5em;">开始导入</button>
+                    </div>
+                </div>
+            </section>
+
+            <section id="account" style="margin-top: 3em;">
+                <h2><i class="fas fa-shield-alt"></i> 账户安全</h2>
+                <form style="max-width: 500px;">
+                    <div class="form-group">
+                        <label for="current-password">当前密码</label>
+                        <input type="password" id="current-password" class="form-control">
+                    </div>
+                    <div class="form-group">
+                        <label for="new-password">新密码</label>
+                        <input type="password" id="new-password" class="form-control">
+                    </div>
+                    <div class="form-group">
+                        <label for="confirm-password">确认新密码</label>
+                        <input type="password" id="confirm-password" class="form-control">
+                    </div>
+                    <button type="submit" class="button button-primary">更改密码</button>
+                </form>
+                <div style="margin-top: 2em; padding-top: 2em; border-top: 1px solid var(--border-light);">
+                    <label style="font-weight: 500;">删除账户</label>
+                    <p style="font-size: 0.9em; color: var(--text-muted);">删除您的账户将永久移除所有数据，此操作无法撤销。</p>
+                    <button type="button" class="button button-danger">申请删除账户</button>
+                </div>
+            </section>
+        </main>
+    </div>
+    <script>
+        // Basic JS for settings sidebar navigation (replace with router logic)
+        document.querySelectorAll('.sidebar nav a').forEach(anchor => {
+            anchor.addEventListener('click', function (e) {
+                document.querySelectorAll('.sidebar nav a').forEach(a => a.classList.remove('active'));
+                this.classList.add('active');
+
+                if (this.hash) { // Only prevent default if it's an anchor link
+                    e.preventDefault();
+                    document.querySelectorAll('main.content section').forEach(section => {
+                        section.style.display = 'none';
+                    });
+                    const targetSection = document.querySelector(this.hash);
+                    if (targetSection) {
+                        targetSection.style.display = 'block';
+                        targetSection.scrollIntoView(); // Scroll to the section
+                    } else {
+                        // If no hash or section not found, show the first one (profile)
+                        document.querySelector('#profile').style.display = 'block';
+                    }
+                }
+            });
+        });
+        // Trigger click on the first active link on load to show initial section
+        document.querySelector('.sidebar nav a.active')?.click();
+        if (!document.querySelector('.sidebar nav a.active')) {
+            document.querySelector('#profile').style.display = 'block'; // Fallback
+        }
+    </script>
+</body>
+
+</html>

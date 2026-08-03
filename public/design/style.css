@@ -1,0 +1,740 @@
+/* style.css */
+:root {
+    --primary-color: #4a90e2;
+    /* TickTick-like blue */
+    --primary-light: #eaf2fc;
+    --text-color: #333;
+    --text-muted: #777;
+    --bg-color: #ffffff;
+    --bg-alt: #f8f9fa;
+    /* Very light gray for sidebars/alt sections */
+    --border-color: #dee2e6;
+    --border-light: #e9ecef;
+    --font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
+    --hover-bg: #f1f3f5;
+    --danger-color: #dc3545;
+}
+
+* {
+    box-sizing: border-box;
+    margin: 0;
+    padding: 0;
+}
+
+body {
+    font-family: var(--font-family);
+    font-size: 14px;
+    line-height: 1.6;
+    color: var(--text-color);
+    background-color: var(--bg-alt);
+    /* Slightly off-white background */
+    display: flex;
+    flex-direction: column;
+    min-height: 100vh;
+}
+
+header {
+    background-color: var(--bg-color);
+    border-bottom: 1px solid var(--border-color);
+    padding: 0.8em 1.5em;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    position: sticky;
+    /* Make header sticky */
+    top: 0;
+    z-index: 100;
+}
+
+header h1 a {
+    color: var(--text-color);
+    text-decoration: none;
+    font-size: 1.4em;
+    font-weight: 600;
+}
+
+header nav a,
+header nav span {
+    color: var(--text-muted);
+    text-decoration: none;
+    margin-left: 1em;
+    font-size: 0.9em;
+}
+
+header nav a:hover {
+    color: var(--primary-color);
+}
+
+.main-container {
+    display: flex;
+    flex-grow: 1;
+    /* Allow main content to fill remaining height */
+    overflow: hidden;
+    /* Prevent scrollbars on body */
+}
+
+aside.sidebar {
+    background-color: var(--bg-color);
+    /* Sidebar distinct from main area */
+    border-right: 1px solid var(--border-color);
+    width: 240px;
+    padding: 1.5em 0;
+    /* No horizontal padding initially */
+    flex-shrink: 0;
+    /* Prevent sidebar from shrinking */
+    overflow-y: auto;
+    /* Allow sidebar to scroll if content overflows */
+}
+
+aside.sidebar nav ul {
+    list-style: none;
+}
+
+aside.sidebar nav ul li a,
+aside.sidebar nav ul li span {
+    /* span for non-clickable category titles */
+    display: flex;
+    /* Use flex for icon alignment */
+    align-items: center;
+    padding: 0.6em 1.5em;
+    color: var(--text-muted);
+    text-decoration: none;
+    font-size: 0.95em;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+}
+
+aside.sidebar nav ul li span {
+    font-weight: 600;
+    color: var(--text-color);
+    margin-top: 1em;
+    padding-left: 1.2em;
+    /* Slightly less indent */
+}
+
+
+aside.sidebar nav ul li a i {
+    margin-right: 0.8em;
+    width: 16px;
+    /* Ensure icons align */
+    text-align: center;
+    color: #888;
+    /* Slightly darker icon color */
+}
+
+aside.sidebar nav ul li a:hover {
+    background-color: var(--hover-bg);
+}
+
+aside.sidebar nav ul li a.active {
+    /* Style for the current view */
+    background-color: var(--primary-light);
+    color: var(--primary-color);
+    font-weight: 500;
+}
+
+aside.sidebar nav ul li a.active i {
+    color: var(--primary-color);
+}
+
+aside.sidebar nav ul ul {
+    /* Nested lists for projects */
+    padding-left: 1.5em;
+    /* Indent projects */
+}
+
+main.content {
+    flex-grow: 1;
+    padding: 2em;
+    overflow-y: auto;
+    /* Allow main content to scroll */
+    background-color: var(--bg-color);
+    /* Main content area white */
+}
+
+main.content h2 {
+    font-size: 1.8em;
+    font-weight: 600;
+    margin-bottom: 1.5em;
+    color: var(--text-color);
+}
+
+main.content h3 {
+    font-size: 1.2em;
+    font-weight: 600;
+    margin-bottom: 1em;
+    color: var(--text-color);
+    border-bottom: 1px solid var(--border-light);
+    padding-bottom: 0.5em;
+}
+
+section {
+    margin-bottom: 2em;
+}
+
+ul {
+    list-style: none;
+    padding: 0;
+}
+
+/* --- Common Components --- */
+
+.button {
+    display: inline-block;
+    padding: 0.6em 1.2em;
+    font-size: 0.9em;
+    font-weight: 500;
+    border: 1px solid var(--border-color);
+    border-radius: 5px;
+    background-color: var(--bg-color);
+    color: var(--text-color);
+    cursor: pointer;
+    text-align: center;
+    text-decoration: none;
+    transition: background-color 0.2s ease, border-color 0.2s ease;
+}
+
+.button:hover {
+    background-color: var(--hover-bg);
+    border-color: #adb5bd;
+}
+
+.button-primary {
+    background-color: var(--primary-color);
+    border-color: var(--primary-color);
+    color: white;
+}
+
+.button-primary:hover {
+    background-color: #3a80d2;
+    /* Darker blue on hover */
+    border-color: #3a80d2;
+}
+
+.button-danger {
+    color: var(--danger-color);
+    border-color: var(--danger-color);
+}
+
+.button-danger:hover {
+    background-color: #f8d7da;
+    /* Light red background */
+}
+
+.button-icon {
+    background: none;
+    border: none;
+    color: var(--text-muted);
+    padding: 0.3em;
+    font-size: 1.1em;
+    cursor: pointer;
+    vertical-align: middle;
+}
+
+.button-icon:hover {
+    color: var(--primary-color);
+}
+
+.form-group {
+    margin-bottom: 1.2em;
+}
+
+.form-group label {
+    display: block;
+    font-weight: 500;
+    margin-bottom: 0.5em;
+    font-size: 0.9em;
+}
+
+.form-control {
+    display: block;
+    width: 100%;
+    padding: 0.7em 0.9em;
+    font-size: 0.95em;
+    line-height: 1.5;
+    color: var(--text-color);
+    background-color: var(--bg-color);
+    border: 1px solid var(--border-color);
+    border-radius: 5px;
+    transition: border-color 0.15s ease-in-out, box-shadow 0.15s ease-in-out;
+}
+
+.form-control:focus {
+    border-color: var(--primary-color);
+    outline: 0;
+    box-shadow: 0 0 0 0.2rem rgba(74, 144, 226, 0.25);
+}
+
+textarea.form-control {
+    min-height: 80px;
+    resize: vertical;
+}
+
+.checkbox-custom {
+    /* Style checkboxes nicely */
+    display: inline-block;
+    position: relative;
+    padding-left: 25px;
+    cursor: pointer;
+    user-select: none;
+}
+
+.checkbox-custom input {
+    position: absolute;
+    opacity: 0;
+    cursor: pointer;
+    height: 0;
+    width: 0;
+}
+
+.checkmark {
+    position: absolute;
+    top: 1px;
+    left: 0;
+    height: 18px;
+    width: 18px;
+    background-color: var(--bg-color);
+    border: 1px solid var(--border-color);
+    border-radius: 3px;
+}
+
+.checkbox-custom:hover input~.checkmark {
+    border-color: var(--primary-color);
+}
+
+.checkbox-custom input:checked~.checkmark {
+    background-color: var(--primary-color);
+    border-color: var(--primary-color);
+}
+
+.checkmark:after {
+    content: "";
+    position: absolute;
+    display: none;
+}
+
+.checkbox-custom input:checked~.checkmark:after {
+    display: block;
+}
+
+.checkbox-custom .checkmark:after {
+    /* Checkmark symbol */
+    left: 6px;
+    top: 2px;
+    width: 5px;
+    height: 10px;
+    border: solid white;
+    border-width: 0 2px 2px 0;
+    transform: rotate(45deg);
+}
+
+.task-item {
+    display: flex;
+    align-items: flex-start;
+    /* Align checkbox with top of text */
+    padding: 0.8em 0.5em;
+    border-bottom: 1px solid var(--border-light);
+    transition: background-color 0.2s ease;
+}
+
+.task-item:hover {
+    background-color: var(--hover-bg);
+}
+
+.task-item .task-checkbox {
+    margin-right: 10px;
+    margin-top: 1px;
+    /* Align checkbox nicely */
+}
+
+.task-item .task-content {
+    flex-grow: 1;
+}
+
+.task-item .task-title {
+    display: block;
+    /* Allow wrapping */
+    margin-bottom: 2px;
+    cursor: pointer;
+    /* Indicate clickable for details */
+}
+
+.task-item input[type="checkbox"]:checked+.task-content .task-title {
+    text-decoration: line-through;
+    color: var(--text-muted);
+}
+
+.task-item .task-meta {
+    font-size: 0.85em;
+    color: var(--text-muted);
+    margin-top: 3px;
+}
+
+.task-item .task-meta span {
+    margin-right: 10px;
+}
+
+.task-item .task-meta i {
+    margin-right: 3px;
+}
+
+.task-item .task-actions {
+    margin-left: auto;
+    /* Push actions to the right */
+    padding-left: 1em;
+    display: none;
+    /* Initially hidden */
+    align-items: center;
+}
+
+.task-item:hover .task-actions {
+    display: flex;
+    /* Show actions on hover */
+}
+
+.priority-dot {
+    display: inline-block;
+    width: 8px;
+    height: 8px;
+    border-radius: 50%;
+    margin-right: 5px;
+    vertical-align: middle;
+}
+
+.priority-high {
+    background-color: #ff4d4f;
+}
+
+.priority-medium {
+    background-color: #faad14;
+}
+
+.priority-low {
+    background-color: #1890ff;
+}
+
+.tag {
+    display: inline-block;
+    background-color: var(--bg-alt);
+    color: var(--text-muted);
+    padding: 2px 6px;
+    font-size: 0.8em;
+    border-radius: 3px;
+    border: 1px solid var(--border-light);
+}
+
+.modal {
+    display: none;
+    /* Controlled by JS */
+    position: fixed;
+    z-index: 1050;
+    left: 0;
+    top: 0;
+    width: 100%;
+    height: 100%;
+    overflow: hidden;
+    outline: 0;
+    background-color: rgba(0, 0, 0, 0.5);
+    /* Dim background */
+}
+
+.modal-dialog {
+    position: relative;
+    width: auto;
+    max-width: 600px;
+    /* Default modal width */
+    margin: 1.75rem auto;
+    /* Center vertically/horizontally */
+    pointer-events: none;
+}
+
+.modal-content {
+    position: relative;
+    display: flex;
+    flex-direction: column;
+    width: 100%;
+    pointer-events: auto;
+    background-color: var(--bg-color);
+    background-clip: padding-box;
+    border: 1px solid rgba(0, 0, 0, .2);
+    border-radius: 0.3rem;
+    outline: 0;
+    max-height: calc(100vh - 3.5rem);
+    /* Limit height */
+    overflow-y: auto;
+    /* Allow modal content scroll */
+}
+
+.modal-header {
+    display: flex;
+    align-items: flex-start;
+    justify-content: space-between;
+    padding: 1rem 1.5rem;
+    border-bottom: 1px solid var(--border-color);
+}
+
+.modal-title {
+    margin-bottom: 0;
+    line-height: 1.5;
+    font-size: 1.25rem;
+    font-weight: 600;
+}
+
+.modal-header .close {
+    padding: 1rem 1rem;
+    margin: -1rem -1rem -1rem auto;
+    background-color: transparent;
+    border: 0;
+    font-size: 1.5rem;
+    font-weight: 700;
+    line-height: 1;
+    color: #000;
+    text-shadow: 0 1px 0 #fff;
+    opacity: .5;
+    cursor: pointer;
+}
+
+.modal-header .close:hover {
+    opacity: .75;
+}
+
+.modal-body {
+    position: relative;
+    flex: 1 1 auto;
+    padding: 1.5rem;
+}
+
+.modal-footer {
+    display: flex;
+    align-items: center;
+    justify-content: flex-end;
+    /* Buttons to the right */
+    padding: 1rem 1.5rem;
+    border-top: 1px solid var(--border-color);
+}
+
+.modal-footer> :not(:last-child) {
+    margin-right: .5rem;
+}
+
+/* --- Page Specific --- */
+
+/* Dashboard */
+.dashboard-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+    gap: 2em;
+}
+
+.quick-add input {
+    display: inline-block;
+    width: auto;
+    flex-grow: 1;
+    margin-right: 0.5em;
+}
+
+.quick-add form {
+    display: flex;
+}
+
+/* Calendar */
+.calendar-controls {
+    display: flex;
+    align-items: center;
+    margin-bottom: 1.5em;
+    gap: 1em;
+}
+
+.calendar-controls span {
+    font-size: 1.2em;
+    font-weight: 500;
+}
+
+.calendar-grid {
+    display: grid;
+    grid-template-columns: repeat(7, 1fr);
+    border-left: 1px solid var(--border-color);
+    border-top: 1px solid var(--border-color);
+}
+
+.calendar-header,
+.calendar-day {
+    padding: 0.5em;
+    border-right: 1px solid var(--border-color);
+    border-bottom: 1px solid var(--border-color);
+}
+
+.calendar-header {
+    text-align: center;
+    font-weight: 500;
+    background-color: var(--bg-alt);
+    font-size: 0.9em;
+}
+
+.calendar-day {
+    min-height: 120px;
+    position: relative;
+    /* For positioning events */
+}
+
+.calendar-day .day-number {
+    font-size: 0.85em;
+    color: var(--text-muted);
+}
+
+.calendar-event {
+    background-color: var(--primary-light);
+    border-left: 3px solid var(--primary-color);
+    color: #3170a7;
+    padding: 3px 6px;
+    font-size: 0.85em;
+    border-radius: 3px;
+    margin-bottom: 3px;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    cursor: pointer;
+}
+
+.calendar-event:hover {
+    background-color: #d1e3f8;
+}
+
+.daily-timeline {
+    border-left: 1px solid var(--border-color);
+    position: relative;
+    /* Context for event positioning */
+}
+
+.time-slot {
+    height: 60px;
+    /* 1 hour slot */
+    border-bottom: 1px dashed var(--border-light);
+    position: relative;
+    padding-left: 50px;
+    /* Space for time label */
+}
+
+.time-slot::before {
+    /* Time label */
+    content: attr(data-time);
+    position: absolute;
+    left: 5px;
+    top: -8px;
+    /* Adjust position */
+    font-size: 0.8em;
+    color: var(--text-muted);
+}
+
+.daily-event {
+    position: absolute;
+    left: 50px;
+    /* Align with timeline */
+    right: 10px;
+    /* Padding on right */
+    background-color: var(--primary-light);
+    border: 1px solid var(--primary-color);
+    color: #3170a7;
+    padding: 5px 8px;
+    border-radius: 4px;
+    font-size: 0.9em;
+    overflow: hidden;
+    z-index: 1;
+    /* Ensure events are above timeline lines */
+    cursor: pointer;
+}
+
+/* JS would calculate top and height based on start/end times */
+
+/* Matrix */
+.matrix-grid {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    grid-template-rows: auto auto;
+    gap: 1.5em;
+    min-height: 60vh;
+    /* Ensure matrix takes up space */
+}
+
+.matrix-quadrant {
+    border: 1px solid var(--border-color);
+    border-radius: 5px;
+    padding: 1.5em;
+    background-color: var(--bg-color);
+    overflow-y: auto;
+    /* Allow quadrant content to scroll */
+}
+
+.matrix-quadrant h4 {
+    margin-top: 0;
+    margin-bottom: 1em;
+    font-size: 1.1em;
+    font-weight: 600;
+    border-bottom: 1px solid var(--border-light);
+    padding-bottom: 0.5em;
+}
+
+.matrix-quadrant ul li {
+    font-size: 0.95em;
+    padding: 0.5em 0;
+    border-bottom: 1px solid var(--border-light);
+    cursor: grab;
+    /* Indicate draggable */
+}
+
+.matrix-quadrant ul li:last-child {
+    border-bottom: none;
+}
+
+/* Habits/Goals */
+.item-list-item {
+    /* For habits and goals lists */
+    display: flex;
+    align-items: center;
+    padding: 0.8em 0.5em;
+    border-bottom: 1px solid var(--border-light);
+}
+
+.item-list-item .item-content {
+    flex-grow: 1;
+    margin-right: 1em;
+}
+
+.item-list-item .item-title {
+    font-weight: 500;
+}
+
+.item-list-item .item-meta {
+    font-size: 0.85em;
+    color: var(--text-muted);
+}
+
+.item-list-item .item-actions {
+    margin-left: auto;
+    display: flex;
+    gap: 0.5em;
+}
+
+.streak-counter {
+    color: #ff9a00;
+    /* Orange for streak */
+    font-weight: 500;
+}
+
+.progress-bar {
+    /* Basic progress bar */
+    height: 8px;
+    background-color: var(--border-light);
+    border-radius: 4px;
+    overflow: hidden;
+    margin-top: 5px;
+}
+
+.progress-bar-inner {
+    height: 100%;
+    background-color: var(--primary-color);
+    width: 60%;
+    /* Example width, set by JS */
+    border-radius: 4px;
+}
