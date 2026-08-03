@@ -152,6 +152,15 @@
                             <!-- JS would show specific day pickers etc. based on selection -->
                         </div>
                         <div class="form-group">
+                            <label>默认象限（生成待办的优先级归属）</label>
+                            <div class="quadrant-options">
+                                <label><input type="radio" name="habit-quadrant" value="urgent_important"><span class="quadrant-dot q-ui"></span>重要且紧急</label>
+                                <label><input type="radio" name="habit-quadrant" value="urgent_not_important"><span class="quadrant-dot q-uni"></span>紧急不重要</label>
+                                <label><input type="radio" name="habit-quadrant" value="important_not_urgent" checked><span class="quadrant-dot q-inu"></span>重要不紧急</label>
+                                <label><input type="radio" name="habit-quadrant" value="not_urgent_not_important"><span class="quadrant-dot q-nn"></span>不紧急不重要</label>
+                            </div>
+                        </div>
+                        <div class="form-group">
                             <label for="habit-goal-desc">目标描述 (可选)</label>
                             <input type="text" id="habit-goal-desc" class="form-control"
                                 placeholder="例如：30分钟, 1小时/次, 完成1节课">
