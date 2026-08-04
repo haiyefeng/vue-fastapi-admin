@@ -82,6 +82,44 @@
         </main>
     </div>
 
+    <div id="create-todo-modal" class="modal">
+        <div class="modal-dialog">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title">创建待办事项</h5>
+                    <button type="button" class="close" onclick="closeCreateModal()" aria-label="Close"><span aria-hidden="true">×</span></button>
+                </div>
+                <div class="modal-body">
+                    <div class="form-group">
+                        <label for="todo-title">标题 <span style="color: var(--danger-color);">*</span></label>
+                        <input type="text" id="todo-title" class="form-control" placeholder="要做什么？">
+                    </div>
+                    <div class="form-group">
+                        <label>象限（优先级）<span style="color: var(--danger-color);">*</span></label>
+                        <div class="quadrant-options" id="todo-quadrant">
+                            <label><input type="radio" name="todo-quadrant" value="urgent_important"><span class="quadrant-dot q-ui"></span>重要且紧急</label>
+                            <label><input type="radio" name="todo-quadrant" value="urgent_not_important"><span class="quadrant-dot q-uni"></span>紧急不重要</label>
+                            <label><input type="radio" name="todo-quadrant" value="important_not_urgent"><span class="quadrant-dot q-inu"></span>重要不紧急</label>
+                            <label><input type="radio" name="todo-quadrant" value="not_urgent_not_important"><span class="quadrant-dot q-nn"></span>不紧急不重要</label>
+                        </div>
+                    </div>
+                    <div class="form-group">
+                        <label for="todo-notes">备注</label>
+                        <textarea id="todo-notes" class="form-control" rows="2" placeholder="可选"></textarea>
+                    </div>
+                    <div class="form-group">
+                        <label>已选时间段</label>
+                        <ul id="todo-slots" style="font-size: 0.9em; color: var(--text-muted); padding-left: 1em; list-style: disc;"></ul>
+                    </div>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="button" onclick="closeCreateModal()">取消</button>
+                    <button type="button" class="button button-primary" onclick="confirmCreate()">确定</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
     <script>
         const GRAN_HEIGHT = { 15: 16, 30: 26, 60: 44 };
         const DAY_LABELS = ['周一 8/3', '周二 8/4', '周三 8/5', '周四 8/6', '周五 8/7', '周六 8/8', '周日 8/9'];
@@ -215,7 +253,41 @@
             return out;
         }
 
-        function openCreateModal() { /* Task 8 实现 */ }
+        function openCreateModal() {
+            document.getElementById('todo-title').value = '';
+            document.getElementById('todo-notes').value = '';
+            document.querySelectorAll('input[name="todo-quadrant"]').forEach(r => { r.checked = false; });
+            const list = document.getElementById('todo-slots');
+            list.innerHTML = '';
+            mergedRanges().forEach(r => {
+                const li = document.createElement('li');
+                li.textContent = DAY_LABELS[r.day].split(' ')[0] + ' ' + fmt(r.start) + '–' + fmt(r.end);
+                list.appendChild(li);
+            });
+            document.getElementById('create-todo-modal').style.display = 'block';
+            document.getElementById('todo-title').focus();
+        }
+
+        function closeCreateModal() {
+            document.getElementById('create-todo-modal').style.display = 'none';
+        }
+
+        function confirmCreate() {
+            const title = document.getElementById('todo-title').value.trim();
+            const quadrant = (document.querySelector('input[name="todo-quadrant"]:checked') || {}).value;
+            if (!title) { alert('请输入标题'); return; }
+            if (!quadrant) { alert('请选择象限'); return; }
+            events.push({
+                title: title,
+                quadrant: quadrant,
+                notes: document.getElementById('todo-notes').value.trim(),
+                ranges: mergedRanges(),
+            });
+            selected.clear();
+            closeCreateModal();
+            refreshSelection();
+            renderGrid();
+        }
 
         let dragging = false, dragDay = null, dragAnchor = null;
         const gridEl = document.getElementById('schedule-grid');
