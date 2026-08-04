@@ -393,27 +393,6 @@ textarea.form-control {
     /* Show actions on hover */
 }
 
-.priority-dot {
-    display: inline-block;
-    width: 8px;
-    height: 8px;
-    border-radius: 50%;
-    margin-right: 5px;
-    vertical-align: middle;
-}
-
-.priority-high {
-    background-color: #ff4d4f;
-}
-
-.priority-medium {
-    background-color: #faad14;
-}
-
-.priority-low {
-    background-color: #1890ff;
-}
-
 .tag {
     display: inline-block;
     background-color: var(--bg-alt);
