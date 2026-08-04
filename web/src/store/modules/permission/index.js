@@ -1,7 +1,10 @@
 import { defineStore } from 'pinia'
 import { basicRoutes, vueModules } from '@/router/routes'
-import Layout from '@/layout/index.vue'
+import { defineAsyncComponent } from 'vue'
 import api from '@/api'
+
+// 使用动态导入，与 router/routes/index.js 保持一致
+const Layout = () => import('@/layout/index.vue')
 
 // * 后端路由相关函数
 // 根据后端传来数据构建出前端路由
@@ -11,7 +14,7 @@ function buildRoutes(routes = []) {
     const route = {
       name: e.name,
       path: e.path,
-      component: shallowRef(Layout),
+      component: defineAsyncComponent(Layout),
       isHidden: e.is_hidden,
       redirect: e.redirect,
       meta: {

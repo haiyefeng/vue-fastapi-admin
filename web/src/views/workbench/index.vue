@@ -1,5 +1,5 @@
 <template>
-  <AppPage :show-footer="false">
+  <AppPage :show-footer="true">
     <div flex-1>
       <n-card rounded-10>
         <div flex items-center justify-between>

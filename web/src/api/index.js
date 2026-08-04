@@ -1,4 +1,5 @@
 import { request } from '@/utils'
+import todoApi from './todo'
 
 export default {
   login: (data) => request.post('/base/access_token', data, { noNeedToken: true }),
@@ -39,4 +40,6 @@ export default {
   deleteDept: (params = {}) => request.delete('/dept/delete', { params }),
   // auditlog
   getAuditLogList: (params = {}) => request.get('/auditlog/list', { params }),
+  // todo
+  ...todoApi
 }

@@ -242,3 +242,9 @@ pnpm dev
 ### Visitors Count
 
 <img align="left" src = "https://profile-counter.glitch.me/vue-fastapi-admin/count.svg" alt="Loading">
+
+
+### 构建镜像
+
+`docker build -t vue-fastapi-admin-app:latest .`
+`docker save -o vue-fastapi-admin-app.tar vue-fastapi-admin-app:latest`

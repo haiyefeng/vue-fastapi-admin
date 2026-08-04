@@ -1,0 +1,56 @@
+<!-- (Include <!DOCTYPE>, <head>, <body>, <header>, .main-container, <aside>) -->
+<main class="content">
+    <div class="calendar-controls">
+        <button class="button"><i class="fas fa-chevron-left"></i></button>
+        <span>2023年 第50周 (12月11日 - 12月17日)</span>
+        <button class="button"><i class="fas fa-chevron-right"></i></button>
+        <div style="margin-left: auto;">
+            <a href="calendar-day.html" class="button">日</a>
+            <a href="calendar-week.html" class="button active">周</a>
+            <a href="#" class="button">月</a>
+        </div>
+    </div>
+
+    <div class="calendar-grid">
+        <div class="calendar-header">周一 <span class="day-number">11</span></div>
+        <div class="calendar-header">周二 <span class="day-number">12</span></div>
+        <div class="calendar-header">周三 <span class="day-number">13</span></div>
+        <div class="calendar-header">周四 <span class="day-number">14</span></div>
+        <div class="calendar-header">周五 <span class="day-number">15</span></div>
+        <div class="calendar-header">周六 <span class="day-number">16</span></div>
+        <div class="calendar-header">周日 <span class="day-number">17</span></div>
+
+        <div class="calendar-day">
+            <div class="day-number">11</div>
+            <div class="calendar-event">10:00 项目启动会</div>
+        </div>
+        <div class="calendar-day">
+            <div class="day-number">12</div>
+            <!-- No events -->
+        </div>
+        <div class="calendar-day" style="background-color: var(--primary-light);"> <!-- Highlight Today -->
+            <div class="day-number">13</div>
+            <div class="calendar-event">09:00 团队会议</div>
+            <div class="calendar-event" style="background-color: #ffeeba; border-color: #ffc107; color: #856404;">14:00
+                准备报告</div>
+        </div>
+        <div class="calendar-day">
+            <div class="day-number">14</div>
+            <div class="calendar-event">全天 外出培训</div>
+        </div>
+        <div class="calendar-day">
+            <div class="day-number">15</div>
+            <div class="calendar-event">16:00 周总结</div>
+        </div>
+        <div class="calendar-day">
+            <div class="day-number">16</div>
+            <div class="calendar-event" style="background-color: #e2e3e5; border-color: #adb5bd; color: #383d41;">10:00
+                买菜 (个人)</div>
+        </div>
+        <div class="calendar-day">
+            <div class="day-number">17</div>
+            <!-- No events -->
+        </div>
+    </div>
+</main>
+<!-- (Include closing .main-container, <footer>, modals, <script>) -->

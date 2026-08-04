@@ -1,0 +1,264 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>任务 - 我的效率应用</title>
+    <link rel="stylesheet" href="style.css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <style>
+        .tasks-layout { display: flex; gap: 1.5em; align-items: flex-start; }
+        .project-nav { width: 200px; flex-shrink: 0; background: var(--bg-alt); border: 1px solid var(--border-light); border-radius: 6px; padding: 0.8em 0; }
+        .project-nav ul li a { display: flex; align-items: center; padding: 0.45em 1em; color: var(--text-muted); text-decoration: none; font-size: 0.92em; }
+        .project-nav ul li a i { margin-right: 0.6em; width: 14px; text-align: center; }
+        .project-nav ul li a:hover { background: var(--hover-bg); }
+        .project-nav ul li a.active { background: var(--primary-light); color: var(--primary-color); font-weight: 500; }
+        .project-nav .nav-group { font-size: 0.8em; font-weight: 600; color: var(--text-color); padding: 0.8em 1em 0.3em; }
+        .project-nav ul ul { padding-left: 1.2em; }
+        .task-area { flex: 1; min-width: 0; }
+        .group-title { margin: 1em 0 0.5em 0.5em; font-size: 0.9em; font-weight: 600; }
+    </style>
+</head>
+
+<body>
+    <header>
+        <h1><a href="/"><i class="fas fa-check-double"></i> 我的效率应用</a></h1>
+        <nav>
+            <span><i class="fas fa-user"></i> 用户名</span>
+            <a href="settings.html"><i class="fas fa-cog"></i> 设置</a>
+            <a href="#"><i class="fas fa-sign-out-alt"></i> 退出</a>
+        </nav>
+    </header>
+
+    <div class="main-container">
+        <aside class="sidebar">
+            <nav>
+                <ul>
+                    <li><a href="dashboard.html"><i class="fas fa-calendar-day"></i> 今日</a></li>
+                    <li><a href="tasks.html" class="active"><i class="fas fa-tasks"></i> 任务</a></li>
+                    <li><a href="schedule-week.html"><i class="fas fa-calendar-week"></i> 日历</a></li>
+                    <li><a href="matrix.html"><i class="fas fa-th-large"></i> 四象限</a></li>
+                    <li><a href="habits.html"><i class="fas fa-sync-alt"></i> 习惯</a></li>
+                    <li><a href="goals.html"><i class="fas fa-flag-checkered"></i> 计划</a></li>
+                    <li><a href="summary.html"><i class="fas fa-glasses"></i> 回顾总结</a></li>
+                </ul>
+            </nav>
+        </aside>
+
+        <main class="content">
+            <div class="tasks-layout">
+                <nav class="project-nav">
+                    <ul>
+                        <li><a href="#" class="active"><i class="fas fa-inbox"></i> 收件箱 <span style="margin-left:auto;">5</span></a></li>
+                    </ul>
+                    <div class="nav-group">工作</div>
+                    <ul>
+                        <li><a href="#"><i class="fas fa-briefcase"></i> Q4 营销活动</a></li>
+                        <li><a href="#"><i class="fas fa-briefcase"></i> 官网改版</a></li>
+                    </ul>
+                    <div class="nav-group">学习</div>
+                    <ul>
+                        <li><a href="#"><i class="fas fa-graduation-cap"></i> React 进阶</a></li>
+                    </ul>
+                    <div class="nav-group">清单</div>
+                    <ul>
+                        <li><a href="#"><i class="fas fa-list"></i> 本周购物清单</a></li>
+                    </ul>
+                    <ul style="margin-top: 0.6em; border-top: 1px solid var(--border-light); padding-top: 0.6em;">
+                        <li><a href="#"><i class="fas fa-plus"></i> 新建项目/清单</a></li>
+                    </ul>
+                </nav>
+
+                <div class="task-area">
+                    <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 1em;">
+                        <h2 style="margin-bottom: 0;"><i class="fas fa-inbox"></i> 收件箱</h2>
+                        <div>
+                            <button class="button"><i class="fas fa-sort-amount-down"></i> 排序</button>
+                            <button class="button"><i class="fas fa-filter"></i> 过滤</button>
+                        </div>
+                    </div>
+
+                    <section class="quick-add" style="margin-bottom: 1em;">
+                        <form onsubmit="return false;">
+                            <input type="text" class="form-control" placeholder="添加任务到收件箱 (按 Enter 保存)">
+                            <button type="submit" class="button button-primary"><i class="fas fa-plus"></i> 添加</button>
+                        </form>
+                    </section>
+
+                    <ul class="task-list">
+                        <li><h4 class="group-title" style="color: var(--danger-color);">已过期</h4></li>
+                        <li class="task-item">
+                            <label class="checkbox-custom task-checkbox"><input type="checkbox"><span class="checkmark"></span></label>
+                            <div class="task-content">
+                                <span class="task-title" onclick="openModal('task-detail-modal')">联系供应商确认物料</span>
+                                <div class="task-meta">
+                                    <span style="color: var(--danger-color);"><i class="far fa-calendar"></i> 昨天</span>
+                                    <span><span class="quadrant-dot q-ui"></span>重要且紧急</span>
+                                </div>
+                            </div>
+                            <div class="task-actions">
+                                <button class="button-icon" title="排程"><i class="fas fa-calendar-plus"></i></button>
+                                <button class="button-icon" title="编辑" onclick="openModal('task-detail-modal')"><i class="fas fa-edit"></i></button>
+                            </div>
+                        </li>
+
+                        <li><h4 class="group-title" style="color: var(--primary-color);">今天</h4></li>
+                        <li class="task-item">
+                            <label class="checkbox-custom task-checkbox"><input type="checkbox"><span class="checkmark"></span></label>
+                            <div class="task-content">
+                                <span class="task-title" onclick="openModal('task-detail-modal')">完成项目报告初稿</span>
+                                <div class="task-meta">
+                                    <span><i class="far fa-calendar"></i> 今天 18:00</span>
+                                    <span><span class="quadrant-dot q-ui"></span>重要且紧急</span>
+                                    <span><i class="far fa-check-square"></i> 1/3 子任务</span>
+                                </div>
+                            </div>
+                            <div class="task-actions">
+                                <button class="button-icon" title="排程"><i class="fas fa-calendar-plus"></i></button>
+                                <button class="button-icon" title="编辑" onclick="openModal('task-detail-modal')"><i class="fas fa-edit"></i></button>
+                            </div>
+                        </li>
+                        <li class="task-item">
+                            <label class="checkbox-custom task-checkbox"><input type="checkbox" checked><span class="checkmark"></span></label>
+                            <div class="task-content">
+                                <span class="task-title" onclick="openModal('task-detail-modal')">晨间阅读（习惯）</span>
+                                <div class="task-meta">
+                                    <span><i class="fas fa-sync-alt"></i> 习惯生成</span>
+                                    <span><span class="quadrant-dot q-inu"></span>重要不紧急</span>
+                                </div>
+                            </div>
+                        </li>
+
+                        <li><h4 class="group-title">稍后</h4></li>
+                        <li class="task-item">
+                            <label class="checkbox-custom task-checkbox"><input type="checkbox"><span class="checkmark"></span></label>
+                            <div class="task-content">
+                                <span class="task-title" onclick="openModal('task-detail-modal')">设计宣传海报 V1</span>
+                                <div class="task-meta">
+                                    <span><i class="far fa-calendar"></i> 8月18日</span>
+                                    <span><span class="quadrant-dot q-inu"></span>重要不紧急</span>
+                                </div>
+                            </div>
+                            <div class="task-actions">
+                                <button class="button-icon" title="排程"><i class="fas fa-calendar-plus"></i></button>
+                                <button class="button-icon" title="编辑" onclick="openModal('task-detail-modal')"><i class="fas fa-edit"></i></button>
+                            </div>
+                        </li>
+                        <li class="task-item">
+                            <label class="checkbox-custom task-checkbox"><input type="checkbox"><span class="checkmark"></span></label>
+                            <div class="task-content">
+                                <span class="task-title" onclick="openModal('task-detail-modal')">浏览行业资讯</span>
+                                <div class="task-meta">
+                                    <span>无截止时间</span>
+                                    <span><span class="quadrant-dot q-nn"></span>不紧急不重要</span>
+                                </div>
+                            </div>
+                            <div class="task-actions">
+                                <button class="button-icon" title="排程"><i class="fas fa-calendar-plus"></i></button>
+                                <button class="button-icon" title="编辑" onclick="openModal('task-detail-modal')"><i class="fas fa-edit"></i></button>
+                            </div>
+                        </li>
+                    </ul>
+                </div>
+            </div>
+        </main>
+    </div>
+
+    <div id="task-detail-modal" class="modal">
+        <div class="modal-dialog">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title">任务详情</h5>
+                    <button type="button" class="close" onclick="closeModal('task-detail-modal')" aria-label="Close"><span aria-hidden="true">×</span></button>
+                </div>
+                <div class="modal-body">
+                    <div class="form-group">
+                        <input type="text" class="form-control" value="完成项目报告初稿" style="font-size: 1.15em; font-weight: 500; border: none; box-shadow: none; padding: 0.4em 0;">
+                    </div>
+                    <div class="form-group">
+                        <textarea class="form-control" rows="2" placeholder="添加备注...（可记录完成方法、收获、注意事项等）"></textarea>
+                    </div>
+
+                    <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(160px, 1fr)); gap: 1em; margin-bottom: 1em;">
+                        <div class="form-group">
+                            <label><i class="fas fa-folder"></i> 项目</label>
+                            <select class="form-control">
+                                <option>收件箱</option>
+                                <option selected>工作 / Q4 营销活动</option>
+                                <option>工作 / 官网改版</option>
+                                <option>学习 / React 进阶</option>
+                                <option>清单 / 本周购物清单</option>
+                            </select>
+                        </div>
+                        <div class="form-group">
+                            <label><i class="far fa-calendar"></i> 截止日期</label>
+                            <input type="date" class="form-control" value="2026-08-04">
+                        </div>
+                        <div class="form-group">
+                            <label><i class="far fa-bell"></i> 提醒</label>
+                            <input type="datetime-local" class="form-control" value="2026-08-04T16:00">
+                        </div>
+                        <div class="form-group">
+                            <label><i class="fas fa-flag-checkered"></i> 关联计划</label>
+                            <select class="form-control">
+                                <option selected>无</option>
+                                <option>提升 React 编程技能</option>
+                                <option>完成毕业论文</option>
+                            </select>
+                        </div>
+                    </div>
+
+                    <div class="form-group">
+                        <label>象限（优先级）</label>
+                        <div class="quadrant-options">
+                            <label><input type="radio" name="detail-quadrant" value="urgent_important" checked><span class="quadrant-dot q-ui"></span>重要且紧急</label>
+                            <label><input type="radio" name="detail-quadrant" value="urgent_not_important"><span class="quadrant-dot q-uni"></span>紧急不重要</label>
+                            <label><input type="radio" name="detail-quadrant" value="important_not_urgent"><span class="quadrant-dot q-inu"></span>重要不紧急</label>
+                            <label><input type="radio" name="detail-quadrant" value="not_urgent_not_important"><span class="quadrant-dot q-nn"></span>不紧急不重要</label>
+                        </div>
+                    </div>
+
+                    <hr style="border: none; border-top: 1px solid var(--border-light); margin: 1.2em 0;">
+
+                    <section>
+                        <h4 style="font-size: 1em; font-weight: 600; margin-bottom: 0.6em;">子任务</h4>
+                        <ul class="task-list" style="margin-bottom: 0.8em;">
+                            <li class="task-item" style="padding: 0.4em 0;">
+                                <label class="checkbox-custom task-checkbox"><input type="checkbox" checked><span class="checkmark"></span></label>
+                                <div class="task-content"><input type="text" class="form-control" value="收集数据" style="border: none; padding-left: 0;"></div>
+                                <div class="task-actions" style="display: flex;"><button class="button-icon"><i class="fas fa-trash-alt"></i></button></div>
+                            </li>
+                            <li class="task-item" style="padding: 0.4em 0;">
+                                <label class="checkbox-custom task-checkbox"><input type="checkbox"><span class="checkmark"></span></label>
+                                <div class="task-content"><input type="text" class="form-control" value="撰写第一部分" style="border: none; padding-left: 0;"></div>
+                                <div class="task-actions" style="display: flex;"><button class="button-icon"><i class="fas fa-trash-alt"></i></button></div>
+                            </li>
+                            <li class="task-item" style="padding: 0.4em 0;">
+                                <label class="checkbox-custom task-checkbox"><input type="checkbox"><span class="checkmark"></span></label>
+                                <div class="task-content"><input type="text" class="form-control" value="图表制作" style="border: none; padding-left: 0;"></div>
+                                <div class="task-actions" style="display: flex;"><button class="button-icon"><i class="fas fa-trash-alt"></i></button></div>
+                            </li>
+                        </ul>
+                        <form style="display: flex;" onsubmit="return false;">
+                            <input type="text" class="form-control" placeholder="添加子任务...">
+                            <button type="submit" class="button button-primary" style="margin-left: 0.5em; padding: 0.4em 0.8em;">添加</button>
+                        </form>
+                    </section>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="button button-danger" style="margin-right: auto;"><i class="fas fa-trash-alt"></i> 删除任务</button>
+                    <button type="button" class="button" onclick="closeModal('task-detail-modal')">取消</button>
+                    <button type="button" class="button button-primary" onclick="closeModal('task-detail-modal')">保存更改</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        function openModal(id) { const m = document.getElementById(id); if (m) m.style.display = 'block'; }
+        function closeModal(id) { const m = document.getElementById(id); if (m) m.style.display = 'none'; }
+    </script>
+</body>
+
+</html>

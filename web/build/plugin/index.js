@@ -24,7 +24,7 @@ export function createVitePlugins(viteEnv, isBuild) {
   if (isBuild) {
     plugins.push(
       visualizer({
-        open: true,
+        open: false,  // 不自动打开浏览器，否则docker build会失败
         gzipSize: true,
         brotliSize: true,
       }),

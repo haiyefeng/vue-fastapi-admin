@@ -1,0 +1,53 @@
+services:
+  app:
+    image: vue-fastapi-admin-app
+    container_name: vue-fastapi-admin
+    restart: always
+    ports:
+      - "7777:80"
+    depends_on:
+      mysql:
+        condition: service_healthy
+    environment:
+      - DB_HOST=mysql
+      - DB_PORT=3306
+      - DB_USER=root
+      - DB_PASSWORD=password123
+      - DB_NAME=vue_fastapi_admin
+    volumes:
+      - app_data:/opt/vue-fastapi-admin/data
+      # - /volume2/docker/life_plan/app:/opt/vue-fastapi-admin/data
+    networks:
+      - app-network
+
+  mysql:
+    image: mysql:8.1
+    container_name: vue-fastapi-admin-mysql
+    restart: always
+    ports:
+      - "3380:3306"
+    environment:
+      - MYSQL_ROOT_PASSWORD=password123
+      - MYSQL_DATABASE=vue_fastapi_admin
+      - MYSQL_USER=app_user
+      - MYSQL_PASSWORD=app_password
+    volumes:
+      - mysql_data:/var/lib/mysql
+      # - /volume2/docker/life_plan/mysql:/var/lib/mysql
+    networks:
+      - app-network
+    command: --default-authentication-plugin=mysql_native_password --character-set-server=utf8mb4 --collation-server=utf8mb4_unicode_ci --log-error-suppression-list="MY-013360"
+    healthcheck:
+      test: [ "CMD", "mysqladmin", "ping", "-h", "localhost", "-u", "root", "-ppassword123" ]
+      interval: 10s
+      timeout: 10s
+      retries: 15
+      start_period: 30s
+
+networks:
+  app-network:
+    driver: bridge
+
+volumes:
+  mysql_data:
+  app_data:

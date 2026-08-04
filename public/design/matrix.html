@@ -1,0 +1,82 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>四象限 - 我的效率应用</title>
+    <link rel="stylesheet" href="style.css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+</head>
+
+<body>
+    <header>
+        <h1><a href="/"><i class="fas fa-check-double"></i> 我的效率应用</a></h1>
+        <nav>
+            <span><i class="fas fa-user"></i> 用户名</span>
+            <a href="settings.html"><i class="fas fa-cog"></i> 设置</a>
+            <a href="#"><i class="fas fa-sign-out-alt"></i> 退出</a>
+        </nav>
+    </header>
+
+    <div class="main-container">
+        <aside class="sidebar">
+            <nav>
+                <ul>
+                    <li><a href="dashboard.html"><i class="fas fa-calendar-day"></i> 今日</a></li>
+                    <li><a href="tasks.html"><i class="fas fa-tasks"></i> 任务</a></li>
+                    <li><a href="schedule-week.html"><i class="fas fa-calendar-week"></i> 日历</a></li>
+                    <li><a href="matrix.html" class="active"><i class="fas fa-th-large"></i> 四象限</a></li>
+                    <li><a href="habits.html"><i class="fas fa-sync-alt"></i> 习惯</a></li>
+                    <li><a href="goals.html"><i class="fas fa-flag-checkered"></i> 计划</a></li>
+                    <li><a href="summary.html"><i class="fas fa-glasses"></i> 回顾总结</a></li>
+                </ul>
+            </nav>
+        </aside>
+
+        <main class="content">
+            <h2><i class="fas fa-th-large"></i> 四象限任务视图</h2>
+            <p style="color: var(--text-muted); margin-top: -1.5em; margin-bottom: 2em;">拖拽任务可在象限间移动</p>
+
+            <div class="matrix-grid">
+                <section class="matrix-quadrant" id="quadrant1" style="border-top: 4px solid var(--q-ui);">
+                    <h4><i class="fas fa-exclamation-circle" style="color: var(--q-ui);"></i> 重要且紧急 (Do)</h4>
+                    <ul>
+                        <li draggable="true">完成项目报告初稿</li>
+                        <li draggable="true">回复 David 的邮件</li>
+                        <li draggable="true">联系供应商确认物料</li>
+                    </ul>
+                </section>
+
+                <section class="matrix-quadrant" id="quadrant2" style="border-top: 4px solid var(--q-uni);">
+                    <h4><i class="fas fa-user-friends" style="color: var(--q-uni);"></i> 紧急不重要 (Delegate)</h4>
+                    <ul>
+                        <li draggable="true">预定会议室</li>
+                        <li draggable="true">回复非紧急群消息</li>
+                    </ul>
+                </section>
+
+                <section class="matrix-quadrant" id="quadrant3" style="border-top: 4px solid var(--q-inu);">
+                    <h4><i class="fas fa-calendar-check" style="color: var(--q-inu);"></i> 重要不紧急 (Schedule)</h4>
+                    <ul>
+                        <li draggable="true">设计宣传海报 V1</li>
+                        <li draggable="true">规划下季度目标</li>
+                        <li draggable="true">学习 React 新特性</li>
+                    </ul>
+                </section>
+
+                <section class="matrix-quadrant" id="quadrant4" style="border-top: 4px solid var(--q-nn);">
+                    <h4><i class="fas fa-trash-alt" style="color: var(--q-nn);"></i> 不紧急不重要 (Eliminate)</h4>
+                    <ul>
+                        <li draggable="true">整理桌面文件</li>
+                        <li draggable="true">浏览行业资讯（非必需）</li>
+                    </ul>
+                </section>
+            </div>
+        </main>
+    </div>
+
+    <!-- (Include Modals if tasks are clickable for detail view) -->
+</body>
+
+</html>

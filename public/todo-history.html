@@ -1,0 +1,515 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>待办事项历史统计</title>
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css">
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.10.0/font/bootstrap-icons.css">
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/chart.js@4.0.0/dist/chart.min.css">
+    <style>
+        :root {
+            --primary-color: #4e73df;
+            --success-color: #1cc88a;
+            --warning-color: #f6c23e;
+            --danger-color: #e74a3b;
+            --light-color: #f8f9fc;
+            --dark-color: #5a5c69;
+        }
+
+        body {
+            font-family: 'Nunito', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif;
+            background-color: #f8f9fc;
+            color: #5a5c69;
+        }
+
+        .app-container {
+            max-width: 1200px;
+            margin: 2rem auto;
+            padding: 0 15px;
+        }
+
+        .header {
+            margin-bottom: 2rem;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+        }
+
+        .card {
+            border: none;
+            border-radius: 0.5rem;
+            box-shadow: 0 0.15rem 1.75rem rgba(0, 0, 0, 0.15);
+            margin-bottom: 1.5rem;
+        }
+
+        .card-header {
+            background-color: white;
+            border-bottom: 1px solid #e3e6f0;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            padding: 1rem 1.25rem;
+        }
+
+        .card-title {
+            margin-bottom: 0;
+            color: #5a5c69;
+            font-weight: 700;
+        }
+
+        .quadrant-badge {
+            display: inline-block;
+            padding: 0.25rem 0.5rem;
+            border-radius: 0.25rem;
+            font-size: 0.75rem;
+            font-weight: 700;
+            margin-left: 0.5rem;
+        }
+
+        .badge-1 {
+            background-color: rgba(231, 74, 59, 0.1);
+            color: var(--danger-color);
+        }
+
+        .badge-2 {
+            background-color: rgba(246, 194, 62, 0.1);
+            color: var(--warning-color);
+        }
+
+        .badge-3 {
+            background-color: rgba(78, 115, 223, 0.1);
+            color: var(--primary-color);
+        }
+
+        .badge-4 {
+            background-color: rgba(28, 200, 138, 0.1);
+            color: var(--success-color);
+        }
+
+        .table th {
+            font-weight: 600;
+            padding: 1rem;
+        }
+
+        .table td {
+            padding: 1rem;
+            vertical-align: middle;
+        }
+
+        .date-cell {
+            font-weight: 600;
+            color: #4e73df;
+        }
+
+        .chart-container {
+            position: relative;
+            height: 300px;
+            width: 100%;
+            margin-bottom: 1.5rem;
+        }
+
+        .filter-section {
+            display: flex;
+            gap: 1rem;
+            margin-bottom: 1.5rem;
+            flex-wrap: wrap;
+        }
+
+        .todo-count {
+            background-color: #fff;
+            border-radius: 5px;
+            padding: 1rem;
+            box-shadow: 0 0.15rem 1.75rem rgba(0, 0, 0, 0.15);
+            text-align: center;
+            width: calc(25% - 0.75rem);
+            min-width: 150px;
+            flex-grow: 1;
+        }
+
+        .todo-count-title {
+            font-size: 0.8rem;
+            color: #858796;
+            margin-bottom: 0.25rem;
+        }
+
+        .todo-count-value {
+            font-size: 1.75rem;
+            font-weight: 700;
+            margin-bottom: 0;
+        }
+
+        .todo-count-icon {
+            font-size: 1.5rem;
+            margin-bottom: 0.5rem;
+        }
+
+        .count-q1 .todo-count-icon,
+        .count-q1 .todo-count-value {
+            color: var(--danger-color);
+        }
+
+        .count-q2 .todo-count-icon,
+        .count-q2 .todo-count-value {
+            color: var(--warning-color);
+        }
+
+        .count-q3 .todo-count-icon,
+        .count-q3 .todo-count-value {
+            color: var(--primary-color);
+        }
+
+        .count-q4 .todo-count-icon,
+        .count-q4 .todo-count-value {
+            color: var(--success-color);
+        }
+
+        .date-selector {
+            display: flex;
+            gap: 1rem;
+            margin-bottom: 1.5rem;
+        }
+
+        .date-selector .form-control {
+            max-width: 200px;
+        }
+
+        .empty-message {
+            text-align: center;
+            padding: 2rem;
+            color: #858796;
+        }
+
+        .nav-tabs .nav-link {
+            border: none;
+            color: #858796;
+            font-weight: 600;
+            padding: 1rem 1.5rem;
+        }
+
+        .nav-tabs .nav-link.active {
+            color: var(--primary-color);
+            border-bottom: 2px solid var(--primary-color);
+            background-color: transparent;
+        }
+
+        .tab-content {
+            padding: 1.5rem 0;
+        }
+
+        .no-data-message {
+            text-align: center;
+            padding: 3rem;
+            font-size: 1.1rem;
+            color: #858796;
+        }
+    </style>
+</head>
+
+<body>
+    <div class="app-container">
+        <div class="header">
+            <h1><i class="bi bi-bar-chart-line me-2"></i>待办历史统计</h1>
+            <a href="todo-quadrant.html" class="btn btn-outline-primary">
+                <i class="bi bi-kanban btn-icon"></i>返回四象限待办
+            </a>
+        </div>
+
+        <div class="card">
+            <div class="card-header">
+                <h5 class="card-title"><i class="bi bi-filter me-2"></i>筛选条件</h5>
+            </div>
+            <div class="card-body">
+                <div class="date-selector">
+                    <div>
+                        <label class="form-label">开始日期</label>
+                        <input type="date" class="form-control" id="startDate" value="2023-03-01">
+                    </div>
+                    <div>
+                        <label class="form-label">结束日期</label>
+                        <input type="date" class="form-control" id="endDate" value="2023-03-24">
+                    </div>
+                    <div class="d-flex align-items-end">
+                        <button class="btn btn-primary" id="filterBtn">应用筛选</button>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="filter-section">
+            <div class="todo-count count-q1">
+                <div class="todo-count-icon"><i class="bi bi-exclamation-diamond"></i></div>
+                <h6 class="todo-count-title">紧急且重要</h6>
+                <p class="todo-count-value">18</p>
+            </div>
+            <div class="todo-count count-q2">
+                <div class="todo-count-icon"><i class="bi bi-clock-history"></i></div>
+                <h6 class="todo-count-title">紧急但不重要</h6>
+                <p class="todo-count-value">12</p>
+            </div>
+            <div class="todo-count count-q3">
+                <div class="todo-count-icon"><i class="bi bi-graph-up"></i></div>
+                <h6 class="todo-count-title">重要但不紧急</h6>
+                <p class="todo-count-value">15</p>
+            </div>
+            <div class="todo-count count-q4">
+                <div class="todo-count-icon"><i class="bi bi-cup-hot"></i></div>
+                <h6 class="todo-count-title">不紧急也不重要</h6>
+                <p class="todo-count-value">7</p>
+            </div>
+        </div>
+
+        <ul class="nav nav-tabs" id="myTab" role="tablist">
+            <li class="nav-item" role="presentation">
+                <button class="nav-link active" id="chart-tab" data-bs-toggle="tab" data-bs-target="#chart-tab-content"
+                    type="button" role="tab" aria-controls="chart-tab-content" aria-selected="true">
+                    <i class="bi bi-graph-up me-2"></i>图表统计
+                </button>
+            </li>
+            <li class="nav-item" role="presentation">
+                <button class="nav-link" id="list-tab" data-bs-toggle="tab" data-bs-target="#list-tab-content"
+                    type="button" role="tab" aria-controls="list-tab-content" aria-selected="false">
+                    <i class="bi bi-list-ul me-2"></i>详细列表
+                </button>
+            </li>
+        </ul>
+
+        <div class="tab-content" id="myTabContent">
+            <div class="tab-pane fade show active" id="chart-tab-content" role="tabpanel" aria-labelledby="chart-tab">
+                <div class="card">
+                    <div class="card-header">
+                        <h5 class="card-title"><i class="bi bi-calendar3 me-2"></i>每日完成待办数量</h5>
+                    </div>
+                    <div class="card-body">
+                        <div class="chart-container">
+                            <canvas id="dailyChart"></canvas>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="card">
+                    <div class="card-header">
+                        <h5 class="card-title"><i class="bi bi-pie-chart me-2"></i>四象限待办分布</h5>
+                    </div>
+                    <div class="card-body">
+                        <div class="chart-container">
+                            <canvas id="quadrantChart"></canvas>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="tab-pane fade" id="list-tab-content" role="tabpanel" aria-labelledby="list-tab">
+                <div class="card">
+                    <div class="card-header">
+                        <h5 class="card-title"><i class="bi bi-list-check me-2"></i>已完成待办列表</h5>
+                        <div class="dropdown">
+                            <button class="btn btn-sm btn-outline-secondary dropdown-toggle" type="button"
+                                id="sortDropdown" data-bs-toggle="dropdown" aria-expanded="false">
+                                <i class="bi bi-sort-down me-1"></i>排序方式
+                            </button>
+                            <ul class="dropdown-menu dropdown-menu-end" aria-labelledby="sortDropdown">
+                                <li><a class="dropdown-item active" href="#">日期（新→旧）</a></li>
+                                <li><a class="dropdown-item" href="#">日期（旧→新）</a></li>
+                                <li><a class="dropdown-item" href="#">象限</a></li>
+                            </ul>
+                        </div>
+                    </div>
+                    <div class="card-body p-0">
+                        <table class="table table-hover mb-0">
+                            <thead>
+                                <tr>
+                                    <th>完成日期</th>
+                                    <th>待办事项</th>
+                                    <th>象限</th>
+                                    <th>完成时间</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                <tr>
+                                    <td class="date-cell">2023-03-24</td>
+                                    <td>完成项目报告</td>
+                                    <td><span class="quadrant-badge badge-1">紧急且重要</span></td>
+                                    <td>14:30</td>
+                                </tr>
+                                <tr>
+                                    <td class="date-cell">2023-03-24</td>
+                                    <td>准备明天的会议材料</td>
+                                    <td><span class="quadrant-badge badge-1">紧急且重要</span></td>
+                                    <td>16:45</td>
+                                </tr>
+                                <tr>
+                                    <td class="date-cell">2023-03-24</td>
+                                    <td>回复客户邮件</td>
+                                    <td><span class="quadrant-badge badge-2">紧急但不重要</span></td>
+                                    <td>10:20</td>
+                                </tr>
+                                <tr>
+                                    <td class="date-cell">2023-03-23</td>
+                                    <td>完成季度计划制定</td>
+                                    <td><span class="quadrant-badge badge-3">重要但不紧急</span></td>
+                                    <td>17:15</td>
+                                </tr>
+                                <tr>
+                                    <td class="date-cell">2023-03-23</td>
+                                    <td>整理工作桌面</td>
+                                    <td><span class="quadrant-badge badge-4">不紧急也不重要</span></td>
+                                    <td>09:30</td>
+                                </tr>
+                                <tr>
+                                    <td class="date-cell">2023-03-22</td>
+                                    <td>撰写周报</td>
+                                    <td><span class="quadrant-badge badge-1">紧急且重要</span></td>
+                                    <td>11:45</td>
+                                </tr>
+                                <tr>
+                                    <td class="date-cell">2023-03-22</td>
+                                    <td>安排团队会议</td>
+                                    <td><span class="quadrant-badge badge-3">重要但不紧急</span></td>
+                                    <td>15:00</td>
+                                </tr>
+                                <tr>
+                                    <td class="date-cell">2023-03-21</td>
+                                    <td>处理紧急Bug修复</td>
+                                    <td><span class="quadrant-badge badge-1">紧急且重要</span></td>
+                                    <td>10:30</td>
+                                </tr>
+                                <tr>
+                                    <td class="date-cell">2023-03-21</td>
+                                    <td>阅读行业新闻</td>
+                                    <td><span class="quadrant-badge badge-4">不紧急也不重要</span></td>
+                                    <td>13:15</td>
+                                </tr>
+                            </tbody>
+                        </table>
+                    </div>
+                    <div class="card-footer">
+                        <nav aria-label="Page navigation">
+                            <ul class="pagination justify-content-center mb-0">
+                                <li class="page-item disabled">
+                                    <a class="page-link" href="#" tabindex="-1" aria-disabled="true">上一页</a>
+                                </li>
+                                <li class="page-item active"><a class="page-link" href="#">1</a></li>
+                                <li class="page-item"><a class="page-link" href="#">2</a></li>
+                                <li class="page-item"><a class="page-link" href="#">3</a></li>
+                                <li class="page-item">
+                                    <a class="page-link" href="#">下一页</a>
+                                </li>
+                            </ul>
+                        </nav>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js@4.0.0/dist/chart.umd.min.js"></script>
+    <script>
+        document.addEventListener('DOMContentLoaded', function () {
+            // 每日完成待办数量图表
+            const dailyChartCtx = document.getElementById('dailyChart').getContext('2d');
+            const dailyChart = new Chart(dailyChartCtx, {
+                type: 'bar',
+                data: {
+                    labels: ['3/18', '3/19', '3/20', '3/21', '3/22', '3/23', '3/24'],
+                    datasets: [
+                        {
+                            label: '紧急且重要',
+                            data: [2, 1, 3, 2, 3, 2, 5],
+                            backgroundColor: '#e74a3b',
+                            borderColor: '#e74a3b',
+                            borderWidth: 1
+                        },
+                        {
+                            label: '紧急但不重要',
+                            data: [1, 2, 1, 2, 1, 3, 2],
+                            backgroundColor: '#f6c23e',
+                            borderColor: '#f6c23e',
+                            borderWidth: 1
+                        },
+                        {
+                            label: '重要但不紧急',
+                            data: [3, 2, 2, 1, 3, 2, 2],
+                            backgroundColor: '#4e73df',
+                            borderColor: '#4e73df',
+                            borderWidth: 1
+                        },
+                        {
+                            label: '不紧急也不重要',
+                            data: [1, 0, 1, 2, 0, 2, 1],
+                            backgroundColor: '#1cc88a',
+                            borderColor: '#1cc88a',
+                            borderWidth: 1
+                        }
+                    ]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    plugins: {
+                        legend: {
+                            position: 'top',
+                        },
+                        title: {
+                            display: false
+                        }
+                    },
+                    scales: {
+                        x: {
+                            stacked: true,
+                            grid: {
+                                display: false
+                            }
+                        },
+                        y: {
+                            stacked: true,
+                            beginAtZero: true,
+                            ticks: {
+                                precision: 0
+                            }
+                        }
+                    }
+                }
+            });
+
+            // 四象限待办分布图表
+            const quadrantChartCtx = document.getElementById('quadrantChart').getContext('2d');
+            const quadrantChart = new Chart(quadrantChartCtx, {
+                type: 'doughnut',
+                data: {
+                    labels: ['紧急且重要', '紧急但不重要', '重要但不紧急', '不紧急也不重要'],
+                    datasets: [{
+                        data: [18, 12, 15, 7],
+                        backgroundColor: [
+                            '#e74a3b',
+                            '#f6c23e',
+                            '#4e73df',
+                            '#1cc88a'
+                        ],
+                        borderWidth: 0
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    plugins: {
+                        legend: {
+                            position: 'right',
+                        }
+                    },
+                    cutout: '70%'
+                }
+            });
+
+            // 筛选按钮点击事件
+            document.getElementById('filterBtn').addEventListener('click', function () {
+                // 模拟筛选功能，实际应用中需要从后端获取数据
+                alert('应用筛选: ' + document.getElementById('startDate').value + ' 至 ' + document.getElementById('endDate').value);
+            });
+        });
+    </script>
+</body>
+
+</html>

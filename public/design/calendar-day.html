@@ -1,0 +1,167 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>日视图 - 我的效率应用</title>
+    <link rel="stylesheet" href="style.css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <style>
+        .view-toggle .button.active { background: var(--primary-light); color: var(--primary-color); border-color: var(--primary-color); }
+        .day-timeline { position: relative; border: 1px solid var(--border-color); user-select: none; }
+        .hour-slot { height: 48px; border-bottom: 1px solid var(--border-light); position: relative; padding-left: 56px; box-sizing: border-box; }
+        .hour-slot::before { content: attr(data-time); position: absolute; left: 6px; top: -0.55em; font-size: 0.75em; color: var(--text-muted); background: var(--bg-color); padding: 0 2px; }
+        .hour-slot.drop-hint { background: var(--primary-light); }
+        .day-event { position: absolute; left: 56px; right: 10px; border-radius: 4px; padding: 2px 6px; font-size: 0.85em; color: #fff; overflow: hidden; z-index: 2; box-sizing: border-box; }
+        .unscheduled-item { cursor: grab; }
+        .unscheduled-item:active { cursor: grabbing; }
+    </style>
+</head>
+
+<body>
+    <header>
+        <h1><a href="/"><i class="fas fa-check-double"></i> 我的效率应用</a></h1>
+        <nav>
+            <span><i class="fas fa-user"></i> 用户名</span>
+            <a href="settings.html"><i class="fas fa-cog"></i> 设置</a>
+            <a href="#"><i class="fas fa-sign-out-alt"></i> 退出</a>
+        </nav>
+    </header>
+
+    <div class="main-container">
+        <aside class="sidebar">
+            <nav>
+                <ul>
+                    <li><a href="dashboard.html"><i class="fas fa-calendar-day"></i> 今日</a></li>
+                    <li><a href="tasks.html"><i class="fas fa-tasks"></i> 任务</a></li>
+                    <li><a href="schedule-week.html" class="active"><i class="fas fa-calendar-week"></i> 日历</a></li>
+                    <li><a href="matrix.html"><i class="fas fa-th-large"></i> 四象限</a></li>
+                    <li><a href="habits.html"><i class="fas fa-sync-alt"></i> 习惯</a></li>
+                    <li><a href="goals.html"><i class="fas fa-flag-checkered"></i> 计划</a></li>
+                    <li><a href="summary.html"><i class="fas fa-glasses"></i> 回顾总结</a></li>
+                </ul>
+            </nav>
+        </aside>
+
+        <main class="content">
+            <div class="calendar-controls">
+                <button class="button"><i class="fas fa-chevron-left"></i></button>
+                <span>2026年8月4日, 星期二</span>
+                <button class="button"><i class="fas fa-chevron-right"></i></button>
+                <input type="date" class="form-control" style="width: auto;" value="2026-08-04">
+                <span class="view-toggle" style="margin-left: auto;">
+                    <a href="calendar-day.html" class="button active">日</a>
+                    <a href="schedule-week.html" class="button">周</a>
+                </span>
+            </div>
+
+            <div class="day-timeline" id="day-timeline"></div>
+
+            <section style="margin-top: 2em;">
+                <h3><i class="far fa-calendar-times"></i> 未安排的任务（拖到时间轴上排程）</h3>
+                <ul class="task-list" id="unscheduled-list">
+                    <li class="task-item unscheduled-item" draggable="true" data-title="设计宣传海报 V1" data-quadrant="important_not_urgent">
+                        <div class="task-content">
+                            <span class="task-title"><span class="quadrant-dot q-inu"></span>设计宣传海报 V1</span>
+                            <div class="task-meta"><span><i class="far fa-calendar"></i> 8月18日截止</span></div>
+                        </div>
+                    </li>
+                    <li class="task-item unscheduled-item" draggable="true" data-title="回复 David 的邮件" data-quadrant="urgent_important">
+                        <div class="task-content">
+                            <span class="task-title"><span class="quadrant-dot q-ui"></span>回复 David 的邮件</span>
+                            <div class="task-meta"><span><i class="far fa-calendar"></i> 今天截止</span></div>
+                        </div>
+                    </li>
+                    <li class="task-item unscheduled-item" draggable="true" data-title="整理桌面文件" data-quadrant="not_urgent_not_important">
+                        <div class="task-content">
+                            <span class="task-title"><span class="quadrant-dot q-nn"></span>整理桌面文件</span>
+                            <div class="task-meta"><span>无截止时间</span></div>
+                        </div>
+                    </li>
+                </ul>
+            </section>
+        </main>
+    </div>
+
+    <script>
+        const HOUR_PX = 48;
+        const COLORS = {
+            urgent_important: '#f5222d',
+            urgent_not_important: '#faad14',
+            important_not_urgent: '#1890ff',
+            not_urgent_not_important: '#909399',
+        };
+        let blocks = [
+            { title: '团队会议', quadrant: 'urgent_important', start: 9 * 60, end: 10 * 60 + 30 },
+            { title: '晨间阅读（习惯）', quadrant: 'important_not_urgent', start: 7 * 60, end: 7 * 60 + 30 },
+            { title: '准备报告', quadrant: 'urgent_not_important', start: 14 * 60, end: 15 * 60 },
+        ];
+
+        function fmt(min) {
+            return String(Math.floor(min / 60)).padStart(2, '0') + ':' + String(min % 60).padStart(2, '0');
+        }
+
+        function renderTimeline() {
+            const tl = document.getElementById('day-timeline');
+            tl.innerHTML = '';
+            for (let hh = 0; hh < 24; hh++) {
+                const slot = document.createElement('div');
+                slot.className = 'hour-slot';
+                slot.dataset.time = String(hh).padStart(2, '0') + ':00';
+                tl.appendChild(slot);
+            }
+            blocks.forEach(b => {
+                const ev = document.createElement('div');
+                ev.className = 'day-event';
+                ev.style.top = (b.start / 60 * HOUR_PX) + 'px';
+                ev.style.height = ((b.end - b.start) / 60 * HOUR_PX - 2) + 'px';
+                ev.style.backgroundColor = COLORS[b.quadrant];
+                ev.title = b.title + ' ' + fmt(b.start) + '–' + fmt(b.end);
+                ev.innerHTML = '<strong>' + fmt(b.start) + '</strong> ' + b.title;
+                tl.appendChild(ev);
+            });
+            const now = new Date();
+            const line = document.createElement('div');
+            line.style.cssText = 'position:absolute;left:0;right:0;height:2px;background:var(--danger-color);z-index:3;pointer-events:none;';
+            line.style.top = ((now.getHours() * 60 + now.getMinutes()) / 60 * HOUR_PX) + 'px';
+            tl.appendChild(line);
+        }
+
+        let dragged = null;
+        document.getElementById('unscheduled-list').addEventListener('dragstart', e => {
+            const item = e.target.closest('.unscheduled-item');
+            if (!item) return;
+            dragged = { title: item.dataset.title, quadrant: item.dataset.quadrant, el: item };
+            e.dataTransfer.effectAllowed = 'move';
+        });
+
+        const timeline = document.getElementById('day-timeline');
+        timeline.addEventListener('dragover', e => {
+            if (!dragged) return;
+            e.preventDefault();
+            const slot = e.target.closest('.hour-slot');
+            timeline.querySelectorAll('.drop-hint').forEach(s => s.classList.remove('drop-hint'));
+            if (slot) slot.classList.add('drop-hint');
+        });
+        timeline.addEventListener('dragleave', () => {
+            timeline.querySelectorAll('.drop-hint').forEach(s => s.classList.remove('drop-hint'));
+        });
+        timeline.addEventListener('drop', e => {
+            e.preventDefault();
+            timeline.querySelectorAll('.drop-hint').forEach(s => s.classList.remove('drop-hint'));
+            if (!dragged) return;
+            const rect = timeline.getBoundingClientRect();
+            const y = e.clientY - rect.top;
+            const startMin = Math.floor(y / (HOUR_PX / 2)) * 30; // 按 30 分钟吸附
+            blocks.push({ title: dragged.title, quadrant: dragged.quadrant, start: startMin, end: startMin + 60 });
+            dragged.el.remove();
+            dragged = null;
+            renderTimeline();
+        });
+
+        renderTimeline();
+    </script>
+</body>
+
+</html>
