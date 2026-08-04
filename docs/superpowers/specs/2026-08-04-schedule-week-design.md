@@ -56,6 +56,16 @@
 - 复用 `public/design/style.css` 中的 CSS 变量（`--primary-color` 等）、`.button` / `.button-primary` / `.modal*` / `.form-control` 等通用类，保持与目录下其它设计稿视觉一致。
 - 四象限配色直接从 `web/src/views/todo/TodoQuadrant/index.vue` 现有 CSS 搬过来（`#f5222d` / `#faad14` / `#1890ff` / `#909399`），避免以后转 Vue 组件时颜色对不上。
 
+## Mockup 已知边缘问题（评审已确认，留给 Vue 化时处理）
+
+最终代码评审确认以下 Minor 级边缘问题存在于静态稿中，均不影响 mockup 演示，Vue 化时一并解决：
+
+- `schedule-week.html`：事件块未设 `pointer-events: none`，拖拽经过已有事件块处选区停止扩展（Vue 化时加上或改用列级事件委托）
+- `schedule-week.html`：鼠标移出浏览器窗口松开时 `mouseup` 不触发，拖拽状态粘滞到下一次点击
+- `schedule-week.html`：选区小结用 `toFixed(1)`，15 分钟粒度下 0.25 小时显示为 0.3
+- `calendar-day.html`：拖放到 23:30 之后的格子会生成越过午夜的事件块（需对起始分钟做 `[0, 1380]` 钳制）
+- `calendar-day.html`：无 `dragend` 清理，取消的拖拽会残留待放置状态
+
 ## 已知缺口（不在本次范围内，留给后续 Vue 化时处理）
 
 后端 `TodoItem` 模型（`app/models/todo.py`）目前只有单个 `due_date` 字段，没有开始/结束时间。也就是说这个 mockup 里"拖拽出一段时间范围"这个概念，暂时无法 1:1 映射到现有 API。真正把这个页面接入后端时，需要先给 `TodoItem`（或新表）加上开始时间/结束时间字段并迁移数据库——这次的 mockup 只负责把交互和视觉钉下来，不改后端。
