@@ -54,3 +54,56 @@ async def test_deleting_todo_cascades_to_subtasks(client, test_user):
     resp = await client.delete("/api/v1/todo/delete", params={"todo_id": todo.id})
     assert resp.status_code == 200
     assert await SubTask.filter(todo_item_id=todo.id).count() == 0
+
+
+async def test_create_subtask_for_other_user_todo_returns_404(client, test_user):
+    """cross-user ownership check: create subtask for a todo owned by another user"""
+    from app.models.admin import User
+
+    other_user = await User.create(username="other", email="other@example.com", password="x", is_superuser=True)
+    other_todo = await _create_todo(other_user.id)
+
+    # test_user tries to create subtask under other_user's todo
+    resp = await client.post("/api/v1/subtask/create", json={"todo_item_id": other_todo.id, "title": "侵犯"})
+    assert resp.status_code == 404
+
+
+async def test_update_subtask_owned_by_other_user_returns_404(client, test_user):
+    """cross-user ownership check: update subtask owned by another user"""
+    from app.models.admin import User
+
+    other_user = await User.create(username="other", email="other@example.com", password="x", is_superuser=True)
+    other_todo = await _create_todo(other_user.id)
+    other_subtask = await SubTask.create(todo_item_id=other_todo.id, title="他人的子任务", order=0)
+
+    # test_user tries to update other_user's subtask
+    resp = await client.post("/api/v1/subtask/update", json={"id": other_subtask.id, "is_completed": True})
+    assert resp.status_code == 404
+
+
+async def test_delete_subtask_owned_by_other_user_returns_404(client, test_user):
+    """cross-user ownership check: delete subtask owned by another user"""
+    from app.models.admin import User
+
+    other_user = await User.create(username="other", email="other@example.com", password="x", is_superuser=True)
+    other_todo = await _create_todo(other_user.id)
+    other_subtask = await SubTask.create(todo_item_id=other_todo.id, title="他人的子任务", order=0)
+
+    # test_user tries to delete other_user's subtask
+    resp = await client.delete("/api/v1/subtask/delete", params={"subtask_id": other_subtask.id})
+    assert resp.status_code == 404
+    # Verify the subtask still exists
+    assert await SubTask.filter(id=other_subtask.id).count() == 1
+
+
+async def test_list_subtasks_for_other_user_todo_returns_404(client, test_user):
+    """cross-user ownership check: list subtasks for a todo owned by another user"""
+    from app.models.admin import User
+
+    other_user = await User.create(username="other", email="other@example.com", password="x", is_superuser=True)
+    other_todo = await _create_todo(other_user.id)
+    await SubTask.create(todo_item_id=other_todo.id, title="他人的子任务", order=0)
+
+    # test_user tries to list subtasks under other_user's todo
+    resp = await client.get("/api/v1/subtask/list", params={"todo_item_id": other_todo.id})
+    assert resp.status_code == 404
