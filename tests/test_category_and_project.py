@@ -59,3 +59,59 @@ async def test_project_update_can_clear_category(client):
 async def test_delete_nonexistent_project_returns_404(client):
     resp = await client.delete("/api/v1/project/delete", params={"project_id": 99999})
     assert resp.status_code == 404
+
+
+async def test_project_create_cannot_use_another_user_category_id(client, test_user):
+    """创建项目时，不能用另一个用户的私有分类 ID"""
+    from app.models.admin import User
+
+    # Create a second user and their category
+    other_user = await User.create(username="other_user", email="other@example.com", password="123456")
+    other_category = await Category.create(user_id=other_user.id, name="Other's Private")
+
+    # Try to create a project as test_user with other_user's category_id
+    resp = await client.post(
+        "/api/v1/project/create",
+        json={"name": "My Project", "type": "project", "category_id": other_category.id},
+    )
+
+    assert resp.status_code == 200
+    body = resp.json()["data"]
+
+    # Should NOT have the category linked (should fall back to None since no category_name provided)
+    assert body["category_id"] is None or body["category_name"] is None
+
+    # Verify the project exists but isn't linked to other_user's category
+    project = await Project.filter(id=body["id"], user_id=test_user.id).first()
+    assert project is not None
+    assert project.category_id is None
+
+
+async def test_project_update_cannot_use_another_user_category_id(client, test_user):
+    """更新项目时，不能改为另一个用户的私有分类 ID"""
+    from app.models.admin import User
+
+    # Create a project
+    create_resp = await client.post("/api/v1/project/create", json={"name": "My Project", "type": "project"})
+    project_id = create_resp.json()["data"]["id"]
+
+    # Create a second user and their category
+    other_user = await User.create(username="other_user2", email="other2@example.com", password="123456")
+    other_category = await Category.create(user_id=other_user.id, name="Other's Private 2")
+
+    # Try to update the project with other_user's category_id
+    update_resp = await client.post(
+        "/api/v1/project/update",
+        json={"id": project_id, "category_id": other_category.id},
+    )
+
+    assert update_resp.status_code == 200
+    body = update_resp.json()["data"]
+
+    # Should NOT have the category linked to other_user's category
+    assert body["category_id"] is None or body["category_name"] is None
+
+    # Verify the project exists but isn't linked to other_user's category
+    project = await Project.filter(id=project_id, user_id=test_user.id).first()
+    assert project is not None
+    assert project.category_id is None

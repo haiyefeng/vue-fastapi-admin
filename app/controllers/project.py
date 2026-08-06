@@ -2,7 +2,7 @@ from typing import List, Optional
 
 from app.controllers.category import category_controller
 from app.core.crud import CRUDBase
-from app.models.todo import Project, TodoItem
+from app.models.todo import Category, Project, TodoItem
 from app.schemas.project import ProjectCreate, ProjectUpdate
 
 
@@ -57,7 +57,13 @@ class ProjectController(CRUDBase[Project, ProjectCreate, ProjectUpdate]):
         self, user_id: int, category_id: Optional[int], category_name: Optional[str]
     ) -> Optional[int]:
         if category_id is not None:
-            return category_id
+            # Verify the category belongs to the current user or is system-predefined
+            from tortoise.expressions import Q
+
+            category = await Category.filter(Q(id=category_id, user_id=user_id) | Q(id=category_id, user_id__isnull=True)).first()
+            if category:
+                return category_id
+            # Category doesn't belong to user and isn't system-predefined, fall back to category_name
         if category_name:
             category = await category_controller.get_or_create(user_id, category_name)
             return category.id
