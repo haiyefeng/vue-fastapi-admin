@@ -217,6 +217,23 @@ async def init_menus():
         ]
         await Menu.bulk_create(todo_children_menu)
 
+    # 一期任务体系升级：任务列表页菜单。独立于上面的判断，保证已经部署过的环境重启后也能自动补上
+    todo_parent_menu = await Menu.filter(name="待办事项").first()
+    if todo_parent_menu:
+        task_menu = await Menu.filter(name="任务", parent_id=todo_parent_menu.id).first()
+        if not task_menu:
+            await Menu.create(
+                menu_type=MenuType.MENU,
+                name="任务",
+                path="tasks",
+                order=0,
+                parent_id=todo_parent_menu.id,
+                icon="material-symbols:task-outline",
+                is_hidden=False,
+                component="/todo/TaskList",
+                keepalive=True,
+            )
+
 
 async def init_apis():
     apis = await api_controller.model.exists()
