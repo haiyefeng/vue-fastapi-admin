@@ -20,6 +20,10 @@ class TodoItem(BaseModel, TimestampMixin):
     quadrant_type = fields.CharEnumField(QuadrantType, description="象限类型", index=True)
     due_date = fields.DatetimeField(null=True, description="截止时间")
     notes = fields.TextField(null=True, description="备注信息")
+    project = fields.ForeignKeyField(
+        "models.Project", related_name="tasks", null=True, on_delete=fields.SET_NULL, description="所属项目，为空则属于收件箱"
+    )
+    reminder_at = fields.DatetimeField(null=True, description="提醒时间，仅存储与展示，不做推送")
     is_completed = fields.BooleanField(default=False, description="是否已完成", index=True)
     completed_at = fields.DatetimeField(null=True, description="完成时间")
     user_id = fields.IntField(description="用户ID", index=True)
@@ -77,3 +81,20 @@ class Project(BaseModel, TimestampMixin):
 
     def __str__(self):
         return self.name
+
+
+class SubTask(BaseModel, TimestampMixin):
+    """子任务模型"""
+
+    todo_item = fields.ForeignKeyField(
+        "models.TodoItem", related_name="subtasks", on_delete=fields.CASCADE, description="所属待办事项"
+    )
+    title = fields.CharField(max_length=200, description="子任务标题")
+    is_completed = fields.BooleanField(default=False, description="是否已完成")
+    order = fields.IntField(default=0, description="显示顺序，创建时按序递增赋值")
+
+    class Meta:
+        table = "sub_task"
+
+    def __str__(self):
+        return self.title
