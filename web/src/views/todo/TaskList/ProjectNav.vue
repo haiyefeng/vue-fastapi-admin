@@ -41,10 +41,13 @@
 
 <script setup>
 import { ref, computed, onMounted } from 'vue'
+import { useMessage } from 'naive-ui'
 import api from '@/api'
 import NewProjectModal from './NewProjectModal.vue'
 
 const emit = defineEmits(['select', 'changed'])
+
+const message = useMessage()
 
 const projects = ref([])
 const activeSelection = ref({ type: 'inbox' })
@@ -67,8 +70,13 @@ const isInboxActive = computed(() => activeSelection.value.type === 'inbox')
 const isProjectActive = (id) => activeSelection.value.type === 'project' && activeSelection.value.id === id
 
 const fetchProjects = async () => {
-  const res = await api.getProjects()
-  projects.value = res.data || []
+  try {
+    const res = await api.getProjects()
+    projects.value = res.data || []
+  } catch (error) {
+    console.error('获取项目列表失败:', error)
+    message.error('获取项目列表失败')
+  }
 }
 
 const selectInbox = () => {

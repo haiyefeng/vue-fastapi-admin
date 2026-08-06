@@ -65,8 +65,13 @@ const rules = {
 const categoryOptions = computed(() => categories.value.map((c) => ({ label: c.name, value: c.id })))
 
 const fetchCategories = async () => {
-  const res = await api.getCategories()
-  categories.value = res.data || []
+  try {
+    const res = await api.getCategories()
+    categories.value = res.data || []
+  } catch (error) {
+    console.error('获取分类列表失败:', error)
+    message.error('获取分类列表失败')
+  }
 }
 
 const onUpdateShow = (value) => {
@@ -84,7 +89,11 @@ watch(
 )
 
 const handleSubmit = async () => {
-  await formRef.value?.validate()
+  try {
+    await formRef.value?.validate()
+  } catch {
+    return
+  }
   submitting.value = true
   try {
     const payload = {
