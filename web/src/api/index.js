@@ -1,5 +1,8 @@
 import { request } from '@/utils'
 import todoApi from './todo'
+import projectApi from './project'
+import categoryApi from './category'
+import subtaskApi from './subtask'
 
 export default {
   login: (data) => request.post('/base/access_token', data, { noNeedToken: true }),
@@ -41,5 +44,9 @@ export default {
   // auditlog
   getAuditLogList: (params = {}) => request.get('/auditlog/list', { params }),
   // todo
-  ...todoApi
+  ...todoApi,
+  // project / category / subtask（一期任务体系）
+  ...projectApi,
+  ...categoryApi,
+  ...subtaskApi
 }
