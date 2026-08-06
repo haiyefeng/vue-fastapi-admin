@@ -6,6 +6,7 @@ venv/
 .ruff_cache/
 .pytest_cache/
 migrations/
+.worktrees/
 web/node_modules/
 
 db.sqlite3
