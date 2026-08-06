@@ -10,6 +10,7 @@ from .depts import depts_router
 from .menus import menus_router
 from .project import project_router
 from .roles import roles_router
+from .subtask import subtask_router
 from .todos import todos_router
 from .users import users_router
 
@@ -25,3 +26,4 @@ v1_router.include_router(auditlog_router, prefix="/auditlog", dependencies=[Depe
 v1_router.include_router(todos_router, prefix="/todo", dependencies=[DependPermission])
 v1_router.include_router(category_router, prefix="/category", dependencies=[DependPermission])
 v1_router.include_router(project_router, prefix="/project", dependencies=[DependPermission])
+v1_router.include_router(subtask_router, prefix="/subtask", dependencies=[DependPermission])
