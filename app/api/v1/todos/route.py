@@ -2,15 +2,22 @@ import logging
 from datetime import date
 from typing import List, Optional
 
-from fastapi import APIRouter, Depends, Path, Query, HTTPException
+from fastapi import APIRouter, Depends, HTTPException, Path, Query
 from tortoise.exceptions import DoesNotExist
 
+from app.controllers.subtask import subtask_controller
 from app.controllers.todo import todo_controller
 from app.core.dependency import AuthControl
 from app.models.admin import User
-from app.models.todo import QuadrantType, TodoItem
-from app.schemas.base import Success, SuccessExtra, Fail
-from app.schemas.todo import TodoItemCreate, TodoItemUpdate, TodoItemOut, TodoStatisticsByDate, QuadrantStatistics
+from app.models.todo import TodoItem
+from app.schemas.base import Fail, Success, SuccessExtra
+from app.schemas.todo import (
+    QuadrantStatistics,
+    TodoItemCreate,
+    TodoItemOut,
+    TodoItemUpdate,
+    TodoStatisticsByDate,
+)
 
 logger = logging.getLogger(__name__)
 
@@ -21,14 +28,18 @@ router = APIRouter()
 async def list_todos(
     page: int = Query(1, description="页码"),
     page_size: int = Query(10, description="每页数量"),
-    quadrant_type: Optional[QuadrantType] = Query(None, description="象限类型"),
+    quadrant_type: Optional[str] = Query(None, description="象限类型，多个用逗号分隔"),
     is_completed: Optional[bool] = Query(None, description="是否已完成"),
     start_date: Optional[date] = Query(None, description="开始日期"),
     end_date: Optional[date] = Query(None, description="结束日期"),
+    project_id: Optional[int] = Query(None, description="项目ID"),
+    inbox_only: Optional[bool] = Query(None, description="是否只看收件箱（project_id 为空），优先于 project_id"),
+    sort_by: Optional[str] = Query(None, description="排序字段: due_date/quadrant_type/created_at"),
+    sort_order: Optional[str] = Query("asc", description="排序方向: asc/desc"),
     current_user: User = Depends(AuthControl.is_authed),
 ):
     """
-    获取当前用户的待办事项列表，支持按象限和完成状态筛选
+    获取当前用户的待办事项列表，支持按象限（可多选）、完成状态、项目/收件箱筛选，支持排序
     """
     total, todos = await todo_controller.get_todos_by_user(
         user_id=current_user.id,
@@ -38,12 +49,20 @@ async def list_todos(
         is_completed=is_completed,
         start_date=start_date,
         end_date=end_date,
+        project_id=project_id,
+        inbox_only=inbox_only,
+        sort_by=sort_by,
+        sort_order=sort_order,
     )
+
+    todo_ids = [todo.id for todo in todos]
+    counts = await subtask_controller.get_counts_by_todo_ids(todo_ids)
 
     result = []
     for todo in todos:
         todo_dict = await todo.to_dict()
-        todo_out = TodoItemOut(**todo_dict)
+        total_sub, completed_sub = counts.get(todo.id, (0, 0))
+        todo_out = TodoItemOut(**todo_dict, subtask_total=total_sub, subtask_completed=completed_sub)
         result.append(todo_out.model_dump())
 
     return SuccessExtra(data=result, total=total, page=page, page_size=page_size)
@@ -75,7 +94,9 @@ async def get_todo(
     try:
         todo = await TodoItem.get(id=todo_id, user_id=current_user.id)
         todo_dict = await todo.to_dict()
-        todo_out = TodoItemOut(**todo_dict)
+        counts = await subtask_controller.get_counts_by_todo_ids([todo.id])
+        total_sub, completed_sub = counts.get(todo.id, (0, 0))
+        todo_out = TodoItemOut(**todo_dict, subtask_total=total_sub, subtask_completed=completed_sub)
         return Success(data=todo_out.model_dump())
     except DoesNotExist:
         raise HTTPException(status_code=404, detail="待办事项不存在")
@@ -94,7 +115,9 @@ async def update_todo(
         raise HTTPException(status_code=404, detail="待办事项不存在")
 
     todo_dict = await todo.to_dict()
-    todo_out = TodoItemOut(**todo_dict)
+    counts = await subtask_controller.get_counts_by_todo_ids([todo.id])
+    total_sub, completed_sub = counts.get(todo.id, (0, 0))
+    todo_out = TodoItemOut(**todo_dict, subtask_total=total_sub, subtask_completed=completed_sub)
     return Success(data=todo_out.model_dump())
 
 

@@ -1,12 +1,17 @@
 from datetime import date, datetime, timedelta
-from typing import List, Optional, Dict, Tuple, Any
+from typing import Any, Dict, List, Optional, Tuple
 
 from tortoise.expressions import Q
 from tortoise.functions import Count
 
 from app.core.crud import CRUDBase
-from app.models.todo import TodoItem, QuadrantType
-from app.schemas.todo import TodoItemCreate, TodoItemUpdate, QuadrantStatistics, TodoStatisticsByDate
+from app.models.todo import QuadrantType, TodoItem
+from app.schemas.todo import (
+    QuadrantStatistics,
+    TodoItemCreate,
+    TodoItemUpdate,
+    TodoStatisticsByDate,
+)
 
 
 class TodoController(CRUDBase[TodoItem, TodoItemCreate, TodoItemUpdate]):
@@ -25,16 +30,22 @@ class TodoController(CRUDBase[TodoItem, TodoItemCreate, TodoItemUpdate]):
         user_id: int,
         page: int = 1,
         page_size: int = 20,
-        quadrant_type: Optional[QuadrantType] = None,
+        quadrant_type: Optional[str] = None,
         is_completed: Optional[bool] = None,
         start_date: Optional[date] = None,
         end_date: Optional[date] = None,
+        project_id: Optional[int] = None,
+        inbox_only: Optional[bool] = None,
+        sort_by: Optional[str] = None,
+        sort_order: Optional[str] = None,
     ) -> Tuple[int, List[TodoItem]]:
         """获取用户的待办事项列表"""
         query = Q(user_id=user_id)
 
         if quadrant_type:
-            query &= Q(quadrant_type=quadrant_type)
+            quadrants = [q.strip() for q in quadrant_type.split(",") if q.strip()]
+            if quadrants:
+                query &= Q(quadrant_type__in=quadrants)
 
         if is_completed is not None:
             query &= Q(is_completed=is_completed)
@@ -45,7 +56,19 @@ class TodoController(CRUDBase[TodoItem, TodoItemCreate, TodoItemUpdate]):
         if end_date:
             query &= Q(created_at__lte=datetime.combine(end_date, datetime.max.time()))
 
-        return await self.list(page=page, page_size=page_size, search=query, order=["-created_at"])
+        if inbox_only:
+            query &= Q(project_id__isnull=True)
+        elif project_id is not None:
+            query &= Q(project_id=project_id)
+
+        if sort_by is None:
+            order = ["-created_at"]
+        else:
+            field = sort_by if sort_by in ("due_date", "quadrant_type", "created_at") else "created_at"
+            direction = "-" if sort_order == "desc" else ""
+            order = [f"{direction}{field}"]
+
+        return await self.list(page=page, page_size=page_size, search=query, order=order)
 
     async def update_todo(self, todo_id: int, obj_in: TodoItemUpdate, user_id: int) -> Optional[TodoItem]:
         """更新待办事项"""

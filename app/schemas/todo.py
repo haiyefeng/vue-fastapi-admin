@@ -1,5 +1,5 @@
 from datetime import date, datetime
-from typing import Optional, Dict, List
+from typing import Dict, List, Optional
 
 from pydantic import BaseModel, Field
 
@@ -13,6 +13,8 @@ class TodoItemBase(BaseModel):
     quadrant_type: QuadrantType = Field(..., description="象限类型")
     due_date: Optional[datetime] = Field(None, description="截止时间")
     notes: Optional[str] = Field(None, description="备注信息")
+    project_id: Optional[int] = Field(None, description="所属项目ID，为空则属于收件箱")
+    reminder_at: Optional[datetime] = Field(None, description="提醒时间，仅存储与展示，不做推送")
 
     class Config:
         json_encoders = {date: lambda v: v.isoformat() if v else None}
@@ -33,6 +35,8 @@ class TodoItemUpdate(BaseModel):
     due_date: Optional[datetime] = Field(None, description="截止时间")
     notes: Optional[str] = Field(None, description="备注信息")
     is_completed: Optional[bool] = Field(None, description="是否已完成")
+    project_id: Optional[int] = Field(None, description="所属项目ID，传 null 可退回收件箱")
+    reminder_at: Optional[datetime] = Field(None, description="提醒时间")
 
 
 class TodoItemOut(TodoItemBase):
@@ -43,6 +47,8 @@ class TodoItemOut(TodoItemBase):
     completed_at: Optional[datetime] = Field(None, description="完成时间")
     created_at: datetime
     updated_at: datetime
+    subtask_total: int = Field(0, description="子任务总数")
+    subtask_completed: int = Field(0, description="已完成子任务数")
 
     class Config:
         from_attributes = True
