@@ -9,10 +9,21 @@
     <template v-for="group in groupedProjects" :key="group.name">
       <div class="nav-group">{{ group.name }}</div>
       <ul class="nav-list">
-        <li v-for="project in group.projects" :key="project.id">
-          <a href="javascript:;" :class="{ active: isProjectActive(project.id) }" @click="selectProject(project)">
+        <li v-for="project in group.projects" :key="project.id" class="nav-item">
+          <a
+            href="javascript:;"
+            :class="{ active: isProjectActive(project.id) }"
+            @click="selectProject(project)"
+          >
             {{ project.name }}
           </a>
+          <n-dropdown
+            trigger="click"
+            :options="activeProjectOptions"
+            @select="(key) => handleProjectAction(key, project)"
+          >
+            <button class="nav-item-more" @click.stop>⋯</button>
+          </n-dropdown>
         </li>
       </ul>
     </template>
@@ -20,10 +31,21 @@
     <n-collapse v-if="archivedProjects.length" class="archived-collapse">
       <n-collapse-item title="已归档" name="archived">
         <ul class="nav-list">
-          <li v-for="project in archivedProjects" :key="project.id">
-            <a href="javascript:;" :class="{ active: isProjectActive(project.id) }" @click="selectProject(project)">
+          <li v-for="project in archivedProjects" :key="project.id" class="nav-item">
+            <a
+              href="javascript:;"
+              :class="{ active: isProjectActive(project.id) }"
+              @click="selectProject(project)"
+            >
               {{ project.name }}
             </a>
+            <n-dropdown
+              trigger="click"
+              :options="archivedProjectOptions"
+              @select="(key) => handleProjectAction(key, project)"
+            >
+              <button class="nav-item-more" @click.stop>⋯</button>
+            </n-dropdown>
           </li>
         </ul>
       </n-collapse-item>
@@ -41,13 +63,23 @@
 
 <script setup>
 import { ref, computed, onMounted } from 'vue'
-import { useMessage } from 'naive-ui'
+import { useMessage, useDialog } from 'naive-ui'
 import api from '@/api'
 import NewProjectModal from './NewProjectModal.vue'
 
 const emit = defineEmits(['select', 'changed'])
 
 const message = useMessage()
+const dialog = useDialog()
+
+const activeProjectOptions = [
+  { label: '归档', key: 'archive' },
+  { label: '删除', key: 'delete' },
+]
+const archivedProjectOptions = [
+  { label: '取消归档', key: 'unarchive' },
+  { label: '删除', key: 'delete' },
+]
 
 const projects = ref([])
 const activeSelection = ref({ type: 'inbox' })
@@ -67,7 +99,8 @@ const groupedProjects = computed(() => {
 })
 
 const isInboxActive = computed(() => activeSelection.value.type === 'inbox')
-const isProjectActive = (id) => activeSelection.value.type === 'project' && activeSelection.value.id === id
+const isProjectActive = (id) =>
+  activeSelection.value.type === 'project' && activeSelection.value.id === id
 
 const fetchProjects = async () => {
   try {
@@ -95,6 +128,50 @@ const handleCreated = async (project) => {
   selectProject(project)
 }
 
+const setArchived = async (project, isArchived) => {
+  try {
+    await api.updateProject(project.id, { is_archived: isArchived })
+    await fetchProjects()
+    emit('changed')
+  } catch (error) {
+    console.error('更新项目失败:', error)
+    message.error('更新项目失败')
+  }
+}
+
+const deleteProject = (project) => {
+  dialog.warning({
+    title: '确认删除',
+    content: `确定要删除项目「${project.name}」吗？项目内的任务将退回收件箱，不会被删除。`,
+    positiveText: '确定',
+    negativeText: '取消',
+    onPositiveClick: async () => {
+      try {
+        await api.deleteProject(project.id)
+        message.success('删除成功')
+        await fetchProjects()
+        emit('changed')
+        if (isProjectActive(project.id)) {
+          selectInbox()
+        }
+      } catch (error) {
+        console.error('删除项目失败:', error)
+        message.error('删除失败')
+      }
+    },
+  })
+}
+
+const handleProjectAction = (key, project) => {
+  if (key === 'archive') {
+    setArchived(project, true)
+  } else if (key === 'unarchive') {
+    setArchived(project, false)
+  } else if (key === 'delete') {
+    deleteProject(project)
+  }
+}
+
 defineExpose({ refresh: fetchProjects })
 
 onMounted(async () => {
@@ -120,11 +197,42 @@ onMounted(async () => {
   font-size: 0.92em;
   border-radius: 4px;
   color: inherit;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
 }
 .nav-list a.active {
   background: rgba(24, 144, 255, 0.12);
   color: #1890ff;
   font-weight: 500;
+}
+.nav-item {
+  display: flex;
+  align-items: center;
+}
+.nav-item a {
+  flex: 1;
+  min-width: 0;
+}
+.nav-item-more {
+  flex-shrink: 0;
+  visibility: hidden;
+  border: none;
+  background: transparent;
+  cursor: pointer;
+  padding: 0.2em 0.5em;
+  margin-right: 0.4em;
+  border-radius: 4px;
+  color: inherit;
+  opacity: 0.6;
+  line-height: 1;
+}
+.nav-item:hover .nav-item-more {
+  visibility: visible;
+}
+.nav-item-more:hover {
+  opacity: 1;
+  background: rgba(128, 128, 128, 0.15);
 }
 .nav-group {
   font-size: 0.8em;

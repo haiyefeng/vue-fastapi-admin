@@ -236,9 +236,10 @@ async def init_menus():
 
 
 async def init_apis():
-    apis = await api_controller.model.exists()
-    if not apis:
-        await api_controller.refresh_api()
+    # refresh_api() is idempotent (upserts current routes, drops stale ones), so it must
+    # run on every startup — otherwise newly added protected routes on an already-deployed
+    # database never get registered until the Api table is manually cleared.
+    await api_controller.refresh_api()
 
 
 async def init_db():
