@@ -209,7 +209,7 @@ const groupedTodos = computed(() => {
       continue
     }
     const due = new Date(todo.due_date).getTime()
-    if (due < today && !todo.is_completed) {
+    if (due < today) {
       overdue.push(todo)
     } else if (due >= today && due < tomorrow) {
       todayItems.push(todo)
