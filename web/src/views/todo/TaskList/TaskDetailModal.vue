@@ -136,7 +136,7 @@ const loadDetail = async () => {
       reminder_at: toDateValue(todo.reminder_at),
       quadrant_type: todo.quadrant_type
     }
-    subtasks.value = subtaskRes.data || []
+    subtasks.value = (subtaskRes.data || []).map((sub) => ({ ...sub, _originalTitle: sub.title }))
   } catch (error) {
     console.error('获取任务详情失败:', error)
     message.error('获取任务详情失败')
@@ -208,8 +208,10 @@ const toggleSubtask = async (sub, checked) => {
 }
 
 const renameSubtask = async (sub) => {
+  if (sub.title === sub._originalTitle) return
   try {
     await api.updateSubtask(sub.id, { title: sub.title })
+    sub._originalTitle = sub.title
   } catch (error) {
     console.error('重命名子任务失败:', error)
     message.error('重命名子任务失败')
@@ -231,7 +233,7 @@ const addSubtask = async () => {
   if (!title) return
   try {
     const res = await api.createSubtask({ todo_item_id: props.todoId, title })
-    subtasks.value.push(res.data)
+    subtasks.value.push({ ...res.data, _originalTitle: res.data.title })
     newSubtaskTitle.value = ''
   } catch (error) {
     console.error('添加子任务失败:', error)

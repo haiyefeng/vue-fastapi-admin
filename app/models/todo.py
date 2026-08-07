@@ -21,7 +21,11 @@ class TodoItem(BaseModel, TimestampMixin):
     due_date = fields.DatetimeField(null=True, description="截止时间")
     notes = fields.TextField(null=True, description="备注信息")
     project = fields.ForeignKeyField(
-        "models.Project", related_name="tasks", null=True, on_delete=fields.SET_NULL, description="所属项目，为空则属于收件箱"
+        "models.Project",
+        related_name="tasks",
+        null=True,
+        on_delete=fields.SET_NULL,
+        description="所属项目，为空则属于收件箱",
     )
     reminder_at = fields.DatetimeField(null=True, description="提醒时间，仅存储与展示，不做推送")
     is_completed = fields.BooleanField(default=False, description="是否已完成", index=True)

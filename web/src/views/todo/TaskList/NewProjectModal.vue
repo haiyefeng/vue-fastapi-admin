@@ -22,7 +22,7 @@
         <n-input v-model:value="form.new_category_name" placeholder="或输入新分类名称（留空则用上面的选择）" />
       </n-form-item>
       <n-form-item label="颜色">
-        <n-color-picker v-model:value="form.color_hex" :show-alpha="false" />
+        <n-color-picker v-model:value="form.color_hex" :show-alpha="false" :modes="['hex']" />
       </n-form-item>
     </n-form>
     <template #footer>

@@ -130,8 +130,13 @@ const quickAddPlaceholder = computed(() =>
 )
 
 const fetchProjectList = async () => {
-  const res = await api.getProjects()
-  projectList.value = res.data || []
+  try {
+    const res = await api.getProjects()
+    projectList.value = res.data || []
+  } catch (error) {
+    console.error('获取项目列表失败:', error)
+    message.error('获取项目列表失败')
+  }
 }
 
 const fetchTodos = async () => {
@@ -150,8 +155,13 @@ const fetchTodos = async () => {
   if (filterStatus.value === 'completed') params.is_completed = true
   if (filterQuadrants.value.length) params.quadrant_type = filterQuadrants.value.join(',')
 
-  const res = await api.getTodos(params)
-  todos.value = res.data || []
+  try {
+    const res = await api.getTodos(params)
+    todos.value = res.data || []
+  } catch (error) {
+    console.error('获取任务列表失败:', error)
+    message.error('获取任务列表失败')
+  }
 }
 
 const handleSelect = (payload) => {
@@ -164,15 +174,28 @@ const handleQuickAdd = async () => {
   if (!title) return
   const payload = { title, quadrant_type: 'not_urgent_not_important' }
   if (selection.value.type === 'project') payload.project_id = selection.value.id
-  await api.createTodo(payload)
-  quickAddTitle.value = ''
-  message.success('已添加')
-  fetchTodos()
+  try {
+    await api.createTodo(payload)
+    quickAddTitle.value = ''
+    message.success('已添加')
+    fetchTodos()
+  } catch (error) {
+    console.error('添加任务失败:', error)
+    message.error('添加任务失败')
+  }
 }
 
 const toggleComplete = async (todo, checked) => {
-  await api.updateTodo(todo.id, { is_completed: checked })
-  fetchTodos()
+  const previous = todo.is_completed
+  todo.is_completed = checked
+  try {
+    await api.updateTodo(todo.id, { is_completed: checked })
+    fetchTodos()
+  } catch (error) {
+    console.error('更新任务状态失败:', error)
+    message.error('更新任务状态失败')
+    todo.is_completed = previous
+  }
 }
 
 const openDetail = (todoId) => {

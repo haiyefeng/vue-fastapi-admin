@@ -81,3 +81,38 @@ async def test_list_includes_subtask_counts(client, test_user):
     item = next(t for t in resp.json()["data"] if t["title"] == "带子任务")
     assert item["subtask_total"] == 2
     assert item["subtask_completed"] == 1
+
+
+async def test_create_todo_with_other_user_project_id_returns_404(client, test_user):
+    """cross-user ownership check: create todo with a project_id owned by another user"""
+    from app.models.admin import User
+
+    other_user = await User.create(username="other", email="other@example.com", password="x", is_superuser=True)
+    other_project = await Project.create(user_id=other_user.id, name="他人的项目")
+
+    resp = await client.post(
+        "/api/v1/todo/create",
+        json={
+            "title": "越权任务",
+            "quadrant_type": "not_urgent_not_important",
+            "project_id": other_project.id,
+        },
+    )
+    assert resp.status_code == 404
+
+
+async def test_update_todo_with_other_user_project_id_returns_404(client, test_user):
+    """cross-user ownership check: update todo to link a project_id owned by another user"""
+    from app.models.admin import User
+
+    other_user = await User.create(username="other", email="other@example.com", password="x", is_superuser=True)
+    other_project = await Project.create(user_id=other_user.id, name="他人的项目")
+    todo = await TodoItem.create(
+        title="正常任务", quadrant_type=QuadrantType.NOT_URGENT_NOT_IMPORTANT, user_id=test_user.id
+    )
+
+    resp = await client.post(
+        "/api/v1/todo/update",
+        json={"id": todo.id, "project_id": other_project.id},
+    )
+    assert resp.status_code == 404

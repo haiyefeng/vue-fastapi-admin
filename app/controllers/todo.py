@@ -1,11 +1,12 @@
 from datetime import date, datetime, timedelta
 from typing import Any, Dict, List, Optional, Tuple
 
+from fastapi import HTTPException
 from tortoise.expressions import Q
 from tortoise.functions import Count
 
 from app.core.crud import CRUDBase
-from app.models.todo import QuadrantType, TodoItem
+from app.models.todo import Project, QuadrantType, TodoItem
 from app.schemas.todo import (
     QuadrantStatistics,
     TodoItemCreate,
@@ -18,8 +19,17 @@ class TodoController(CRUDBase[TodoItem, TodoItemCreate, TodoItemUpdate]):
     def __init__(self):
         super().__init__(model=TodoItem)
 
+    async def _validate_project(self, project_id: Optional[int], user_id: int) -> None:
+        """确保 project_id 存在且属于当前用户，否则拒绝而不是让外键约束在 DB 层报错"""
+        if project_id is None:
+            return
+        exists = await Project.filter(id=project_id, user_id=user_id).exists()
+        if not exists:
+            raise HTTPException(status_code=404, detail="项目不存在")
+
     async def create_todo(self, obj_in: TodoItemCreate, user_id: int) -> TodoItem:
         """创建待办事项"""
+        await self._validate_project(obj_in.project_id, user_id)
         todo_dict = obj_in.model_dump()
         todo = TodoItem(**todo_dict, user_id=user_id)
         await todo.save()
@@ -75,6 +85,9 @@ class TodoController(CRUDBase[TodoItem, TodoItemCreate, TodoItemUpdate]):
         todo = await self.model.filter(id=todo_id, user_id=user_id).first()
         if not todo:
             return None
+
+        if "project_id" in obj_in.model_fields_set:
+            await self._validate_project(obj_in.project_id, user_id)
 
         update_data = obj_in.model_dump(exclude_unset=True)
 

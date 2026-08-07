@@ -60,7 +60,9 @@ class ProjectController(CRUDBase[Project, ProjectCreate, ProjectUpdate]):
             # Verify the category belongs to the current user or is system-predefined
             from tortoise.expressions import Q
 
-            category = await Category.filter(Q(id=category_id, user_id=user_id) | Q(id=category_id, user_id__isnull=True)).first()
+            category = await Category.filter(
+                Q(id=category_id, user_id=user_id) | Q(id=category_id, user_id__isnull=True)
+            ).first()
             if category:
                 return category_id
             # Category doesn't belong to user and isn't system-predefined, fall back to category_name
