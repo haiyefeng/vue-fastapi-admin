@@ -71,6 +71,7 @@ dependencies = [
     "uvloop==0.21.0 ; sys_platform != 'win32'",
     "pytest==8.3.4",
     "pytest-asyncio==0.25.2",
+    "asyncmy>=0.2.13",
 ]
 
 [tool.black]
