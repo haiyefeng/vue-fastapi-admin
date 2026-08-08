@@ -102,3 +102,22 @@ class SubTask(BaseModel, TimestampMixin):
 
     def __str__(self):
         return self.title
+
+
+class TimeBlock(BaseModel, TimestampMixin):
+    """时间块模型：一个待办事项可以有多个时间块，用于日历排程"""
+
+    todo_item = fields.ForeignKeyField(
+        "models.TodoItem", related_name="time_blocks", on_delete=fields.CASCADE, description="所属待办事项"
+    )
+    user = fields.ForeignKeyField(
+        "models.User", related_name="time_blocks", description="所属用户，冗余存储，按用户+日期范围直查"
+    )
+    start_time = fields.DatetimeField(description="开始时间")
+    end_time = fields.DatetimeField(description="结束时间")
+
+    class Meta:
+        table = "time_block"
+
+    def __str__(self):
+        return f"{self.start_time} - {self.end_time}"
