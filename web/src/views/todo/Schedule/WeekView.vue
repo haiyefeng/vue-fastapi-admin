@@ -52,6 +52,7 @@
             class="event-block"
             :style="eventBlockStyle(block)"
             :title="eventBlockTitle(block)"
+            @mousedown.stop
             @click.stop="$emit('edit-todo', block.todo_item_id)"
           >
             {{ formatMin(block.startMin) }} {{ block.title }}
@@ -273,6 +274,7 @@ const nowLineTop = computed(() => {
 })
 
 const shiftWeek = (delta) => {
+  clearSelection()
   const d = new Date(weekStart.value)
   d.setDate(d.getDate() + delta * 7)
   weekStart.value = d

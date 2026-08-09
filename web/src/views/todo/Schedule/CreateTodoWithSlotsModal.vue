@@ -74,9 +74,17 @@ const formatRange = (r) => {
 
 const minutesToDate = (baseDate, minutes) => {
   const d = new Date(baseDate)
-  d.setHours(Math.floor(minutes / 60), minutes % 60, 0, 0)
+  if (minutes >= 1440) {
+    d.setHours(23, 59, 59, 0)
+  } else {
+    d.setHours(Math.floor(minutes / 60), minutes % 60, 0, 0)
+  }
   return d
 }
+
+const pad2 = (n) => String(n).padStart(2, '0')
+const toLocalIsoString = (d) =>
+  `${d.getFullYear()}-${pad2(d.getMonth() + 1)}-${pad2(d.getDate())}T${pad2(d.getHours())}:${pad2(d.getMinutes())}:${pad2(d.getSeconds())}`
 
 const handleSubmit = async () => {
   const title = form.value.title.trim()
@@ -95,8 +103,8 @@ const handleSubmit = async () => {
       quadrant_type: form.value.quadrant_type,
       notes: form.value.notes || null,
       time_blocks: props.ranges.map((r) => ({
-        start_time: minutesToDate(r.date, r.start).toISOString(),
-        end_time: minutesToDate(r.date, r.end).toISOString()
+        start_time: toLocalIsoString(minutesToDate(r.date, r.start)),
+        end_time: toLocalIsoString(minutesToDate(r.date, r.end))
       }))
     }
     const res = await api.createTodo(payload)
