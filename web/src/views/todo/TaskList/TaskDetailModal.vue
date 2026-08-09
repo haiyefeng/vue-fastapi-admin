@@ -57,6 +57,17 @@
           <n-button type="primary" style="margin-left: 0.5em" @click="addSubtask">添加</n-button>
         </div>
       </section>
+
+      <n-divider />
+
+      <section>
+        <h4 style="font-size: 1em; font-weight: 600; margin-bottom: 0.6em">已排程时间</h4>
+        <div v-if="!timeBlocks.length" style="font-size: 0.85em; opacity: 0.6">暂无排程，可在日历页拖拽安排时间</div>
+        <div v-for="block in timeBlocks" :key="block.id" class="timeblock-row">
+          <span>{{ formatTimeBlock(block) }}</span>
+          <n-button text type="error" @click="removeTimeBlock(block)">删除</n-button>
+        </div>
+      </section>
     </n-spin>
 
     <template #footer>
@@ -90,6 +101,7 @@ const loading = ref(false)
 const saving = ref(false)
 const subtasks = ref([])
 const newSubtaskTitle = ref('')
+const timeBlocks = ref([])
 
 const form = ref({
   title: '',
@@ -126,7 +138,11 @@ const loadDetail = async () => {
   if (!props.todoId) return
   loading.value = true
   try {
-    const [todoRes, subtaskRes] = await Promise.all([api.getTodoById(props.todoId), api.getSubtasks(props.todoId)])
+    const [todoRes, subtaskRes, timeBlockRes] = await Promise.all([
+      api.getTodoById(props.todoId),
+      api.getSubtasks(props.todoId),
+      api.getTimeBlocks({ todo_item_id: props.todoId })
+    ])
     const todo = todoRes.data
     form.value = {
       title: todo.title,
@@ -137,6 +153,7 @@ const loadDetail = async () => {
       quadrant_type: todo.quadrant_type
     }
     subtasks.value = (subtaskRes.data || []).map((sub) => ({ ...sub, _originalTitle: sub.title }))
+    timeBlocks.value = timeBlockRes.data || []
   } catch (error) {
     console.error('获取任务详情失败:', error)
     message.error('获取任务详情失败')
@@ -240,12 +257,33 @@ const addSubtask = async () => {
     message.error('添加子任务失败')
   }
 }
+
+const formatTimeBlock = (block) => {
+  const start = new Date(block.start_time)
+  const end = new Date(block.end_time)
+  const pad = (n) => String(n).padStart(2, '0')
+  const dateLabel = `${start.getMonth() + 1}月${start.getDate()}日`
+  const timeLabel = `${pad(start.getHours())}:${pad(start.getMinutes())}–${pad(end.getHours())}:${pad(end.getMinutes())}`
+  return `${dateLabel} ${timeLabel}`
+}
+
+const removeTimeBlock = async (block) => {
+  try {
+    await api.deleteTimeBlock(block.id)
+    timeBlocks.value = timeBlocks.value.filter((b) => b.id !== block.id)
+  } catch (error) {
+    console.error('删除时间块失败:', error)
+    message.error('删除时间块失败')
+  }
+}
 </script>
 
 <style scoped>
-.subtask-row {
+.subtask-row,
+.timeblock-row {
   display: flex;
   align-items: center;
+  justify-content: space-between;
   padding: 0.3em 0;
 }
 .quadrant-dot {
