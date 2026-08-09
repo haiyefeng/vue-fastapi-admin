@@ -28,6 +28,14 @@ class TodoItem(BaseModel, TimestampMixin):
         description="所属项目，为空则属于收件箱",
     )
     reminder_at = fields.DatetimeField(null=True, description="提醒时间，仅存储与展示，不做推送")
+    habit = fields.ForeignKeyField(
+        "models.Habit", related_name="todos", null=True, on_delete=fields.CASCADE,
+        description="所属习惯，非空表示是习惯生成的打卡待办",
+    )
+    generated_date = fields.DateField(
+        null=True,
+        description="习惯待办的所属日期，仅习惯生成的待办有值；用于幂等判断，与用户可改的 due_date 语义分离",
+    )
     is_completed = fields.BooleanField(default=False, description="是否已完成", index=True)
     completed_at = fields.DatetimeField(null=True, description="完成时间")
     user_id = fields.IntField(description="用户ID", index=True)
@@ -121,3 +129,40 @@ class TimeBlock(BaseModel, TimestampMixin):
 
     def __str__(self):
         return f"{self.start_time} - {self.end_time}"
+
+
+class HabitFrequencyType(StrEnum):
+    DAILY = "daily"
+    WEEKLY_DAYS = "weekly_days"  # 每周固定几天，如周一三五
+    WEEKLY_COUNT = "weekly_count"  # 每周任意 N 次（弹性型）
+    INTERVAL_DAYS = "interval_days"  # 每隔 N 天一次
+
+
+class Habit(BaseModel, TimestampMixin):
+    """习惯模型：按频率规则惰性生成带 habit_id 的 TodoItem，勾掉即打卡"""
+
+    user = fields.ForeignKeyField("models.User", related_name="habits", description="所属用户")
+    name = fields.CharField(max_length=100, description="习惯名称")
+    icon = fields.CharField(max_length=50, null=True, description="图标，emoji 或简短文本")
+    color_hex = fields.CharField(max_length=7, null=True, description="颜色代码")
+    frequency_type = fields.CharEnumField(HabitFrequencyType, description="频率类型")
+    frequency_config = fields.JSONField(
+        null=True,
+        description=(
+            'weekly_days: {"days": [1,3,5]}（ISO 星期一=1）；'
+            'weekly_count: {"count": 3}；interval_days: {"interval": 2}；daily 不需要配置'
+        ),
+    )
+    default_quadrant = fields.CharEnumField(
+        QuadrantType, default=QuadrantType.IMPORTANT_NOT_URGENT, description="生成待办的默认象限"
+    )
+    goal_desc = fields.CharField(max_length=100, null=True, description="目标描述，如'30分钟'，仅展示")
+    reminder_time = fields.TimeField(null=True, description="每日提醒时间，写入生成待办的 reminder_at")
+    is_paused = fields.BooleanField(default=False, description="暂停后停止生成新待办，历史保留")
+    is_archived = fields.BooleanField(default=False, description="归档后从主列表隐藏，历史保留")
+
+    class Meta:
+        table = "habit"
+
+    def __str__(self):
+        return self.name
