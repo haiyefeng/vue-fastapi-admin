@@ -11,6 +11,7 @@ from .menus import menus_router
 from .project import project_router
 from .roles import roles_router
 from .subtask import subtask_router
+from .timeblock import timeblock_router
 from .todos import todos_router
 from .users import users_router
 
@@ -27,3 +28,4 @@ v1_router.include_router(todos_router, prefix="/todo", dependencies=[DependPermi
 v1_router.include_router(category_router, prefix="/category", dependencies=[DependPermission])
 v1_router.include_router(project_router, prefix="/project", dependencies=[DependPermission])
 v1_router.include_router(subtask_router, prefix="/subtask", dependencies=[DependPermission])
+v1_router.include_router(timeblock_router, prefix="/timeblock", dependencies=[DependPermission])
