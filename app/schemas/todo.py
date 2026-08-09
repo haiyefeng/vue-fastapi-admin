@@ -6,6 +6,13 @@ from pydantic import BaseModel, Field
 from app.models.todo import QuadrantType
 
 
+class TimeBlockInput(BaseModel):
+    """创建待办事项时可选提交的时间块（不含 todo_item_id，归属由外层待办事项决定）"""
+
+    start_time: datetime = Field(..., description="开始时间")
+    end_time: datetime = Field(..., description="结束时间")
+
+
 class TodoItemBase(BaseModel):
     """待办事项基础模型"""
 
@@ -23,7 +30,7 @@ class TodoItemBase(BaseModel):
 class TodoItemCreate(TodoItemBase):
     """创建待办事项的请求体"""
 
-    pass
+    time_blocks: Optional[List[TimeBlockInput]] = Field(None, description="可选：创建待办的同时提交多个时间块")
 
 
 class TodoItemUpdate(BaseModel):

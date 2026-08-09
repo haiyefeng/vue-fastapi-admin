@@ -1,6 +1,6 @@
 from datetime import datetime
 
-from app.models.todo import Project, QuadrantType, TodoItem
+from app.models.todo import Project, QuadrantType, TimeBlock, TodoItem
 
 
 async def test_create_defaults_to_inbox_when_no_project_given(client):
@@ -116,3 +116,60 @@ async def test_update_todo_with_other_user_project_id_returns_404(client, test_u
         json={"id": todo.id, "project_id": other_project.id},
     )
     assert resp.status_code == 404
+
+
+async def test_create_todo_with_time_blocks(client, test_user):
+    resp = await client.post(
+        "/api/v1/todo/create",
+        json={
+            "title": "团队周会",
+            "quadrant_type": "urgent_important",
+            "time_blocks": [
+                {"start_time": "2026-08-10T09:00:00", "end_time": "2026-08-10T10:00:00"},
+                {"start_time": "2026-08-12T09:00:00", "end_time": "2026-08-12T10:00:00"},
+            ],
+        },
+    )
+    assert resp.status_code == 200
+    todo_id = resp.json()["data"]["id"]
+
+    list_resp = await client.get("/api/v1/timeblock/list", params={"todo_item_id": todo_id})
+    assert len(list_resp.json()["data"]) == 2
+
+
+async def test_create_todo_rejects_time_block_crossing_midnight(client):
+    resp = await client.post(
+        "/api/v1/todo/create",
+        json={
+            "title": "跨天任务",
+            "quadrant_type": "urgent_important",
+            "time_blocks": [{"start_time": "2026-08-10T23:30:00", "end_time": "2026-08-11T00:30:00"}],
+        },
+    )
+    assert resp.status_code == 400
+
+
+async def test_list_unscheduled_only_excludes_scheduled_and_completed(client, test_user):
+    unscheduled = await TodoItem.create(
+        title="未排程任务", quadrant_type=QuadrantType.NOT_URGENT_NOT_IMPORTANT, user_id=test_user.id
+    )
+    scheduled = await TodoItem.create(
+        title="已排程任务", quadrant_type=QuadrantType.NOT_URGENT_NOT_IMPORTANT, user_id=test_user.id
+    )
+    await TimeBlock.create(
+        todo_item_id=scheduled.id,
+        user_id=test_user.id,
+        start_time=datetime(2026, 8, 10, 9, 0),
+        end_time=datetime(2026, 8, 10, 10, 0),
+    )
+    await TodoItem.create(
+        title="已完成任务",
+        quadrant_type=QuadrantType.NOT_URGENT_NOT_IMPORTANT,
+        user_id=test_user.id,
+        is_completed=True,
+    )
+    del unscheduled  # 仅用于建库，断言走标题比较
+
+    resp = await client.get("/api/v1/todo/list", params={"unscheduled_only": True})
+    titles = [t["title"] for t in resp.json()["data"]]
+    assert titles == ["未排程任务"]

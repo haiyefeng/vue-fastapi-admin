@@ -6,7 +6,7 @@ from tortoise.expressions import Q
 from tortoise.functions import Count
 
 from app.core.crud import CRUDBase
-from app.models.todo import Project, QuadrantType, TodoItem
+from app.models.todo import Project, QuadrantType, TimeBlock, TodoItem
 from app.schemas.todo import (
     QuadrantStatistics,
     TodoItemCreate,
@@ -28,11 +28,26 @@ class TodoController(CRUDBase[TodoItem, TodoItemCreate, TodoItemUpdate]):
             raise HTTPException(status_code=404, detail="项目不存在")
 
     async def create_todo(self, obj_in: TodoItemCreate, user_id: int) -> TodoItem:
-        """创建待办事项"""
+        """创建待办事项，可同时提交多个时间块（周视图拖拽/多选创建）"""
         await self._validate_project(obj_in.project_id, user_id)
-        todo_dict = obj_in.model_dump()
+        if obj_in.time_blocks:
+            for block in obj_in.time_blocks:
+                if block.end_time <= block.start_time:
+                    raise HTTPException(status_code=400, detail="time_blocks 中 end_time 必须晚于 start_time")
+                if block.start_time.date() != block.end_time.date():
+                    raise HTTPException(status_code=400, detail="time_blocks 不能跨天")
+
+        todo_dict = obj_in.model_dump(exclude={"time_blocks"})
         todo = TodoItem(**todo_dict, user_id=user_id)
         await todo.save()
+
+        if obj_in.time_blocks:
+            await TimeBlock.bulk_create(
+                [
+                    TimeBlock(todo_item_id=todo.id, user_id=user_id, start_time=b.start_time, end_time=b.end_time)
+                    for b in obj_in.time_blocks
+                ]
+            )
         return todo
 
     async def get_todos_by_user(
@@ -46,6 +61,7 @@ class TodoController(CRUDBase[TodoItem, TodoItemCreate, TodoItemUpdate]):
         end_date: Optional[date] = None,
         project_id: Optional[int] = None,
         inbox_only: Optional[bool] = None,
+        unscheduled_only: Optional[bool] = None,
         sort_by: Optional[str] = None,
         sort_order: Optional[str] = None,
     ) -> Tuple[int, List[TodoItem]]:
@@ -70,6 +86,14 @@ class TodoController(CRUDBase[TodoItem, TodoItemCreate, TodoItemUpdate]):
             query &= Q(project_id__isnull=True)
         elif project_id is not None:
             query &= Q(project_id=project_id)
+
+        if unscheduled_only:
+            from app.controllers.timeblock import time_block_controller
+
+            scheduled_ids = await time_block_controller.get_scheduled_todo_ids(user_id)
+            query &= Q(is_completed=False)
+            if scheduled_ids:
+                query &= ~Q(id__in=scheduled_ids)
 
         if sort_by is None:
             order = ["-created_at"]

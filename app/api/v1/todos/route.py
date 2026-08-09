@@ -34,12 +34,15 @@ async def list_todos(
     end_date: Optional[date] = Query(None, description="结束日期"),
     project_id: Optional[int] = Query(None, description="项目ID"),
     inbox_only: Optional[bool] = Query(None, description="是否只看收件箱（project_id 为空），优先于 project_id"),
+    unscheduled_only: Optional[bool] = Query(
+        None, description="是否只看未排程任务（无任何时间块的未完成任务），用于日历页未安排面板"
+    ),
     sort_by: Optional[str] = Query(None, description="排序字段: due_date/quadrant_type/created_at"),
     sort_order: Optional[str] = Query("asc", description="排序方向: asc/desc"),
     current_user: User = Depends(AuthControl.is_authed),
 ):
     """
-    获取当前用户的待办事项列表，支持按象限（可多选）、完成状态、项目/收件箱筛选，支持排序
+    获取当前用户的待办事项列表，支持按象限（可多选）、完成状态、项目/收件箱/未排程筛选，支持排序
     """
     total, todos = await todo_controller.get_todos_by_user(
         user_id=current_user.id,
@@ -51,6 +54,7 @@ async def list_todos(
         end_date=end_date,
         project_id=project_id,
         inbox_only=inbox_only,
+        unscheduled_only=unscheduled_only,
         sort_by=sort_by,
         sort_order=sort_order,
     )
