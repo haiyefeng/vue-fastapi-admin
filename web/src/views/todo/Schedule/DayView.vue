@@ -12,7 +12,7 @@
       :style="{ height: 24 * HOUR_PX + 'px' }"
       @dragover.prevent="onDragOver"
       @dragleave="onDragLeave"
-      @drop="onDrop"
+      @drop.prevent="onDrop"
     >
       <div v-for="hh in 24" :key="hh" class="hour-slot" :class="{ 'drop-hint': dropHintHour === hh - 1 }">
         <span class="hour-label">{{ pad(hh - 1) }}:00</span>
@@ -149,6 +149,7 @@ const onDateInput = (evt) => {
 const onDragStart = (todo, evt) => {
   dragged.value = todo
   evt.dataTransfer.effectAllowed = 'move'
+  evt.dataTransfer.setData('text/plain', String(todo.id))
 }
 
 const onDragOver = (evt) => {
