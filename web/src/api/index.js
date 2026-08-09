@@ -3,6 +3,7 @@ import todoApi from './todo'
 import projectApi from './project'
 import categoryApi from './category'
 import subtaskApi from './subtask'
+import timeblockApi from './timeblock'
 
 export default {
   login: (data) => request.post('/base/access_token', data, { noNeedToken: true }),
@@ -48,5 +49,7 @@ export default {
   // project / category / subtask（一期任务体系）
   ...projectApi,
   ...categoryApi,
-  ...subtaskApi
+  ...subtaskApi,
+  // timeblock（二期日历排程）
+  ...timeblockApi,
 }
