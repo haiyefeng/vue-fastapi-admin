@@ -40,7 +40,7 @@ class TimeBlockController(CRUDBase[TimeBlock, TimeBlockCreate, TimeBlockCreate])
         todo = await TodoItem.filter(id=todo_item_id, user_id=user_id).first()
         if not todo:
             return None
-        return await TimeBlock.filter(todo_item_id=todo_item_id).select_related("todo_item").order_by("start_time")
+        return await TimeBlock.filter(todo_item_id=todo_item_id, user_id=user_id).select_related("todo_item").order_by("start_time")
 
     async def delete_time_block(self, time_block_id: int, user_id: int) -> bool:
         deleted_count = await TimeBlock.filter(id=time_block_id, user_id=user_id).delete()
