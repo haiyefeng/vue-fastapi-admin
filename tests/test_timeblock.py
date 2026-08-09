@@ -153,3 +153,19 @@ async def test_list_by_todo_item_id_for_other_user_returns_404(client, test_user
 
     resp = await client.get("/api/v1/timeblock/list", params={"todo_item_id": other_todo.id})
     assert resp.status_code == 404
+
+
+async def test_list_by_date_range_excludes_other_user(client, test_user):
+    from app.models.admin import User
+
+    other_user = await User.create(username="other", email="other@example.com", password="x", is_superuser=True)
+    other_todo = await _create_todo(other_user.id, title="别人的会议")
+    await TimeBlock.create(
+        todo_item_id=other_todo.id,
+        user_id=other_user.id,
+        start_time=datetime(2026, 8, 10, 9, 0),
+        end_time=datetime(2026, 8, 10, 10, 0),
+    )
+
+    resp = await client.get("/api/v1/timeblock/list", params={"start_date": "2026-08-10", "end_date": "2026-08-10"})
+    assert resp.json()["data"] == []

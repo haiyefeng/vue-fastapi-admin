@@ -138,11 +138,7 @@ const loadDetail = async () => {
   if (!props.todoId) return
   loading.value = true
   try {
-    const [todoRes, subtaskRes, timeBlockRes] = await Promise.all([
-      api.getTodoById(props.todoId),
-      api.getSubtasks(props.todoId),
-      api.getTimeBlocks({ todo_item_id: props.todoId })
-    ])
+    const [todoRes, subtaskRes] = await Promise.all([api.getTodoById(props.todoId), api.getSubtasks(props.todoId)])
     const todo = todoRes.data
     form.value = {
       title: todo.title,
@@ -153,7 +149,10 @@ const loadDetail = async () => {
       quadrant_type: todo.quadrant_type
     }
     subtasks.value = (subtaskRes.data || []).map((sub) => ({ ...sub, _originalTitle: sub.title }))
-    timeBlocks.value = timeBlockRes.data || []
+    timeBlocks.value = await api
+      .getTimeBlocks({ todo_item_id: props.todoId })
+      .then((res) => res.data || [])
+      .catch(() => [])
   } catch (error) {
     console.error('获取任务详情失败:', error)
     message.error('获取任务详情失败')

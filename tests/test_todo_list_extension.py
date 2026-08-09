@@ -173,3 +173,28 @@ async def test_list_unscheduled_only_excludes_scheduled_and_completed(client, te
     resp = await client.get("/api/v1/todo/list", params={"unscheduled_only": True})
     titles = [t["title"] for t in resp.json()["data"]]
     assert titles == ["未排程任务"]
+
+
+async def test_unscheduled_only_not_polluted_by_other_user_time_block(client, test_user):
+    """cross-user isolation: another user's TimeBlock must not count as 'scheduled' for test_user's todos"""
+    from app.models.admin import User
+
+    other_user = await User.create(username="other", email="other@example.com", password="x", is_superuser=True)
+    other_todo = await TodoItem.create(
+        title="别人的任务", quadrant_type=QuadrantType.NOT_URGENT_NOT_IMPORTANT, user_id=other_user.id
+    )
+    await TimeBlock.create(
+        todo_item_id=other_todo.id,
+        user_id=other_user.id,
+        start_time=datetime(2026, 8, 10, 9, 0),
+        end_time=datetime(2026, 8, 10, 10, 0),
+    )
+
+    unscheduled = await TodoItem.create(
+        title="我的未排程任务", quadrant_type=QuadrantType.NOT_URGENT_NOT_IMPORTANT, user_id=test_user.id
+    )
+    del unscheduled  # 仅用于建库，断言走标题比较
+
+    resp = await client.get("/api/v1/todo/list", params={"unscheduled_only": True})
+    titles = [t["title"] for t in resp.json()["data"]]
+    assert titles == ["我的未排程任务"]

@@ -19,7 +19,7 @@
 </template>
 
 <script setup>
-import { ref, onMounted } from 'vue'
+import { ref, onMounted, watch } from 'vue'
 import api from '@/api'
 import WeekView from './WeekView.vue'
 import DayView from './DayView.vue'
@@ -41,6 +41,12 @@ const handleTodoChanged = () => {
   weekViewRef.value?.refresh()
   dayViewRef.value?.refresh()
 }
+
+// 关闭详情弹窗时也刷新日历，避免弹窗内的局部修改（如删除时间块）未触发 @saved/@deleted 时，
+// 色块未从日历上移除
+watch(detailShow, (visible) => {
+  if (!visible) handleTodoChanged()
+})
 
 onMounted(async () => {
   const res = await api.getProjects()
