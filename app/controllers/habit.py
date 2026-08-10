@@ -17,7 +17,9 @@ class HabitController(CRUDBase[Habit, HabitCreate, HabitUpdate]):
         if frequency_type == HabitFrequencyType.WEEKLY_DAYS:
             days = config.get("days")
             if not days or not isinstance(days, list) or not all(isinstance(d, int) and 1 <= d <= 7 for d in days):
-                raise HTTPException(status_code=400, detail="weekly_days 类型需要 frequency_config.days 为 1-7 的整数列表")
+                raise HTTPException(
+                    status_code=400, detail="weekly_days 类型需要 frequency_config.days 为 1-7 的整数列表"
+                )
         elif frequency_type == HabitFrequencyType.WEEKLY_COUNT:
             count = config.get("count")
             if not isinstance(count, int) or count < 1:
@@ -64,9 +66,11 @@ class HabitController(CRUDBase[Habit, HabitCreate, HabitUpdate]):
 
             if habit.is_paused:
                 data["today_todo_id"] = None
+                data["today_completed"] = None
             else:
                 todo = await TodoItem.filter(habit_id=habit.id, generated_date=today).first()
                 data["today_todo_id"] = todo.id if todo else None
+                data["today_completed"] = todo.is_completed if todo else False
 
             if habit.frequency_type == HabitFrequencyType.WEEKLY_COUNT:
                 data["streak"] = None

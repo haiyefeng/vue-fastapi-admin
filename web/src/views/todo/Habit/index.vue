@@ -28,8 +28,13 @@
           </div>
         </div>
         <div class="habit-actions">
-          <n-button size="small" type="primary" :disabled="!habit.today_todo_id" @click="checkIn(habit)">
-            今日打卡
+          <n-button
+            size="small"
+            :type="habit.today_completed ? 'default' : 'primary'"
+            :disabled="!habit.today_todo_id || habit.today_completed"
+            @click="checkIn(habit)"
+          >
+            {{ habit.today_completed ? '已打卡 ✓' : '今日打卡' }}
           </n-button>
           <n-dropdown trigger="click" :options="activeHabitOptions" @select="(key) => handleAction(key, habit)">
             <button class="habit-more-btn" @click.stop>⋯</button>
@@ -58,7 +63,7 @@
 </template>
 
 <script setup>
-import { ref, onMounted } from 'vue'
+import { ref, onMounted, onActivated } from 'vue'
 import { useMessage, useDialog } from 'naive-ui'
 import api from '@/api'
 import HabitFormModal from './HabitFormModal.vue'
@@ -180,6 +185,7 @@ const handleAction = (key, habit) => {
 }
 
 onMounted(fetchAll)
+onActivated(fetchAll)
 </script>
 
 <style scoped>

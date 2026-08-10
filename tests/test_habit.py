@@ -64,9 +64,7 @@ async def test_update_habit_changing_frequency_type_revalidates_config(client):
     create_resp = await client.post("/api/v1/habit/create", json={"name": "喝水", "frequency_type": "daily"})
     habit_id = create_resp.json()["data"]["id"]
 
-    resp = await client.post(
-        "/api/v1/habit/update", json={"id": habit_id, "frequency_type": "weekly_count"}
-    )
+    resp = await client.post("/api/v1/habit/update", json={"id": habit_id, "frequency_type": "weekly_count"})
     assert resp.status_code == 400
 
 
@@ -83,9 +81,7 @@ async def test_delete_nonexistent_habit_returns_404(client):
 
 
 async def test_list_archived_habits(client, test_user):
-    await Habit.create(
-        user_id=test_user.id, name="已归档", frequency_type=HabitFrequencyType.DAILY, is_archived=True
-    )
+    await Habit.create(user_id=test_user.id, name="已归档", frequency_type=HabitFrequencyType.DAILY, is_archived=True)
     await Habit.create(user_id=test_user.id, name="进行中", frequency_type=HabitFrequencyType.DAILY)
 
     resp = await client.get("/api/v1/habit/archived")
@@ -280,14 +276,10 @@ async def test_create_habit_with_reminder_time_returns_200(client):
 
 
 async def test_update_habit_with_reminder_time_returns_200(client):
-    create_resp = await client.post(
-        "/api/v1/habit/create", json={"name": "喝水", "frequency_type": "daily"}
-    )
+    create_resp = await client.post("/api/v1/habit/create", json={"name": "喝水", "frequency_type": "daily"})
     habit_id = create_resp.json()["data"]["id"]
 
-    resp = await client.post(
-        "/api/v1/habit/update", json={"id": habit_id, "reminder_time": "07:30:00"}
-    )
+    resp = await client.post("/api/v1/habit/update", json={"id": habit_id, "reminder_time": "07:30:00"})
     assert resp.status_code == 200
     assert resp.json()["data"]["reminder_time"] == "07:30:00"
 
@@ -367,6 +359,22 @@ async def test_daily_statistics_exclude_habit_todos(client, test_user):
     today_str = date.today().isoformat()
     today_stat = next(s for s in resp.json()["data"] if s["date"] == today_str)
     assert today_stat["urgent_important"] == 1
+
+
+async def test_today_completed_reflects_check_in_state(client, test_user):
+    await Habit.create(user_id=test_user.id, name="晨间阅读", frequency_type=HabitFrequencyType.DAILY)
+
+    resp1 = await client.get("/api/v1/habit/list")
+    data1 = resp1.json()["data"][0]
+    assert data1["today_completed"] is False
+
+    todo_id = data1["today_todo_id"]
+    check_in_resp = await client.post("/api/v1/todo/update", json={"id": todo_id, "is_completed": True})
+    assert check_in_resp.status_code == 200
+
+    resp2 = await client.get("/api/v1/habit/list")
+    data2 = resp2.json()["data"][0]
+    assert data2["today_completed"] is True
 
 
 async def test_todo_list_includes_habit_id(client, test_user):

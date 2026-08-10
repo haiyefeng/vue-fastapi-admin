@@ -29,7 +29,10 @@ class TodoItem(BaseModel, TimestampMixin):
     )
     reminder_at = fields.DatetimeField(null=True, description="提醒时间，仅存储与展示，不做推送")
     habit = fields.ForeignKeyField(
-        "models.Habit", related_name="todos", null=True, on_delete=fields.CASCADE,
+        "models.Habit",
+        related_name="todos",
+        null=True,
+        on_delete=fields.CASCADE,
         description="所属习惯，非空表示是习惯生成的打卡待办",
     )
     generated_date = fields.DateField(

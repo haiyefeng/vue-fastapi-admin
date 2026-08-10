@@ -44,6 +44,7 @@ class HabitOut(BaseModel):
     is_paused: bool
     is_archived: bool
     today_todo_id: Optional[int] = Field(None, description="今天对应的待办ID，Task 3 补上生成检查后才会有值")
+    today_completed: Optional[bool] = Field(None, description="今天对应的待办是否已完成，None 表示今天未生成（暂停中）")
     streak: Optional[int] = Field(None, description="连续天数，定日型才有值，Task 3 补上")
     week_progress: Optional[str] = Field(None, description="本周进度如'1/3'，弹性型才有值，Task 3 补上")
 
