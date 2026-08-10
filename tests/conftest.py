@@ -11,7 +11,7 @@ TEST_DB_URL = "sqlite://:memory:"
 @pytest_asyncio.fixture
 async def db():
     """每个测试用例独立的内存 SQLite 库，不影响本地开发用的真实数据库配置"""
-    await Tortoise.init(db_url=TEST_DB_URL, modules={"models": ["app.models"]})
+    await Tortoise.init(db_url=TEST_DB_URL, modules={"models": ["app.models"]}, timezone="Asia/Shanghai")
     await Tortoise.generate_schemas()
     yield
     await Tortoise.close_connections()

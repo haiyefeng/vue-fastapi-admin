@@ -25,14 +25,14 @@ async def list_habits(current_user: User = Depends(AuthControl.is_authed)):
 @router.get("/archived", summary="获取已归档的习惯列表")
 async def list_archived_habits(current_user: User = Depends(AuthControl.is_authed)):
     habits = await habit_controller.get_archived_habits(current_user.id)
-    result = [HabitOut(**(await h.to_dict())).model_dump() for h in habits]
+    result = [HabitOut(**(await h.to_dict())).model_dump(mode="json") for h in habits]
     return Success(data=result)
 
 
 @router.post("/create", summary="创建习惯")
 async def create_habit(habit_in: HabitCreate, current_user: User = Depends(AuthControl.is_authed)):
     habit = await habit_controller.create_habit(habit_in, current_user.id)
-    return Success(data=HabitOut(**(await habit.to_dict())).model_dump())
+    return Success(data=HabitOut(**(await habit.to_dict())).model_dump(mode="json"))
 
 
 @router.post("/update", summary="更新习惯")
@@ -40,7 +40,7 @@ async def update_habit(habit_in: HabitUpdate, current_user: User = Depends(AuthC
     habit = await habit_controller.update_habit(habit_in.id, habit_in, current_user.id)
     if not habit:
         raise HTTPException(status_code=404, detail="习惯不存在")
-    return Success(data=HabitOut(**(await habit.to_dict())).model_dump())
+    return Success(data=HabitOut(**(await habit.to_dict())).model_dump(mode="json"))
 
 
 @router.delete("/delete", summary="删除习惯（级联删除历史打卡待办）")

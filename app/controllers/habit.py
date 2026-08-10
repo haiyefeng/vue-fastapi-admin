@@ -100,7 +100,15 @@ class HabitController(CRUDBase[Habit, HabitCreate, HabitUpdate]):
             if should_generate:
                 exists = await TodoItem.filter(habit_id=habit.id, generated_date=today).exists()
                 if not exists:
-                    reminder_at = datetime.combine(today, habit.reminder_time) if habit.reminder_time else None
+                    # habit.reminder_time 是从 DB 读回的 TimeField：tortoise 在非 UTC 时区下会给它挂上
+                    # pytz 时区对象作为 tzinfo，但由于没有日期上下文，pytz 会用 LMT（历史时区，Asia/Shanghai
+                    # 为 +8:06 而非 +8:00）兜底，导致 datetime.combine 后的时间被错误偏移几分钟。这里的
+                    # reminder_time 本质是纯挂钟时间，用之前先剥离这个虚假 tzinfo，避免污染 reminder_at。
+                    reminder_at = (
+                        datetime.combine(today, habit.reminder_time.replace(tzinfo=None))
+                        if habit.reminder_time
+                        else None
+                    )
                     await TodoItem.create(
                         title=habit.name,
                         habit_id=habit.id,

@@ -270,6 +270,44 @@ async def test_streak_counts_consecutive_completed_days_and_breaks_on_miss(clien
     assert data["streak"] == 2
 
 
+async def test_create_habit_with_reminder_time_returns_200(client):
+    resp = await client.post(
+        "/api/v1/habit/create",
+        json={"name": "早起", "frequency_type": "daily", "reminder_time": "07:30:00"},
+    )
+    assert resp.status_code == 200
+    assert resp.json()["data"]["reminder_time"] == "07:30:00"
+
+
+async def test_update_habit_with_reminder_time_returns_200(client):
+    create_resp = await client.post(
+        "/api/v1/habit/create", json={"name": "喝水", "frequency_type": "daily"}
+    )
+    habit_id = create_resp.json()["data"]["id"]
+
+    resp = await client.post(
+        "/api/v1/habit/update", json={"id": habit_id, "reminder_time": "07:30:00"}
+    )
+    assert resp.status_code == 200
+    assert resp.json()["data"]["reminder_time"] == "07:30:00"
+
+
+async def test_archived_habit_with_reminder_time_returns_200(client):
+    create_resp = await client.post(
+        "/api/v1/habit/create",
+        json={"name": "早起", "frequency_type": "daily", "reminder_time": "07:30:00"},
+    )
+    habit_id = create_resp.json()["data"]["id"]
+
+    resp = await client.post("/api/v1/habit/update", json={"id": habit_id, "is_archived": True})
+    assert resp.status_code == 200
+
+    resp = await client.get("/api/v1/habit/archived")
+    assert resp.status_code == 200
+    data = resp.json()["data"]
+    assert data[0]["reminder_time"] == "07:30:00"
+
+
 async def test_reminder_time_written_into_generated_todo(client, test_user):
     from datetime import time
 
