@@ -63,7 +63,7 @@
 </template>
 
 <script setup>
-import { ref, onMounted, onActivated } from 'vue'
+import { ref, onActivated } from 'vue'
 import { useMessage, useDialog } from 'naive-ui'
 import api from '@/api'
 import HabitFormModal from './HabitFormModal.vue'
@@ -184,7 +184,8 @@ const handleAction = (key, habit) => {
   }
 }
 
-onMounted(fetchAll)
+// onActivated covers both the initial mount and every KeepAlive re-activation
+// (Vue fires it on first mount too), so a separate onMounted call would double-fetch.
 onActivated(fetchAll)
 </script>
 
