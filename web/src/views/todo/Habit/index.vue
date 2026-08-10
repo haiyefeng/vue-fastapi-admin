@@ -128,7 +128,7 @@ const checkIn = async (habit) => {
   try {
     await api.updateTodo(habit.today_todo_id, { is_completed: true })
     message.success('打卡成功')
-    fetchHabits()
+    fetchAll()
   } catch (error) {
     console.error('打卡失败:', error)
     message.error('打卡失败')
