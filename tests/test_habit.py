@@ -1,6 +1,6 @@
 from datetime import date, datetime, timedelta
 
-from app.models.todo import Habit, HabitFrequencyType, TodoItem
+from app.models.todo import Habit, HabitFrequencyType, QuadrantType, TodoItem
 
 
 async def test_create_daily_habit(client, test_user):
@@ -324,3 +324,57 @@ async def test_reminder_time_written_into_generated_todo(client, test_user):
     assert todo.reminder_at is not None
     assert todo.reminder_at.hour == 7
     assert todo.reminder_at.minute == 30
+
+
+async def test_quadrant_statistics_exclude_habit_todos(client, test_user):
+    habit = await Habit.create(user_id=test_user.id, name="打卡", frequency_type=HabitFrequencyType.DAILY)
+    await TodoItem.create(
+        title="习惯待办",
+        habit_id=habit.id,
+        user_id=test_user.id,
+        quadrant_type=QuadrantType.URGENT_IMPORTANT,
+    )
+    await TodoItem.create(
+        title="普通待办",
+        user_id=test_user.id,
+        quadrant_type=QuadrantType.URGENT_IMPORTANT,
+    )
+
+    resp = await client.get("/api/v1/todo/statistics/quadrant")
+    assert resp.json()["data"]["urgent_important"] == 1
+
+
+async def test_daily_statistics_exclude_habit_todos(client, test_user):
+    habit = await Habit.create(user_id=test_user.id, name="打卡", frequency_type=HabitFrequencyType.DAILY)
+    now = datetime.now()
+    await TodoItem.create(
+        title="习惯待办",
+        habit_id=habit.id,
+        user_id=test_user.id,
+        quadrant_type=QuadrantType.URGENT_IMPORTANT,
+        is_completed=True,
+        completed_at=now,
+    )
+    await TodoItem.create(
+        title="普通待办",
+        user_id=test_user.id,
+        quadrant_type=QuadrantType.URGENT_IMPORTANT,
+        is_completed=True,
+        completed_at=now,
+    )
+
+    resp = await client.get("/api/v1/todo/statistics/daily")
+    today_str = date.today().isoformat()
+    today_stat = next(s for s in resp.json()["data"] if s["date"] == today_str)
+    assert today_stat["urgent_important"] == 1
+
+
+async def test_todo_list_includes_habit_id(client, test_user):
+    habit = await Habit.create(user_id=test_user.id, name="打卡", frequency_type=HabitFrequencyType.DAILY)
+    await TodoItem.create(
+        title="习惯待办", habit_id=habit.id, user_id=test_user.id, quadrant_type=QuadrantType.URGENT_IMPORTANT
+    )
+
+    resp = await client.get("/api/v1/todo/list")
+    item = next(t for t in resp.json()["data"] if t["title"] == "习惯待办")
+    assert item["habit_id"] == habit.id

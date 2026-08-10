@@ -56,6 +56,7 @@ class TodoItemOut(TodoItemBase):
     updated_at: datetime
     subtask_total: int = Field(0, description="子任务总数")
     subtask_completed: int = Field(0, description="已完成子任务数")
+    habit_id: Optional[int] = Field(None, description="所属习惯ID，非空表示是习惯生成的打卡待办")
 
     class Config:
         from_attributes = True
