@@ -4,6 +4,7 @@ import projectApi from './project'
 import categoryApi from './category'
 import subtaskApi from './subtask'
 import timeblockApi from './timeblock'
+import habitApi from './habit'
 
 export default {
   login: (data) => request.post('/base/access_token', data, { noNeedToken: true }),
@@ -52,4 +53,6 @@ export default {
   ...subtaskApi,
   // timeblock（二期日历排程）
   ...timeblockApi,
+  // habit（三期习惯打卡）
+  ...habitApi,
 }
