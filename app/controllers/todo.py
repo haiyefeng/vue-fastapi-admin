@@ -150,7 +150,10 @@ class TodoController(CRUDBase[TodoItem, TodoItemCreate, TodoItemUpdate]):
             # 统计各象限的已完成数量
             for quadrant in QuadrantType:
                 count = await TodoItem.filter(
-                    user_id=user_id, quadrant_type=quadrant, completed_at__gte=day_start, completed_at__lte=day_end,
+                    user_id=user_id,
+                    quadrant_type=quadrant,
+                    completed_at__gte=day_start,
+                    completed_at__lte=day_end,
                     habit_id__isnull=True,
                 ).count()
 
