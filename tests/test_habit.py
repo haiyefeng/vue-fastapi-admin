@@ -1,4 +1,6 @@
-from app.models.todo import Habit, HabitFrequencyType
+from datetime import date, datetime, timedelta
+
+from app.models.todo import Habit, HabitFrequencyType, TodoItem
 
 
 async def test_create_daily_habit(client, test_user):
@@ -110,3 +112,177 @@ async def test_delete_habit_owned_by_other_user_returns_404(client, test_user):
     resp = await client.delete("/api/v1/habit/delete", params={"habit_id": other_habit.id})
     assert resp.status_code == 404
     assert await Habit.filter(id=other_habit.id).count() == 1
+
+
+async def test_daily_habit_generates_and_is_idempotent(client, test_user):
+    habit = await Habit.create(user_id=test_user.id, name="喝水", frequency_type=HabitFrequencyType.DAILY)
+
+    resp1 = await client.get("/api/v1/habit/list")
+    data1 = resp1.json()["data"][0]
+    assert data1["today_todo_id"] is not None
+    assert data1["streak"] == 0
+
+    resp2 = await client.get("/api/v1/habit/list")
+    data2 = resp2.json()["data"][0]
+    assert data2["today_todo_id"] == data1["today_todo_id"]
+
+    assert await TodoItem.filter(habit_id=habit.id).count() == 1
+
+
+async def test_paused_habit_does_not_generate(client, test_user):
+    habit = await Habit.create(
+        user_id=test_user.id, name="暂停中", frequency_type=HabitFrequencyType.DAILY, is_paused=True
+    )
+    resp = await client.get("/api/v1/habit/list")
+    data = resp.json()["data"][0]
+    assert data["today_todo_id"] is None
+    assert await TodoItem.filter(habit_id=habit.id).count() == 0
+
+
+async def test_weekly_days_only_generates_on_matching_weekday(client, test_user):
+    today_weekday = date.today().isoweekday()
+    other_weekday = 1 if today_weekday != 1 else 2
+
+    matching_habit = await Habit.create(
+        user_id=test_user.id,
+        name="今天该做",
+        frequency_type=HabitFrequencyType.WEEKLY_DAYS,
+        frequency_config={"days": [today_weekday]},
+    )
+    non_matching_habit = await Habit.create(
+        user_id=test_user.id,
+        name="今天不该做",
+        frequency_type=HabitFrequencyType.WEEKLY_DAYS,
+        frequency_config={"days": [other_weekday]},
+    )
+
+    await client.get("/api/v1/habit/list")
+
+    assert await TodoItem.filter(habit_id=matching_habit.id).count() == 1
+    assert await TodoItem.filter(habit_id=non_matching_habit.id).count() == 0
+
+
+async def test_interval_days_generates_on_creation_day(client, test_user):
+    habit = await Habit.create(
+        user_id=test_user.id,
+        name="隔天",
+        frequency_type=HabitFrequencyType.INTERVAL_DAYS,
+        frequency_config={"interval": 3},
+    )
+
+    await client.get("/api/v1/habit/list")
+
+    assert await TodoItem.filter(habit_id=habit.id).count() == 1
+
+
+async def test_weekly_count_stops_generating_and_cleans_up_after_quota_met(client, test_user):
+    today = date.today()
+    week_start = today - timedelta(days=today.isoweekday() - 1)
+    week_days = [week_start + timedelta(days=i) for i in range(7)]
+    # 本周内挑三个不是"今天"的日子模拟历史记录——若直接用 week_start/+1/+2，
+    # 当测试恰好跑在周一时 week_start 就等于 today，会跟"今天"的待办撞在一起，测试变得不稳定
+    seed_days = [d for d in week_days if d != today][:3]
+
+    habit = await Habit.create(
+        user_id=test_user.id,
+        name="运动",
+        frequency_type=HabitFrequencyType.WEEKLY_COUNT,
+        frequency_config={"count": 2},
+    )
+    await TodoItem.create(
+        title=habit.name,
+        habit_id=habit.id,
+        user_id=test_user.id,
+        quadrant_type=habit.default_quadrant,
+        generated_date=seed_days[0],
+        is_completed=True,
+    )
+    await TodoItem.create(
+        title=habit.name,
+        habit_id=habit.id,
+        user_id=test_user.id,
+        quadrant_type=habit.default_quadrant,
+        generated_date=seed_days[1],
+        is_completed=True,
+    )
+    stale = await TodoItem.create(
+        title=habit.name,
+        habit_id=habit.id,
+        user_id=test_user.id,
+        quadrant_type=habit.default_quadrant,
+        generated_date=seed_days[2],
+        is_completed=False,
+    )
+
+    resp = await client.get("/api/v1/habit/list")
+    data = resp.json()["data"][0]
+    assert data["week_progress"] == "2/2"
+    assert data["today_todo_id"] is None
+
+    assert await TodoItem.filter(id=stale.id).count() == 0
+
+
+async def test_weekly_count_generates_when_quota_not_met(client, test_user):
+    habit = await Habit.create(
+        user_id=test_user.id,
+        name="运动",
+        frequency_type=HabitFrequencyType.WEEKLY_COUNT,
+        frequency_config={"count": 3},
+    )
+
+    resp = await client.get("/api/v1/habit/list")
+    data = resp.json()["data"][0]
+    assert data["week_progress"] == "0/3"
+    assert data["today_todo_id"] is not None
+
+
+async def test_streak_counts_consecutive_completed_days_and_breaks_on_miss(client, test_user):
+    habit = await Habit.create(user_id=test_user.id, name="阅读", frequency_type=HabitFrequencyType.DAILY)
+    today = date.today()
+
+    await TodoItem.create(
+        title=habit.name,
+        habit_id=habit.id,
+        user_id=test_user.id,
+        quadrant_type=habit.default_quadrant,
+        generated_date=today - timedelta(days=1),
+        is_completed=True,
+    )
+    await TodoItem.create(
+        title=habit.name,
+        habit_id=habit.id,
+        user_id=test_user.id,
+        quadrant_type=habit.default_quadrant,
+        generated_date=today - timedelta(days=2),
+        is_completed=True,
+    )
+    await TodoItem.create(
+        title=habit.name,
+        habit_id=habit.id,
+        user_id=test_user.id,
+        quadrant_type=habit.default_quadrant,
+        generated_date=today - timedelta(days=3),
+        is_completed=False,
+    )
+
+    resp = await client.get("/api/v1/habit/list")
+    data = resp.json()["data"][0]
+    assert data["streak"] == 2
+
+
+async def test_reminder_time_written_into_generated_todo(client, test_user):
+    from datetime import time
+
+    habit = await Habit.create(
+        user_id=test_user.id,
+        name="早起",
+        frequency_type=HabitFrequencyType.DAILY,
+        reminder_time=time(7, 30),
+    )
+    resp = await client.get("/api/v1/habit/list")
+    todo_id = resp.json()["data"][0]["today_todo_id"]
+
+    todo = await TodoItem.get(id=todo_id)
+    assert todo.reminder_at is not None
+    assert todo.reminder_at.hour == 7
+    assert todo.reminder_at.minute == 30

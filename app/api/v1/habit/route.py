@@ -5,7 +5,6 @@ from fastapi import APIRouter, Depends, HTTPException, Query
 from app.controllers.habit import habit_controller
 from app.core.dependency import AuthControl
 from app.models.admin import User
-from app.models.todo import Habit
 from app.schemas.base import Success
 from app.schemas.habit import HabitCreate, HabitOut, HabitUpdate
 
@@ -14,10 +13,12 @@ logger = logging.getLogger(__name__)
 router = APIRouter()
 
 
-@router.get("/list", summary="获取当前用户进行中的习惯列表")
+@router.get("/list", summary="获取当前用户进行中的习惯列表（含今日生成检查）")
 async def list_habits(current_user: User = Depends(AuthControl.is_authed)):
-    habits = await Habit.filter(user_id=current_user.id, is_archived=False).order_by("-created_at")
-    result = [HabitOut(**(await h.to_dict())).model_dump() for h in habits]
+    habits = await habit_controller.list_active_with_status(current_user.id)
+    # mode="json" 让 reminder_time（time 对象，habit.to_dict() 先转成字符串，HabitOut 校验时又还原成
+    # time 对象）序列化为 ISO 字符串，避免 Success 底层的 DateTimeEncoder（只认 date/datetime）报错
+    result = [HabitOut(**h).model_dump(mode="json") for h in habits]
     return Success(data=result)
 
 

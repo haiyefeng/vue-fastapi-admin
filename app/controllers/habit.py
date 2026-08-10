@@ -1,9 +1,10 @@
-from typing import List, Optional
+from datetime import date, datetime, time, timedelta
+from typing import Any, Dict, List, Optional, Tuple
 
 from fastapi import HTTPException
 
 from app.core.crud import CRUDBase
-from app.models.todo import Habit, HabitFrequencyType
+from app.models.todo import Habit, HabitFrequencyType, TodoItem
 from app.schemas.habit import HabitCreate, HabitUpdate
 
 
@@ -50,6 +51,110 @@ class HabitController(CRUDBase[Habit, HabitCreate, HabitUpdate]):
 
     async def get_archived_habits(self, user_id: int) -> List[Habit]:
         return await Habit.filter(user_id=user_id, is_archived=True).order_by("-updated_at")
+
+    async def list_active_with_status(self, user_id: int) -> List[Dict[str, Any]]:
+        """进行中习惯列表，附带今日生成检查、今日待办ID、连续天数/本周进度"""
+        await self.ensure_today_generated(user_id)
+
+        habits = await Habit.filter(user_id=user_id, is_archived=False).order_by("-created_at")
+        today = date.today()
+        result = []
+        for habit in habits:
+            data = await habit.to_dict()
+
+            if habit.is_paused:
+                data["today_todo_id"] = None
+            else:
+                todo = await TodoItem.filter(habit_id=habit.id, generated_date=today).first()
+                data["today_todo_id"] = todo.id if todo else None
+
+            if habit.frequency_type == HabitFrequencyType.WEEKLY_COUNT:
+                data["streak"] = None
+                count = (habit.frequency_config or {}).get("count", 0)
+                completed = await self._completed_this_week(habit.id, today)
+                data["week_progress"] = f"{completed}/{count}"
+            else:
+                data["streak"] = await self._calc_streak(habit, today)
+                data["week_progress"] = None
+
+            result.append(data)
+        return result
+
+    async def ensure_today_generated(self, user_id: int) -> None:
+        """惰性生成检查：为该用户所有生效中的习惯，补上今天该生成但还没生成的打卡待办"""
+        today = date.today()
+        habits = await Habit.filter(user_id=user_id, is_paused=False, is_archived=False)
+
+        for habit in habits:
+            should_generate = await self._should_generate_today(habit, today)
+
+            if habit.frequency_type == HabitFrequencyType.WEEKLY_COUNT and not should_generate:
+                week_start, week_end = self._week_range(today)
+                await TodoItem.filter(
+                    habit_id=habit.id,
+                    is_completed=False,
+                    generated_date__gte=week_start,
+                    generated_date__lte=week_end,
+                ).delete()
+
+            if should_generate:
+                exists = await TodoItem.filter(habit_id=habit.id, generated_date=today).exists()
+                if not exists:
+                    reminder_at = datetime.combine(today, habit.reminder_time) if habit.reminder_time else None
+                    await TodoItem.create(
+                        title=habit.name,
+                        habit_id=habit.id,
+                        user_id=user_id,
+                        quadrant_type=habit.default_quadrant,
+                        generated_date=today,
+                        due_date=datetime.combine(today, time(23, 59, 59)),
+                        reminder_at=reminder_at,
+                    )
+
+    async def _should_generate_today(self, habit: Habit, today: date) -> bool:
+        config = habit.frequency_config or {}
+        if habit.frequency_type == HabitFrequencyType.DAILY:
+            return True
+        if habit.frequency_type == HabitFrequencyType.WEEKLY_DAYS:
+            return today.isoweekday() in config.get("days", [])
+        if habit.frequency_type == HabitFrequencyType.INTERVAL_DAYS:
+            interval = config.get("interval", 1)
+            anchor = habit.created_at.date()
+            return (today - anchor).days % interval == 0
+        if habit.frequency_type == HabitFrequencyType.WEEKLY_COUNT:
+            count = config.get("count", 0)
+            completed = await self._completed_this_week(habit.id, today)
+            return completed < count
+        return False
+
+    async def _completed_this_week(self, habit_id: int, today: date) -> int:
+        week_start, week_end = self._week_range(today)
+        return await TodoItem.filter(
+            habit_id=habit_id, is_completed=True, generated_date__gte=week_start, generated_date__lte=week_end
+        ).count()
+
+    async def _calc_streak(self, habit: Habit, today: date) -> int:
+        streak = 0
+        # 从昨天开始回看：今天的打卡待办可能刚生成、还未完成，不能算作"断签"，
+        # 连续天数只统计已经完整过去的天数
+        cursor = today - timedelta(days=1)
+        for _ in range(3650):  # 防止极端配置导致死循环，最多回看 10 年
+            if not await self._should_generate_today(habit, cursor):
+                cursor -= timedelta(days=1)
+                continue
+            todo = await TodoItem.filter(habit_id=habit.id, generated_date=cursor).first()
+            if todo and todo.is_completed:
+                streak += 1
+                cursor -= timedelta(days=1)
+            else:
+                break
+        return streak
+
+    @staticmethod
+    def _week_range(today: date) -> Tuple[date, date]:
+        week_start = today - timedelta(days=today.isoweekday() - 1)
+        week_end = week_start + timedelta(days=6)
+        return week_start, week_end
 
 
 habit_controller = HabitController()
