@@ -251,6 +251,23 @@ async def init_menus():
                 keepalive=True,
             )
 
+    # 三期习惯打卡：习惯页菜单。独立于上面的判断，保证已经部署过的环境重启后也能自动补上
+    todo_parent_menu = await Menu.filter(name="待办事项").first()
+    if todo_parent_menu:
+        habit_menu = await Menu.filter(name="习惯", parent_id=todo_parent_menu.id).first()
+        if not habit_menu:
+            await Menu.create(
+                menu_type=MenuType.MENU,
+                name="习惯",
+                path="habit",
+                order=2,
+                parent_id=todo_parent_menu.id,
+                icon="material-symbols:sync-outline",
+                is_hidden=False,
+                component="/todo/Habit",
+                keepalive=True,
+            )
+
 
 async def init_apis():
     # refresh_api() is idempotent (upserts current routes, drops stale ones), so it must
