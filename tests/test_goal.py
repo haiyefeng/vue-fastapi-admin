@@ -120,3 +120,57 @@ async def test_delete_goal_owned_by_other_user_returns_404(client, test_user):
     resp = await client.delete("/api/v1/goal/delete", params={"goal_id": other_goal.id})
     assert resp.status_code == 404
     assert await Goal.filter(id=other_goal.id).count() == 1
+
+
+async def test_get_goal_detail_returns_linked_tasks_and_habits(client, test_user):
+    goal = await Goal.create(user_id=test_user.id, name="React 学习计划")
+    await TodoItem.create(
+        title="完成基础课程", quadrant_type=QuadrantType.NOT_URGENT_NOT_IMPORTANT, user_id=test_user.id,
+        goal_id=goal.id, is_completed=True,
+    )
+    await TodoItem.create(
+        title="搭建实践项目", quadrant_type=QuadrantType.NOT_URGENT_NOT_IMPORTANT, user_id=test_user.id,
+        goal_id=goal.id,
+    )
+    await Habit.create(
+        user_id=test_user.id, name="每日练习 LeetCode", frequency_type=HabitFrequencyType.WEEKLY_DAYS,
+        frequency_config={"days": [1, 3, 5]}, goal_id=goal.id,
+    )
+
+    resp = await client.get("/api/v1/goal/detail", params={"goal_id": goal.id})
+    assert resp.status_code == 200
+    data = resp.json()["data"]
+    assert data["name"] == "React 学习计划"
+    task_titles = {t["title"] for t in data["tasks"]}
+    assert task_titles == {"完成基础课程", "搭建实践项目"}
+    completed_map = {t["title"]: t["is_completed"] for t in data["tasks"]}
+    assert completed_map["完成基础课程"] is True
+    assert completed_map["搭建实践项目"] is False
+    assert len(data["habits"]) == 1
+    assert data["habits"][0]["name"] == "每日练习 LeetCode"
+    assert data["habits"][0]["frequency_type"] == "weekly_days"
+    assert data["habits"][0]["frequency_config"] == {"days": [1, 3, 5]}
+
+
+async def test_get_goal_detail_with_no_linked_items_returns_empty_lists(client, test_user):
+    goal = await Goal.create(user_id=test_user.id, name="空计划")
+
+    resp = await client.get("/api/v1/goal/detail", params={"goal_id": goal.id})
+    data = resp.json()["data"]
+    assert data["tasks"] == []
+    assert data["habits"] == []
+
+
+async def test_get_goal_detail_for_nonexistent_goal_returns_404(client):
+    resp = await client.get("/api/v1/goal/detail", params={"goal_id": 99999})
+    assert resp.status_code == 404
+
+
+async def test_get_goal_detail_owned_by_other_user_returns_404(client, test_user):
+    from app.models.admin import User
+
+    other_user = await User.create(username="other", email="other@example.com", password="x", is_superuser=True)
+    other_goal = await Goal.create(user_id=other_user.id, name="别人的计划")
+
+    resp = await client.get("/api/v1/goal/detail", params={"goal_id": other_goal.id})
+    assert resp.status_code == 404

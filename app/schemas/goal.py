@@ -1,5 +1,5 @@
 from datetime import date
-from typing import Optional
+from typing import List, Optional
 
 from pydantic import BaseModel, Field
 
@@ -33,6 +33,40 @@ class GoalOut(BaseModel):
     task_total: int = Field(0, description="关联任务总数")
     task_completed: int = Field(0, description="关联任务已完成数")
     habit_count: int = Field(0, description="关联习惯数量")
+
+    class Config:
+        from_attributes = True
+
+
+class GoalTaskItem(BaseModel):
+    id: int
+    title: str
+    is_completed: bool
+
+    class Config:
+        from_attributes = True
+
+
+class GoalHabitItem(BaseModel):
+    id: int
+    name: str
+    frequency_type: str
+    frequency_config: Optional[dict] = None
+
+    class Config:
+        from_attributes = True
+
+
+class GoalDetailOut(BaseModel):
+    id: int
+    name: str
+    description: Optional[str] = None
+    target_date: Optional[date] = None
+    category_id: Optional[int] = None
+    category_name: Optional[str] = None
+    is_archived: bool
+    tasks: List[GoalTaskItem] = Field(default_factory=list)
+    habits: List[GoalHabitItem] = Field(default_factory=list)
 
     class Config:
         from_attributes = True

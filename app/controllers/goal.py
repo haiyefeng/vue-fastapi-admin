@@ -88,6 +88,20 @@ class GoalController(CRUDBase[Goal, GoalCreate, GoalUpdate]):
         )
         return {row["goal_id"]: row["cnt"] for row in rows}
 
+    async def get_goal_detail(self, goal_id: int, user_id: int) -> Optional[dict]:
+        goal = await Goal.filter(id=goal_id, user_id=user_id).first()
+        if not goal:
+            return None
+        data = await self.to_out_dict(goal)
+        tasks = await TodoItem.filter(goal_id=goal_id).order_by("created_at")
+        habits = await Habit.filter(goal_id=goal_id).order_by("created_at")
+        data["tasks"] = [{"id": t.id, "title": t.title, "is_completed": t.is_completed} for t in tasks]
+        data["habits"] = [
+            {"id": h.id, "name": h.name, "frequency_type": h.frequency_type, "frequency_config": h.frequency_config}
+            for h in habits
+        ]
+        return data
+
     async def _resolve_category(
         self, user_id: int, category_id: Optional[int], category_name: Optional[str]
     ) -> Optional[int]:

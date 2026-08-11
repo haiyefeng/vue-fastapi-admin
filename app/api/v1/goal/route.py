@@ -6,7 +6,7 @@ from app.controllers.goal import goal_controller
 from app.core.dependency import AuthControl
 from app.models.admin import User
 from app.schemas.base import Success
-from app.schemas.goal import GoalCreate, GoalOut, GoalUpdate
+from app.schemas.goal import GoalCreate, GoalDetailOut, GoalOut, GoalUpdate
 
 logger = logging.getLogger(__name__)
 
@@ -36,6 +36,17 @@ async def list_archived_goals(current_user: User = Depends(AuthControl.is_authed
     goals = await goal_controller.get_archived_goals(current_user.id)
     result = [GoalOut(**(await goal_controller.to_out_dict(g))).model_dump() for g in goals]
     return Success(data=result)
+
+
+@router.get("/detail", summary="获取计划详情（含关联任务/习惯列表）")
+async def get_goal_detail(
+    goal_id: int = Query(..., description="计划ID"),
+    current_user: User = Depends(AuthControl.is_authed),
+):
+    data = await goal_controller.get_goal_detail(goal_id, current_user.id)
+    if not data:
+        raise HTTPException(status_code=404, detail="计划不存在")
+    return Success(data=GoalDetailOut(**data).model_dump())
 
 
 @router.post("/create", summary="创建计划")
