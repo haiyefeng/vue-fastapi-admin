@@ -1,6 +1,6 @@
 from datetime import datetime
 
-from app.models.todo import Project, QuadrantType, TimeBlock, TodoItem
+from app.models.todo import Goal, Project, QuadrantType, TimeBlock, TodoItem
 
 
 async def test_create_defaults_to_inbox_when_no_project_given(client):
@@ -198,3 +198,49 @@ async def test_unscheduled_only_not_polluted_by_other_user_time_block(client, te
     resp = await client.get("/api/v1/todo/list", params={"unscheduled_only": True})
     titles = [t["title"] for t in resp.json()["data"]]
     assert titles == ["我的未排程任务"]
+
+
+async def test_create_todo_with_other_user_goal_id_returns_404(client, test_user):
+    """cross-user ownership check: create todo with a goal_id owned by another user"""
+    from app.models.admin import User
+
+    other_user = await User.create(username="other", email="other@example.com", password="x", is_superuser=True)
+    other_goal = await Goal.create(user_id=other_user.id, name="他人的计划")
+
+    resp = await client.post(
+        "/api/v1/todo/create",
+        json={
+            "title": "越权任务",
+            "quadrant_type": "not_urgent_not_important",
+            "goal_id": other_goal.id,
+        },
+    )
+    assert resp.status_code == 404
+
+
+async def test_update_todo_with_other_user_goal_id_returns_404(client, test_user):
+    """cross-user ownership check: update todo to link a goal_id owned by another user"""
+    from app.models.admin import User
+
+    other_user = await User.create(username="other", email="other@example.com", password="x", is_superuser=True)
+    other_goal = await Goal.create(user_id=other_user.id, name="他人的计划")
+    todo = await TodoItem.create(
+        title="正常任务", quadrant_type=QuadrantType.NOT_URGENT_NOT_IMPORTANT, user_id=test_user.id
+    )
+
+    resp = await client.post(
+        "/api/v1/todo/update",
+        json={"id": todo.id, "goal_id": other_goal.id},
+    )
+    assert resp.status_code == 404
+
+
+async def test_create_todo_with_own_goal_id_succeeds(client, test_user):
+    goal = await Goal.create(user_id=test_user.id, name="我的计划")
+
+    resp = await client.post(
+        "/api/v1/todo/create",
+        json={"title": "关联任务", "quadrant_type": "not_urgent_not_important", "goal_id": goal.id},
+    )
+    assert resp.status_code == 200
+    assert resp.json()["data"]["goal_id"] == goal.id

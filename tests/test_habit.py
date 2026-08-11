@@ -386,3 +386,43 @@ async def test_todo_list_includes_habit_id(client, test_user):
     resp = await client.get("/api/v1/todo/list")
     item = next(t for t in resp.json()["data"] if t["title"] == "习惯待办")
     assert item["habit_id"] == habit.id
+
+
+async def test_create_habit_with_other_user_goal_id_returns_404(client, test_user):
+    from app.models.admin import User
+    from app.models.todo import Goal
+
+    other_user = await User.create(username="other", email="other@example.com", password="x", is_superuser=True)
+    other_goal = await Goal.create(user_id=other_user.id, name="他人的计划")
+
+    resp = await client.post(
+        "/api/v1/habit/create",
+        json={"name": "越权习惯", "frequency_type": "daily", "goal_id": other_goal.id},
+    )
+    assert resp.status_code == 404
+
+
+async def test_update_habit_with_other_user_goal_id_returns_404(client, test_user):
+    from app.models.admin import User
+    from app.models.todo import Goal
+
+    other_user = await User.create(username="other", email="other@example.com", password="x", is_superuser=True)
+    other_goal = await Goal.create(user_id=other_user.id, name="他人的计划")
+    create_resp = await client.post("/api/v1/habit/create", json={"name": "正常习惯", "frequency_type": "daily"})
+    habit_id = create_resp.json()["data"]["id"]
+
+    resp = await client.post("/api/v1/habit/update", json={"id": habit_id, "goal_id": other_goal.id})
+    assert resp.status_code == 404
+
+
+async def test_create_habit_with_own_goal_id_succeeds(client, test_user):
+    from app.models.todo import Goal
+
+    goal = await Goal.create(user_id=test_user.id, name="我的计划")
+
+    resp = await client.post(
+        "/api/v1/habit/create",
+        json={"name": "关联习惯", "frequency_type": "daily", "goal_id": goal.id},
+    )
+    assert resp.status_code == 200
+    assert resp.json()["data"]["goal_id"] == goal.id

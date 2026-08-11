@@ -21,6 +21,7 @@ class TodoItemBase(BaseModel):
     due_date: Optional[datetime] = Field(None, description="截止时间")
     notes: Optional[str] = Field(None, description="备注信息")
     project_id: Optional[int] = Field(None, description="所属项目ID，为空则属于收件箱")
+    goal_id: Optional[int] = Field(None, description="关联的计划ID，为空表示未关联")
     reminder_at: Optional[datetime] = Field(None, description="提醒时间，仅存储与展示，不做推送")
 
     class Config:
@@ -43,6 +44,7 @@ class TodoItemUpdate(BaseModel):
     notes: Optional[str] = Field(None, description="备注信息")
     is_completed: Optional[bool] = Field(None, description="是否已完成")
     project_id: Optional[int] = Field(None, description="所属项目ID，传 null 可退回收件箱")
+    goal_id: Optional[int] = Field(None, description="关联的计划ID，传 null 可解除关联")
     reminder_at: Optional[datetime] = Field(None, description="提醒时间")
 
 

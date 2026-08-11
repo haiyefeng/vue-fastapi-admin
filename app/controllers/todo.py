@@ -6,7 +6,7 @@ from tortoise.expressions import Q
 from tortoise.functions import Count
 
 from app.core.crud import CRUDBase
-from app.models.todo import Project, QuadrantType, TimeBlock, TodoItem
+from app.models.todo import Goal, Project, QuadrantType, TimeBlock, TodoItem
 from app.schemas.todo import (
     QuadrantStatistics,
     TodoItemCreate,
@@ -27,9 +27,18 @@ class TodoController(CRUDBase[TodoItem, TodoItemCreate, TodoItemUpdate]):
         if not exists:
             raise HTTPException(status_code=404, detail="项目不存在")
 
+    async def _validate_goal(self, goal_id: Optional[int], user_id: int) -> None:
+        """确保 goal_id 存在且属于当前用户，否则拒绝而不是让外键约束在 DB 层报错"""
+        if goal_id is None:
+            return
+        exists = await Goal.filter(id=goal_id, user_id=user_id).exists()
+        if not exists:
+            raise HTTPException(status_code=404, detail="计划不存在")
+
     async def create_todo(self, obj_in: TodoItemCreate, user_id: int) -> TodoItem:
         """创建待办事项，可同时提交多个时间块（周视图拖拽/多选创建）"""
         await self._validate_project(obj_in.project_id, user_id)
+        await self._validate_goal(obj_in.goal_id, user_id)
         if obj_in.time_blocks:
             for block in obj_in.time_blocks:
                 if block.end_time <= block.start_time:
@@ -112,6 +121,8 @@ class TodoController(CRUDBase[TodoItem, TodoItemCreate, TodoItemUpdate]):
 
         if "project_id" in obj_in.model_fields_set:
             await self._validate_project(obj_in.project_id, user_id)
+        if "goal_id" in obj_in.model_fields_set:
+            await self._validate_goal(obj_in.goal_id, user_id)
 
         update_data = obj_in.model_dump(exclude_unset=True)
 

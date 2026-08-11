@@ -15,6 +15,7 @@ class HabitCreate(BaseModel):
     default_quadrant: QuadrantType = Field(QuadrantType.IMPORTANT_NOT_URGENT, description="生成待办的默认象限")
     goal_desc: Optional[str] = Field(None, description="目标描述，仅展示")
     reminder_time: Optional[time] = Field(None, description="每日提醒时间")
+    goal_id: Optional[int] = Field(None, description="关联的计划ID，为空表示未关联")
 
 
 class HabitUpdate(BaseModel):
@@ -27,6 +28,7 @@ class HabitUpdate(BaseModel):
     default_quadrant: Optional[QuadrantType] = None
     goal_desc: Optional[str] = None
     reminder_time: Optional[time] = None
+    goal_id: Optional[int] = None
     is_paused: Optional[bool] = None
     is_archived: Optional[bool] = None
 
@@ -41,6 +43,7 @@ class HabitOut(BaseModel):
     default_quadrant: QuadrantType
     goal_desc: Optional[str] = None
     reminder_time: Optional[time] = None
+    goal_id: Optional[int] = None
     is_paused: bool
     is_archived: bool
     today_todo_id: Optional[int] = Field(None, description="今天对应的待办ID，Task 3 补上生成检查后才会有值")
