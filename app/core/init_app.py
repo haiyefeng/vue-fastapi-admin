@@ -268,6 +268,23 @@ async def init_menus():
                 keepalive=True,
             )
 
+    # 三期计划目标：计划页菜单。独立于上面的判断，保证已经部署过的环境重启后也能自动补上
+    todo_parent_menu = await Menu.filter(name="待办事项").first()
+    if todo_parent_menu:
+        goal_menu = await Menu.filter(name="计划", parent_id=todo_parent_menu.id).first()
+        if not goal_menu:
+            await Menu.create(
+                menu_type=MenuType.MENU,
+                name="计划",
+                path="goal",
+                order=3,
+                parent_id=todo_parent_menu.id,
+                icon="material-symbols:flag-outline",
+                is_hidden=False,
+                component="/todo/Goal",
+                keepalive=True,
+            )
+
 
 async def init_apis():
     # refresh_api() is idempotent (upserts current routes, drops stale ones), so it must
