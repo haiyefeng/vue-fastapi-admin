@@ -57,6 +57,8 @@ import api from '@/api'
 import GoalFormModal from './GoalFormModal.vue'
 import GoalDetailModal from './GoalDetailModal.vue'
 
+defineOptions({ name: '计划' })
+
 const message = useMessage()
 const dialog = useDialog()
 
