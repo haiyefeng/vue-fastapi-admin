@@ -39,6 +39,10 @@ class TodoItem(BaseModel, TimestampMixin):
         null=True,
         description="习惯待办的所属日期，仅习惯生成的待办有值；用于幂等判断，与用户可改的 due_date 语义分离",
     )
+    goal = fields.ForeignKeyField(
+        "models.Goal", related_name="todos", null=True, on_delete=fields.SET_NULL,
+        description="关联的计划，为空表示未关联",
+    )
     is_completed = fields.BooleanField(default=False, description="是否已完成", index=True)
     completed_at = fields.DatetimeField(null=True, description="完成时间")
     user_id = fields.IntField(description="用户ID", index=True)
@@ -163,9 +167,32 @@ class Habit(BaseModel, TimestampMixin):
     reminder_time = fields.TimeField(null=True, description="每日提醒时间，写入生成待办的 reminder_at")
     is_paused = fields.BooleanField(default=False, description="暂停后停止生成新待办，历史保留")
     is_archived = fields.BooleanField(default=False, description="归档后从主列表隐藏，历史保留")
+    goal = fields.ForeignKeyField(
+        "models.Goal", related_name="habits", null=True, on_delete=fields.SET_NULL,
+        description="关联的计划，为空表示未关联",
+    )
 
     class Meta:
         table = "habit"
+
+    def __str__(self):
+        return self.name
+
+
+class Goal(BaseModel, TimestampMixin):
+    """计划/目标模型"""
+
+    user = fields.ForeignKeyField("models.User", related_name="goals", description="所属用户")
+    name = fields.CharField(max_length=100, description="计划/目标名称")
+    description = fields.TextField(null=True, description="描述")
+    target_date = fields.DateField(null=True, description="目标完成日期")
+    category = fields.ForeignKeyField(
+        "models.Category", related_name="goals", null=True, description="归属分类"
+    )
+    is_archived = fields.BooleanField(default=False, description="归档后从主列表隐藏，历史保留")
+
+    class Meta:
+        table = "goal"
 
     def __str__(self):
         return self.name

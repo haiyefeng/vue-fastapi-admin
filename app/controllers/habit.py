@@ -4,7 +4,7 @@ from typing import Any, Dict, List, Optional, Tuple
 from fastapi import HTTPException
 
 from app.core.crud import CRUDBase
-from app.models.todo import Habit, HabitFrequencyType, TodoItem
+from app.models.todo import Goal, Habit, HabitFrequencyType, TodoItem
 from app.schemas.habit import HabitCreate, HabitUpdate
 
 
@@ -29,8 +29,17 @@ class HabitController(CRUDBase[Habit, HabitCreate, HabitUpdate]):
             if not isinstance(interval, int) or interval < 1:
                 raise HTTPException(status_code=400, detail="interval_days 类型需要 frequency_config.interval 为正整数")
 
+    async def _validate_goal(self, goal_id: Optional[int], user_id: int) -> None:
+        """确保 goal_id 存在且属于当前用户，否则拒绝而不是让外键约束在 DB 层报错"""
+        if goal_id is None:
+            return
+        exists = await Goal.filter(id=goal_id, user_id=user_id).exists()
+        if not exists:
+            raise HTTPException(status_code=404, detail="计划不存在")
+
     async def create_habit(self, obj_in: HabitCreate, user_id: int) -> Habit:
         self._validate_frequency_config(obj_in.frequency_type, obj_in.frequency_config)
+        await self._validate_goal(obj_in.goal_id, user_id)
         return await Habit.create(user_id=user_id, **obj_in.model_dump())
 
     async def update_habit(self, habit_id: int, obj_in: HabitUpdate, user_id: int) -> Optional[Habit]:
@@ -43,6 +52,8 @@ class HabitController(CRUDBase[Habit, HabitCreate, HabitUpdate]):
             frequency_type = update_data.get("frequency_type", habit.frequency_type)
             frequency_config = update_data.get("frequency_config", habit.frequency_config)
             self._validate_frequency_config(frequency_type, frequency_config)
+        if "goal_id" in update_data:
+            await self._validate_goal(update_data["goal_id"], user_id)
 
         await habit.update_from_dict(update_data).save()
         return habit

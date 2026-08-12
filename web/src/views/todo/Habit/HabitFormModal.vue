@@ -1,5 +1,11 @@
 <template>
-  <n-modal :show="show" preset="card" :title="isEdit ? '编辑习惯' : '添加新习惯'" style="width: 480px" @update:show="onUpdateShow">
+  <n-modal
+    :show="show"
+    preset="card"
+    :title="isEdit ? '编辑习惯' : '添加新习惯'"
+    style="width: 480px"
+    @update:show="onUpdateShow"
+  >
     <n-form ref="formRef" :model="form" :rules="rules" label-placement="left" label-width="80">
       <n-form-item label="名称" path="name">
         <n-input v-model:value="form.name" placeholder="例如：每天阅读" />
@@ -24,7 +30,12 @@
       </n-form-item>
       <n-form-item v-if="form.frequency_type === 'weekly_days'" label="星期">
         <n-checkbox-group v-model:value="form.weekly_days">
-          <n-checkbox v-for="opt in weekdayOptions" :key="opt.value" :value="opt.value" :label="opt.label" />
+          <n-checkbox
+            v-for="opt in weekdayOptions"
+            :key="opt.value"
+            :value="opt.value"
+            :label="opt.label"
+          />
         </n-checkbox-group>
       </n-form-item>
       <n-form-item v-if="form.frequency_type === 'weekly_count'" label="每周次数">
@@ -45,6 +56,14 @@
       </n-form-item>
       <n-form-item label="目标描述">
         <n-input v-model:value="form.goal_desc" placeholder="例如：30分钟（可选）" />
+      </n-form-item>
+      <n-form-item label="关联计划">
+        <n-select
+          v-model:value="form.goal_id"
+          :options="goalOptions"
+          clearable
+          placeholder="未关联"
+        />
       </n-form-item>
       <n-form-item label="提醒时间">
         <n-time-picker
@@ -71,13 +90,14 @@ import api from '@/api'
 
 const props = defineProps({
   show: { type: Boolean, default: false },
-  habit: { type: Object, default: null }
+  habit: { type: Object, default: null },
 })
 const emit = defineEmits(['update:show', 'saved'])
 
 const message = useMessage()
 const formRef = ref(null)
 const submitting = ref(false)
+const goalOptions = ref([])
 
 const isEdit = computed(() => !!props.habit)
 
@@ -88,14 +108,14 @@ const weekdayOptions = [
   { label: '四', value: 4 },
   { label: '五', value: 5 },
   { label: '六', value: 6 },
-  { label: '日', value: 7 }
+  { label: '日', value: 7 },
 ]
 
 const quadrantOptions = [
   { label: '重要且紧急', value: 'urgent_important', color: '#f5222d' },
   { label: '紧急不重要', value: 'urgent_not_important', color: '#faad14' },
   { label: '重要不紧急', value: 'important_not_urgent', color: '#1890ff' },
-  { label: '不紧急不重要', value: 'not_urgent_not_important', color: '#909399' }
+  { label: '不紧急不重要', value: 'not_urgent_not_important', color: '#909399' },
 ]
 
 const defaultForm = () => ({
@@ -108,12 +128,13 @@ const defaultForm = () => ({
   interval_days: 2,
   default_quadrant: 'important_not_urgent',
   goal_desc: '',
-  reminder_time: null
+  reminder_time: null,
+  goal_id: null,
 })
 const form = ref(defaultForm())
 
 const rules = {
-  name: { required: true, message: '请输入名称', trigger: 'blur' }
+  name: { required: true, message: '请输入名称', trigger: 'blur' },
 }
 
 const onUpdateShow = (value) => emit('update:show', value)
@@ -130,7 +151,22 @@ const fillFormFromHabit = (habit) => {
     interval_days: config.interval || 2,
     default_quadrant: habit.default_quadrant,
     goal_desc: habit.goal_desc || '',
-    reminder_time: habit.reminder_time || null
+    reminder_time: habit.reminder_time || null,
+    goal_id: habit.goal_id || null,
+  }
+}
+
+const fetchGoalOptions = async () => {
+  try {
+    const [activeRes, archivedRes] = await Promise.all([api.getGoals(), api.getArchivedGoals()])
+    const active = (activeRes.data || []).map((g) => ({ label: g.name, value: g.id }))
+    const archived = (archivedRes.data || []).map((g) => ({
+      label: `${g.name}（已归档）`,
+      value: g.id,
+    }))
+    goalOptions.value = [...active, ...archived]
+  } catch (error) {
+    console.error('获取计划列表失败:', error)
   }
 }
 
@@ -138,6 +174,7 @@ watch(
   () => props.show,
   (visible) => {
     if (!visible) return
+    fetchGoalOptions()
     if (props.habit) {
       fillFormFromHabit(props.habit)
     } else {
@@ -169,7 +206,8 @@ const handleSubmit = async () => {
       frequency_config: buildFrequencyConfig(),
       default_quadrant: form.value.default_quadrant,
       goal_desc: form.value.goal_desc || null,
-      reminder_time: form.value.reminder_time || null
+      reminder_time: form.value.reminder_time || null,
+      goal_id: form.value.goal_id,
     }
     if (isEdit.value) {
       await api.updateHabit(props.habit.id, payload)

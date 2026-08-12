@@ -1,5 +1,11 @@
 <template>
-  <n-modal :show="show" preset="card" title="任务详情" style="width: 640px" @update:show="onUpdateShow">
+  <n-modal
+    :show="show"
+    preset="card"
+    title="任务详情"
+    style="width: 640px"
+    @update:show="onUpdateShow"
+  >
     <n-spin :show="loading">
       <n-form label-placement="left" label-width="70">
         <n-form-item label="标题">
@@ -16,13 +22,36 @@
 
         <div style="display: grid; grid-template-columns: repeat(2, 1fr); gap: 0.5em 1em">
           <n-form-item label="项目">
-            <n-select v-model:value="form.project_id" :options="projectOptions" clearable placeholder="收件箱" />
+            <n-select
+              v-model:value="form.project_id"
+              :options="projectOptions"
+              clearable
+              placeholder="收件箱"
+            />
           </n-form-item>
           <n-form-item label="截止日期">
-            <n-date-picker v-model:value="form.due_date" type="date" clearable style="width: 100%" />
+            <n-date-picker
+              v-model:value="form.due_date"
+              type="date"
+              clearable
+              style="width: 100%"
+            />
           </n-form-item>
           <n-form-item label="提醒时间">
-            <n-date-picker v-model:value="form.reminder_at" type="datetime" clearable style="width: 100%" />
+            <n-date-picker
+              v-model:value="form.reminder_at"
+              type="datetime"
+              clearable
+              style="width: 100%"
+            />
+          </n-form-item>
+          <n-form-item label="关联计划">
+            <n-select
+              v-model:value="form.goal_id"
+              :options="goalOptions"
+              clearable
+              placeholder="未关联"
+            />
           </n-form-item>
         </div>
 
@@ -53,7 +82,11 @@
           <n-button text type="error" @click="removeSubtask(sub)">删除</n-button>
         </div>
         <div style="display: flex; margin-top: 0.5em">
-          <n-input v-model:value="newSubtaskTitle" placeholder="添加子任务..." @keyup.enter="addSubtask" />
+          <n-input
+            v-model:value="newSubtaskTitle"
+            placeholder="添加子任务..."
+            @keyup.enter="addSubtask"
+          />
           <n-button type="primary" style="margin-left: 0.5em" @click="addSubtask">添加</n-button>
         </div>
       </section>
@@ -62,7 +95,9 @@
 
       <section>
         <h4 style="font-size: 1em; font-weight: 600; margin-bottom: 0.6em">已排程时间</h4>
-        <div v-if="!timeBlocks.length" style="font-size: 0.85em; opacity: 0.6">暂无排程，可在日历页拖拽安排时间</div>
+        <div v-if="!timeBlocks.length" style="font-size: 0.85em; opacity: 0.6">
+          暂无排程，可在日历页拖拽安排时间
+        </div>
         <div v-for="block in timeBlocks" :key="block.id" class="timeblock-row">
           <span>{{ formatTimeBlock(block) }}</span>
           <n-button text type="error" @click="removeTimeBlock(block)">删除</n-button>
@@ -90,7 +125,7 @@ import api from '@/api'
 const props = defineProps({
   show: { type: Boolean, default: false },
   todoId: { type: Number, default: null },
-  projects: { type: Array, default: () => [] }
+  projects: { type: Array, default: () => [] },
 })
 const emit = defineEmits(['update:show', 'saved', 'deleted'])
 
@@ -102,6 +137,7 @@ const saving = ref(false)
 const subtasks = ref([])
 const newSubtaskTitle = ref('')
 const timeBlocks = ref([])
+const goalOptions = ref([])
 
 const form = ref({
   title: '',
@@ -109,18 +145,21 @@ const form = ref({
   project_id: null,
   due_date: null,
   reminder_at: null,
-  quadrant_type: 'not_urgent_not_important'
+  quadrant_type: 'not_urgent_not_important',
+  goal_id: null,
 })
 
 const quadrantOptions = [
   { label: '重要且紧急', value: 'urgent_important', color: '#f5222d' },
   { label: '紧急不重要', value: 'urgent_not_important', color: '#faad14' },
   { label: '重要不紧急', value: 'important_not_urgent', color: '#1890ff' },
-  { label: '不紧急不重要', value: 'not_urgent_not_important', color: '#909399' }
+  { label: '不紧急不重要', value: 'not_urgent_not_important', color: '#909399' },
 ]
 
 const projectOptions = computed(() => {
-  const options = props.projects.filter((p) => !p.is_archived).map((p) => ({ label: p.name, value: p.id }))
+  const options = props.projects
+    .filter((p) => !p.is_archived)
+    .map((p) => ({ label: p.name, value: p.id }))
   const current = props.projects.find((p) => p.id === form.value.project_id)
   if (current && current.is_archived) {
     options.push({ label: `${current.name}（已归档）`, value: current.id })
@@ -138,7 +177,10 @@ const loadDetail = async () => {
   if (!props.todoId) return
   loading.value = true
   try {
-    const [todoRes, subtaskRes] = await Promise.all([api.getTodoById(props.todoId), api.getSubtasks(props.todoId)])
+    const [todoRes, subtaskRes] = await Promise.all([
+      api.getTodoById(props.todoId),
+      api.getSubtasks(props.todoId),
+    ])
     const todo = todoRes.data
     form.value = {
       title: todo.title,
@@ -146,18 +188,35 @@ const loadDetail = async () => {
       project_id: todo.project_id,
       due_date: toDateValue(todo.due_date),
       reminder_at: toDateValue(todo.reminder_at),
-      quadrant_type: todo.quadrant_type
+      quadrant_type: todo.quadrant_type,
+      goal_id: todo.goal_id,
     }
     subtasks.value = (subtaskRes.data || []).map((sub) => ({ ...sub, _originalTitle: sub.title }))
     timeBlocks.value = await api
       .getTimeBlocks({ todo_item_id: props.todoId })
       .then((res) => res.data || [])
       .catch(() => [])
+    goalOptions.value = await fetchGoalOptions()
   } catch (error) {
     console.error('获取任务详情失败:', error)
     message.error('获取任务详情失败')
   } finally {
     loading.value = false
+  }
+}
+
+const fetchGoalOptions = async () => {
+  try {
+    const [activeRes, archivedRes] = await Promise.all([api.getGoals(), api.getArchivedGoals()])
+    const active = (activeRes.data || []).map((g) => ({ label: g.name, value: g.id }))
+    const archived = (archivedRes.data || []).map((g) => ({
+      label: `${g.name}（已归档）`,
+      value: g.id,
+    }))
+    return [...active, ...archived]
+  } catch (error) {
+    console.error('获取计划列表失败:', error)
+    return []
   }
 }
 
@@ -177,7 +236,8 @@ const handleSave = async () => {
       project_id: form.value.project_id,
       due_date: form.value.due_date ? new Date(form.value.due_date).toISOString() : null,
       reminder_at: form.value.reminder_at ? new Date(form.value.reminder_at).toISOString() : null,
-      quadrant_type: form.value.quadrant_type
+      quadrant_type: form.value.quadrant_type,
+      goal_id: form.value.goal_id,
     }
     const res = await api.updateTodo(props.todoId, payload)
     message.success('保存成功')
@@ -207,7 +267,7 @@ const handleDelete = () => {
         console.error('删除任务失败:', error)
         message.error('删除任务失败')
       }
-    }
+    },
   })
 }
 
@@ -262,7 +322,9 @@ const formatTimeBlock = (block) => {
   const end = new Date(block.end_time)
   const pad = (n) => String(n).padStart(2, '0')
   const dateLabel = `${start.getMonth() + 1}月${start.getDate()}日`
-  const timeLabel = `${pad(start.getHours())}:${pad(start.getMinutes())}–${pad(end.getHours())}:${pad(end.getMinutes())}`
+  const timeLabel = `${pad(start.getHours())}:${pad(start.getMinutes())}–${pad(
+    end.getHours()
+  )}:${pad(end.getMinutes())}`
   return `${dateLabel} ${timeLabel}`
 }
 
