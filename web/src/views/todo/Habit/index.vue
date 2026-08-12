@@ -68,6 +68,8 @@ import { useMessage, useDialog } from 'naive-ui'
 import api from '@/api'
 import HabitFormModal from './HabitFormModal.vue'
 
+defineOptions({ name: '习惯' })
+
 const message = useMessage()
 const dialog = useDialog()
 
