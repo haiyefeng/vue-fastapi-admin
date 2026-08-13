@@ -1,5 +1,11 @@
 <template>
-  <n-modal :show="show" preset="card" :title="isEdit ? '编辑计划' : '添加新计划'" style="width: 480px" @update:show="onUpdateShow">
+  <n-modal
+    :show="show"
+    preset="card"
+    :title="isEdit ? '编辑计划' : '添加新计划'"
+    style="width: 480px"
+    @update:show="onUpdateShow"
+  >
     <n-form ref="formRef" :model="form" :rules="rules" label-placement="left" label-width="80">
       <n-form-item label="名称" path="name">
         <n-input v-model:value="form.name" placeholder="例如：学习新语言，完成XX项目" />
@@ -24,7 +30,10 @@
         />
       </n-form-item>
       <n-form-item label="新分类">
-        <n-input v-model:value="form.new_category_name" placeholder="或输入新分类名称（留空则用上面的选择）" />
+        <n-input
+          v-model:value="form.new_category_name"
+          placeholder="或输入新分类名称（留空则用上面的选择）"
+        />
       </n-form-item>
     </n-form>
     <template #footer>
@@ -43,7 +52,7 @@ import api from '@/api'
 
 const props = defineProps({
   show: { type: Boolean, default: false },
-  goal: { type: Object, default: null }
+  goal: { type: Object, default: null },
 })
 const emit = defineEmits(['update:show', 'saved'])
 
@@ -59,15 +68,17 @@ const defaultForm = () => ({
   description: '',
   target_date: null,
   category_id: null,
-  new_category_name: ''
+  new_category_name: '',
 })
 const form = ref(defaultForm())
 
 const rules = {
-  name: { required: true, message: '请输入名称', trigger: 'blur' }
+  name: { required: true, message: '请输入名称', trigger: 'blur' },
 }
 
-const categoryOptions = computed(() => categories.value.map((c) => ({ label: c.name, value: c.id })))
+const categoryOptions = computed(() =>
+  categories.value.map((c) => ({ label: c.name, value: c.id }))
+)
 
 const fetchCategories = async () => {
   try {
@@ -103,7 +114,7 @@ const fillFormFromGoal = (goal) => {
     description: goal.description || '',
     target_date: parseLocalDateString(goal.target_date),
     category_id: goal.category_id,
-    new_category_name: ''
+    new_category_name: '',
   }
 }
 
@@ -127,20 +138,18 @@ const handleSubmit = async () => {
     const payload = {
       name: form.value.name,
       description: form.value.description || null,
-      target_date: formatLocalDateString(form.value.target_date)
+      target_date: formatLocalDateString(form.value.target_date),
     }
     if (form.value.new_category_name.trim()) {
       payload.category_name = form.value.new_category_name.trim()
     } else if (form.value.category_id) {
       payload.category_id = form.value.category_id
     }
-    if (isEdit.value) {
-      await api.updateGoal(props.goal.id, payload)
-    } else {
-      await api.createGoal(payload)
-    }
+    const res = isEdit.value
+      ? await api.updateGoal(props.goal.id, payload)
+      : await api.createGoal(payload)
     message.success('保存成功')
-    emit('saved')
+    emit('saved', res.data)
     onUpdateShow(false)
   } finally {
     submitting.value = false
