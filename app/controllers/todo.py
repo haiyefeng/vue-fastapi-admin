@@ -144,47 +144,44 @@ class TodoController(CRUDBase[TodoItem, TodoItemCreate, TodoItemUpdate]):
     async def get_statistics_by_date(
         self, user_id: int, start_date: Optional[date] = None, end_date: Optional[date] = None
     ) -> List[TodoStatisticsByDate]:
-        """获取按日期统计的待办事项数量"""
+        """获取按日期统计的待办事项数量：一次查询取出范围内所有已完成待办的 (完成日期, 象限)，
+        在内存中按天/象限归位，避免按天 x 象限循环发起 count() 查询（30 天 x 4 象限 = 120 次独立查询）"""
         if not start_date:
             start_date = date.today() - timedelta(days=30)
         if not end_date:
             end_date = date.today()
 
+        day_start = datetime.combine(start_date, datetime.min.time())
+        day_end = datetime.combine(end_date, datetime.max.time())
+
+        rows = await TodoItem.filter(
+            user_id=user_id,
+            habit_id__isnull=True,
+            completed_at__gte=day_start,
+            completed_at__lte=day_end,
+        ).values("completed_at", "quadrant_type")
+
+        counts: Dict[Tuple[date, str], int] = {}
+        for row in rows:
+            key = (row["completed_at"].date(), row["quadrant_type"])
+            counts[key] = counts.get(key, 0) + 1
+
         result = []
         current_date = start_date
         while current_date <= end_date:
-            day_start = datetime.combine(current_date, datetime.min.time())
-            day_end = datetime.combine(current_date, datetime.max.time())
-
             stats = TodoStatisticsByDate(date=current_date)
-
-            # 统计各象限的已完成数量
-            for quadrant in QuadrantType:
-                count = await TodoItem.filter(
-                    user_id=user_id,
-                    quadrant_type=quadrant,
-                    completed_at__gte=day_start,
-                    completed_at__lte=day_end,
-                    habit_id__isnull=True,
-                ).count()
-
-                # 根据象限类型设置相应的字段
-                if quadrant == QuadrantType.URGENT_IMPORTANT:
-                    stats.urgent_important = count
-                elif quadrant == QuadrantType.URGENT_NOT_IMPORTANT:
-                    stats.urgent_not_important = count
-                elif quadrant == QuadrantType.IMPORTANT_NOT_URGENT:
-                    stats.important_not_urgent = count
-                elif quadrant == QuadrantType.NOT_URGENT_NOT_IMPORTANT:
-                    stats.not_urgent_not_important = count
-
+            stats.urgent_important = counts.get((current_date, QuadrantType.URGENT_IMPORTANT), 0)
+            stats.urgent_not_important = counts.get((current_date, QuadrantType.URGENT_NOT_IMPORTANT), 0)
+            stats.important_not_urgent = counts.get((current_date, QuadrantType.IMPORTANT_NOT_URGENT), 0)
+            stats.not_urgent_not_important = counts.get(
+                (current_date, QuadrantType.NOT_URGENT_NOT_IMPORTANT), 0
+            )
             stats.total = (
                 stats.urgent_important
                 + stats.urgent_not_important
                 + stats.important_not_urgent
                 + stats.not_urgent_not_important
             )
-
             result.append(stats)
             current_date += timedelta(days=1)
 
