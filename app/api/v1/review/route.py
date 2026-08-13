@@ -9,11 +9,21 @@ from app.core.dependency import AuthControl
 from app.models.admin import User
 from app.models.todo import ReviewPeriodType
 from app.schemas.base import Success
-from app.schemas.review import ReviewListItem, ReviewOut, ReviewSaveIn
+from app.schemas.review import ReviewDataSummaryOut, ReviewListItem, ReviewOut, ReviewSaveIn
 
 logger = logging.getLogger(__name__)
 
 router = APIRouter()
+
+
+@router.get("/data-summary", summary="获取指定周期的数据回顾聚合（任务完成情况/习惯打卡情况/计划进展）")
+async def get_data_summary(
+    period_type: ReviewPeriodType = Query(..., description="回顾周期类型"),
+    anchor_date: date = Query(..., description="周期内任意一天"),
+    current_user: User = Depends(AuthControl.is_authed),
+):
+    data = await review_controller.get_data_summary(current_user.id, period_type, anchor_date)
+    return Success(data=ReviewDataSummaryOut(**data).model_dump())
 
 
 @router.post("/save", summary="保存回顾（草稿或完成），同周期已存在则覆盖更新")

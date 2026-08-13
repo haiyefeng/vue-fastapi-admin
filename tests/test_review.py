@@ -114,3 +114,181 @@ async def test_reviews_are_isolated_per_user(client, test_user):
 
     resp = await client.get("/api/v1/review/list")
     assert resp.json()["data"] == []
+
+
+from datetime import datetime, timedelta
+
+from app.models.todo import (
+    Category,
+    Goal,
+    Habit,
+    HabitFrequencyType,
+    Project,
+    QuadrantType,
+    TodoItem,
+)
+
+
+async def test_data_summary_task_completion_overall(client, test_user):
+    week_tuesday = datetime(2026, 8, 11, 12, 0, 0)
+    await TodoItem.create(
+        title="任务A", user_id=test_user.id, quadrant_type=QuadrantType.NOT_URGENT_NOT_IMPORTANT,
+        due_date=week_tuesday, is_completed=True,
+    )
+    await TodoItem.create(
+        title="任务B", user_id=test_user.id, quadrant_type=QuadrantType.NOT_URGENT_NOT_IMPORTANT,
+        due_date=week_tuesday, is_completed=False,
+    )
+
+    resp = await client.get(
+        "/api/v1/review/data-summary", params={"period_type": "week", "anchor_date": "2026-08-13"}
+    )
+    assert resp.status_code == 200
+    task_completion = resp.json()["data"]["task_completion"]
+    assert task_completion["total"] == 2
+    assert task_completion["completed"] == 1
+
+
+async def test_data_summary_task_completion_excludes_habit_todos(client, test_user):
+    habit = await Habit.create(user_id=test_user.id, name="打卡", frequency_type=HabitFrequencyType.DAILY)
+    await TodoItem.create(
+        title="习惯待办", user_id=test_user.id, habit_id=habit.id,
+        quadrant_type=QuadrantType.NOT_URGENT_NOT_IMPORTANT,
+        due_date=datetime(2026, 8, 11, 12, 0, 0), is_completed=True,
+    )
+
+    resp = await client.get(
+        "/api/v1/review/data-summary", params={"period_type": "week", "anchor_date": "2026-08-13"}
+    )
+    assert resp.json()["data"]["task_completion"]["total"] == 0
+
+
+async def test_data_summary_task_completion_by_category(client, test_user):
+    cat = await Category.create(user_id=test_user.id, name="工作")
+    project = await Project.create(user_id=test_user.id, category_id=cat.id, name="Q4")
+    await TodoItem.create(
+        title="任务A", user_id=test_user.id, project_id=project.id,
+        quadrant_type=QuadrantType.NOT_URGENT_NOT_IMPORTANT,
+        due_date=datetime(2026, 8, 11, 12, 0, 0), is_completed=True,
+    )
+
+    resp = await client.get(
+        "/api/v1/review/data-summary", params={"period_type": "week", "anchor_date": "2026-08-13"}
+    )
+    by_category = resp.json()["data"]["task_completion"]["by_category"]
+    assert len(by_category) == 1
+    assert by_category[0]["category_name"] == "工作"
+    assert by_category[0]["total"] == 1
+    assert by_category[0]["completed"] == 1
+
+
+async def test_data_summary_urgent_important_breakdown(client, test_user):
+    await TodoItem.create(
+        title="高优先级", user_id=test_user.id, quadrant_type=QuadrantType.URGENT_IMPORTANT,
+        due_date=datetime(2026, 8, 11, 12, 0, 0), is_completed=True,
+    )
+    await TodoItem.create(
+        title="其他象限", user_id=test_user.id, quadrant_type=QuadrantType.NOT_URGENT_NOT_IMPORTANT,
+        due_date=datetime(2026, 8, 11, 12, 0, 0), is_completed=True,
+    )
+
+    resp = await client.get(
+        "/api/v1/review/data-summary", params={"period_type": "week", "anchor_date": "2026-08-13"}
+    )
+    task_completion = resp.json()["data"]["task_completion"]
+    assert task_completion["urgent_important_total"] == 1
+    assert task_completion["urgent_important_completed"] == 1
+
+
+async def test_data_summary_habit_checkin_daily_type(client, test_user):
+    habit = await Habit.create(user_id=test_user.id, name="晨间阅读", frequency_type=HabitFrequencyType.DAILY)
+    await TodoItem.create(
+        title="晨间阅读", user_id=test_user.id, habit_id=habit.id,
+        quadrant_type=QuadrantType.IMPORTANT_NOT_URGENT, generated_date="2026-08-11", is_completed=True,
+    )
+
+    resp = await client.get(
+        "/api/v1/review/data-summary", params={"period_type": "week", "anchor_date": "2026-08-13"}
+    )
+    habits = resp.json()["data"]["habits"]
+    assert len(habits) == 1
+    assert habits[0]["expected"] == 7
+    assert habits[0]["completed"] == 1
+    assert habits[0]["streak"] is not None
+
+
+async def test_data_summary_habit_checkin_weekly_count_type(client, test_user):
+    habit = await Habit.create(
+        user_id=test_user.id, name="运动", frequency_type=HabitFrequencyType.WEEKLY_COUNT,
+        frequency_config={"count": 3},
+    )
+    await TodoItem.create(
+        title="运动", user_id=test_user.id, habit_id=habit.id,
+        quadrant_type=QuadrantType.IMPORTANT_NOT_URGENT, generated_date="2026-08-11", is_completed=True,
+    )
+
+    resp = await client.get(
+        "/api/v1/review/data-summary", params={"period_type": "week", "anchor_date": "2026-08-13"}
+    )
+    habits = resp.json()["data"]["habits"]
+    assert habits[0]["expected"] == 3
+    assert habits[0]["completed"] == 1
+    assert habits[0]["streak"] is None
+
+
+async def test_data_summary_habit_checkin_excludes_paused_and_archived(client, test_user):
+    await Habit.create(
+        user_id=test_user.id, name="已暂停", frequency_type=HabitFrequencyType.DAILY, is_paused=True
+    )
+    await Habit.create(
+        user_id=test_user.id, name="已归档", frequency_type=HabitFrequencyType.DAILY, is_archived=True
+    )
+
+    resp = await client.get(
+        "/api/v1/review/data-summary", params={"period_type": "week", "anchor_date": "2026-08-13"}
+    )
+    assert resp.json()["data"]["habits"] == []
+
+
+async def test_data_summary_goal_progress_with_linked_tasks(client, test_user):
+    goal = await Goal.create(user_id=test_user.id, name="学习计划")
+    await TodoItem.create(
+        title="任务A", user_id=test_user.id, goal_id=goal.id,
+        quadrant_type=QuadrantType.NOT_URGENT_NOT_IMPORTANT,
+        is_completed=True, completed_at=datetime(2026, 8, 11, 12, 0, 0),
+    )
+    await TodoItem.create(
+        title="任务B", user_id=test_user.id, goal_id=goal.id,
+        quadrant_type=QuadrantType.NOT_URGENT_NOT_IMPORTANT, is_completed=False,
+    )
+
+    resp = await client.get(
+        "/api/v1/review/data-summary", params={"period_type": "week", "anchor_date": "2026-08-13"}
+    )
+    goals = resp.json()["data"]["goals"]
+    assert len(goals) == 1
+    assert goals[0]["newly_completed"] == 1
+    assert goals[0]["total_linked_tasks"] == 2
+    assert goals[0]["progress_percent"] == 50.0
+
+
+async def test_data_summary_goal_progress_no_linked_tasks_returns_null_percent(client, test_user):
+    await Goal.create(user_id=test_user.id, name="无关联计划")
+
+    resp = await client.get(
+        "/api/v1/review/data-summary", params={"period_type": "week", "anchor_date": "2026-08-13"}
+    )
+    goals = resp.json()["data"]["goals"]
+    assert goals[0]["total_linked_tasks"] == 0
+    assert goals[0]["progress_percent"] is None
+
+
+async def test_data_summary_never_triggers_habit_generation(client, test_user):
+    """数据回顾聚合是只读查询，打开回顾页不应该像打开习惯页那样顺带生成今天的习惯待办"""
+    await Habit.create(user_id=test_user.id, name="晨间阅读", frequency_type=HabitFrequencyType.DAILY)
+
+    await client.get(
+        "/api/v1/review/data-summary", params={"period_type": "week", "anchor_date": "2026-08-13"}
+    )
+
+    assert await TodoItem.filter(habit_id__isnull=False).count() == 0
