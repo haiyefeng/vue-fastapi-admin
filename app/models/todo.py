@@ -196,3 +196,33 @@ class Goal(BaseModel, TimestampMixin):
 
     def __str__(self):
         return self.name
+
+
+class ReviewPeriodType(StrEnum):
+    WEEK = "week"
+    MONTH = "month"
+    QUARTER = "quarter"
+    YEAR = "year"
+
+
+class ReviewStatus(StrEnum):
+    DRAFT = "draft"
+    COMPLETED = "completed"
+
+
+class Review(BaseModel, TimestampMixin):
+    """周期回顾模型：数据回顾区实时聚合计算不落库，这里只存七步反思答案与状态"""
+
+    user = fields.ForeignKeyField("models.User", related_name="reviews", description="所属用户")
+    period_type = fields.CharEnumField(ReviewPeriodType, description="回顾周期类型")
+    period_start = fields.DateField(description="周期开始日期")
+    period_end = fields.DateField(description="周期结束日期")
+    answers = fields.JSONField(default=dict, description="七步提问法答案，key 为 step1~step7")
+    status = fields.CharEnumField(ReviewStatus, default=ReviewStatus.DRAFT, description="草稿/已完成")
+
+    class Meta:
+        table = "review"
+        unique_together = (("user", "period_type", "period_start"),)
+
+    def __str__(self):
+        return f"{self.period_type} {self.period_start}"
