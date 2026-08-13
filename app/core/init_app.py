@@ -285,6 +285,23 @@ async def init_menus():
                 keepalive=True,
             )
 
+    # 四期回顾总结：回顾页菜单。独立于上面的判断，保证已经部署过的环境重启后也能自动补上
+    todo_parent_menu = await Menu.filter(name="待办事项").first()
+    if todo_parent_menu:
+        review_menu = await Menu.filter(name="回顾总结", parent_id=todo_parent_menu.id).first()
+        if not review_menu:
+            await Menu.create(
+                menu_type=MenuType.MENU,
+                name="回顾总结",
+                path="review",
+                order=4,
+                parent_id=todo_parent_menu.id,
+                icon="material-symbols:rate-review-outline",
+                is_hidden=False,
+                component="/todo/Review",
+                keepalive=True,
+            )
+
 
 async def init_apis():
     # refresh_api() is idempotent (upserts current routes, drops stale ones), so it must
