@@ -11,6 +11,7 @@ from .goal import goal_router
 from .habit import habit_router
 from .menus import menus_router
 from .project import project_router
+from .review import review_router
 from .roles import roles_router
 from .subtask import subtask_router
 from .timeblock import timeblock_router
@@ -33,3 +34,4 @@ v1_router.include_router(project_router, prefix="/project", dependencies=[Depend
 v1_router.include_router(subtask_router, prefix="/subtask", dependencies=[DependPermission])
 v1_router.include_router(timeblock_router, prefix="/timeblock", dependencies=[DependPermission])
 v1_router.include_router(habit_router, prefix="/habit", dependencies=[DependPermission])
+v1_router.include_router(review_router, prefix="/review", dependencies=[DependPermission])
