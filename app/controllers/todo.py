@@ -173,9 +173,7 @@ class TodoController(CRUDBase[TodoItem, TodoItemCreate, TodoItemUpdate]):
             stats.urgent_important = counts.get((current_date, QuadrantType.URGENT_IMPORTANT), 0)
             stats.urgent_not_important = counts.get((current_date, QuadrantType.URGENT_NOT_IMPORTANT), 0)
             stats.important_not_urgent = counts.get((current_date, QuadrantType.IMPORTANT_NOT_URGENT), 0)
-            stats.not_urgent_not_important = counts.get(
-                (current_date, QuadrantType.NOT_URGENT_NOT_IMPORTANT), 0
-            )
+            stats.not_urgent_not_important = counts.get((current_date, QuadrantType.NOT_URGENT_NOT_IMPORTANT), 0)
             stats.total = (
                 stats.urgent_important
                 + stats.urgent_not_important

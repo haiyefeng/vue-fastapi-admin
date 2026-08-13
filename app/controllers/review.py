@@ -165,14 +165,21 @@ class ReviewController(CRUDBase[Review, ReviewSaveIn, ReviewSaveIn]):
                 ).count()
                 streak = None
             else:
+                range_start = max(period_start, habit.created_at.date())
+                range_end = min(period_end, today)
+
+                todos = await TodoItem.filter(
+                    habit_id=habit.id, generated_date__gte=period_start, generated_date__lte=period_end
+                ).values("generated_date", "is_completed")
+                completed_map = {t["generated_date"]: t["is_completed"] for t in todos}
+
                 expected = 0
                 completed = 0
-                cursor = period_start
-                while cursor <= period_end:
+                cursor = range_start
+                while cursor <= range_end:
                     if await habit_controller.should_generate_today(habit, cursor):
                         expected += 1
-                        todo = await TodoItem.filter(habit_id=habit.id, generated_date=cursor).first()
-                        if todo and todo.is_completed:
+                        if completed_map.get(cursor):
                             completed += 1
                     cursor += timedelta(days=1)
                 streak = await habit_controller.calc_streak(habit, today)

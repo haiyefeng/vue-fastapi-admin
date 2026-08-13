@@ -92,8 +92,14 @@
       </section>
 
       <div class="review-footer">
-        <n-button :loading="saving" @click="handleSave('draft')">保存草稿</n-button>
-        <n-button type="primary" :loading="saving" @click="handleSave('completed')"
+        <n-button :disabled="!summary" :loading="saving" @click="handleSave('draft')"
+          >保存草稿</n-button
+        >
+        <n-button
+          type="primary"
+          :disabled="!summary"
+          :loading="saving"
+          @click="handleSave('completed')"
           >完成本次回顾</n-button
         >
       </div>
@@ -249,6 +255,8 @@ const loadAll = async () => {
   } catch (error) {
     console.error('加载回顾数据失败:', error)
     message.error('加载回顾数据失败')
+    summary.value = null
+    answers.value = defaultAnswers()
   } finally {
     loading.value = false
   }
@@ -274,11 +282,10 @@ const handleSave = async (status) => {
   }
 }
 
-const handleGoalCreated = async (goal) => {
+const handleGoalCreated = (goal) => {
   if (goal) {
     sessionCreatedGoals.value.push(goal)
   }
-  message.success('计划创建成功')
 }
 
 const openHistoryModal = async () => {

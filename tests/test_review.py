@@ -1,4 +1,4 @@
-from datetime import date
+from datetime import date, datetime
 
 from app.controllers.review import ReviewController
 from app.models.todo import Review, ReviewPeriodType
@@ -116,7 +116,7 @@ async def test_reviews_are_isolated_per_user(client, test_user):
     assert resp.json()["data"] == []
 
 
-from datetime import datetime, timedelta
+from datetime import timedelta
 
 from app.models.todo import (
     Category,
@@ -201,20 +201,46 @@ async def test_data_summary_urgent_important_breakdown(client, test_user):
 
 
 async def test_data_summary_habit_checkin_daily_type(client, test_user):
-    habit = await Habit.create(user_id=test_user.id, name="晨间阅读", frequency_type=HabitFrequencyType.DAILY)
+    # A week safely in the past (2020), well after the habit's creation and well before
+    # "today" — keeps the expected==7 assertion independent of when this test actually
+    # runs, since neither clamp bound (creation date, today) falls inside this week.
+    habit = await Habit.create(
+        user_id=test_user.id, name="晨间阅读", frequency_type=HabitFrequencyType.DAILY,
+        created_at=datetime(2019, 1, 1),
+    )
     await TodoItem.create(
         title="晨间阅读", user_id=test_user.id, habit_id=habit.id,
-        quadrant_type=QuadrantType.IMPORTANT_NOT_URGENT, generated_date="2026-08-11", is_completed=True,
+        quadrant_type=QuadrantType.IMPORTANT_NOT_URGENT, generated_date="2020-01-08", is_completed=True,
     )
 
     resp = await client.get(
-        "/api/v1/review/data-summary", params={"period_type": "week", "anchor_date": "2026-08-13"}
+        "/api/v1/review/data-summary", params={"period_type": "week", "anchor_date": "2020-01-06"}
     )
     habits = resp.json()["data"]["habits"]
     assert len(habits) == 1
     assert habits[0]["expected"] == 7
     assert habits[0]["completed"] == 1
     assert habits[0]["streak"] is not None
+
+
+async def test_data_summary_habit_checkin_expected_clamped_to_creation_date(client, test_user):
+    """created mid-week, in a week safely in the past: expected should only count days
+    from creation date onward, not the full week before creation. Using a past week
+    (not "this week") keeps the assertion independent of whatever "today" actually is
+    when the test runs — only the creation-date lower clamp is exercised here, never
+    the today upper clamp."""
+    habit = await Habit.create(
+        user_id=test_user.id, name="新习惯", frequency_type=HabitFrequencyType.DAILY,
+        created_at=datetime(2020, 1, 8),  # Wednesday of the week 2020-01-06 (Mon) ~ 2020-01-12 (Sun)
+    )
+
+    resp = await client.get(
+        "/api/v1/review/data-summary", params={"period_type": "week", "anchor_date": "2020-01-06"}
+    )
+    habits = resp.json()["data"]["habits"]
+    # week is 2020-01-06 (Mon) to 2020-01-12 (Sun); habit created 2020-01-08 (Wed):
+    # [max(01-06, 01-08), min(01-12, today)] = [01-08, 01-12] = 5 days
+    assert habits[0]["expected"] == 5
 
 
 async def test_data_summary_habit_checkin_weekly_count_type(client, test_user):
