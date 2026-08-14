@@ -46,14 +46,16 @@ class DashboardController:
         ).values_list("id", flat=True)
 
         scheduled_today_ids = await TimeBlock.filter(
-            user_id=user_id, start_time__gte=day_start, start_time__lte=day_end,
+            user_id=user_id,
+            start_time__gte=day_start,
+            start_time__lte=day_end,
         ).values_list("todo_item_id", flat=True)
 
         combined_ids = set(due_today_ids) | set(scheduled_today_ids)
         if not combined_ids:
             return []
 
-        tasks = await TodoItem.filter(id__in=combined_ids, is_completed=False, habit_id__isnull=True)
+        tasks = await TodoItem.filter(id__in=combined_ids, user_id=user_id, is_completed=False, habit_id__isnull=True)
         return sorted(tasks, key=lambda t: (t.due_date is None, t.due_date))
 
     async def _get_today_habits(self, user_id: int) -> List[Dict[str, Any]]:
