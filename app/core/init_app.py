@@ -188,7 +188,7 @@ async def init_menus():
             is_hidden=False,
             component="Layout",
             keepalive=False,
-            redirect="/todo/quadrant",
+            redirect="/todo/dashboard",
         )
 
         todo_children_menu = [
@@ -301,6 +301,28 @@ async def init_menus():
                 component="/todo/Review",
                 keepalive=True,
             )
+
+    # 四期今日概览：今日页菜单 + 把待办事项父菜单默认页从四象限切到今日概览。
+    # 独立于上面的判断，保证已经部署过的环境重启后也能自动补上；redirect 的更新对已经存在的
+    # 父菜单记录也生效，不只是全新建库时走 Step 1 的初始值。
+    todo_parent_menu = await Menu.filter(name="待办事项").first()
+    if todo_parent_menu:
+        dashboard_menu = await Menu.filter(name="今日", parent_id=todo_parent_menu.id).first()
+        if not dashboard_menu:
+            await Menu.create(
+                menu_type=MenuType.MENU,
+                name="今日",
+                path="dashboard",
+                order=-1,
+                parent_id=todo_parent_menu.id,
+                icon="material-symbols:today-outline",
+                is_hidden=False,
+                component="/todo/Dashboard",
+                keepalive=True,
+            )
+        if todo_parent_menu.redirect != "/todo/dashboard":
+            todo_parent_menu.redirect = "/todo/dashboard"
+            await todo_parent_menu.save()
 
 
 async def init_apis():
