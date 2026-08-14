@@ -7,6 +7,7 @@ import timeblockApi from './timeblock'
 import habitApi from './habit'
 import goalApi from './goal'
 import reviewApi from './review'
+import dashboardApi from './dashboard'
 
 export default {
   login: (data) => request.post('/base/access_token', data, { noNeedToken: true }),
@@ -61,4 +62,6 @@ export default {
   ...goalApi,
   // review（四期回顾总结）
   ...reviewApi,
+  // dashboard（四期今日概览）
+  ...dashboardApi,
 }
