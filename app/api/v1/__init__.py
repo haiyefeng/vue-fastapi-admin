@@ -6,6 +6,7 @@ from .apis import apis_router
 from .auditlog import auditlog_router
 from .base import base_router
 from .category import category_router
+from .dashboard import dashboard_router
 from .depts import depts_router
 from .goal import goal_router
 from .habit import habit_router
@@ -35,3 +36,4 @@ v1_router.include_router(subtask_router, prefix="/subtask", dependencies=[Depend
 v1_router.include_router(timeblock_router, prefix="/timeblock", dependencies=[DependPermission])
 v1_router.include_router(habit_router, prefix="/habit", dependencies=[DependPermission])
 v1_router.include_router(review_router, prefix="/review", dependencies=[DependPermission])
+v1_router.include_router(dashboard_router, prefix="/dashboard", dependencies=[DependPermission])
