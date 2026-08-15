@@ -3,7 +3,7 @@
     <n-grid :cols="2" :x-gap="20">
       <!-- 重要且紧急 -->
       <n-gi>
-        <n-card title="重要且紧急" class="quadrant-card urgent-important">
+        <n-card class="quadrant-card urgent-important">
           <template #header>
             <span class="quadrant-card-title">
               <span class="quadrant-icon-badge urgent-important"
@@ -61,7 +61,7 @@
 
       <!-- 紧急不重要 -->
       <n-gi>
-        <n-card title="紧急不重要" class="quadrant-card urgent-not-important">
+        <n-card class="quadrant-card urgent-not-important">
           <template #header>
             <span class="quadrant-card-title">
               <span class="quadrant-icon-badge urgent-not-important"
@@ -119,7 +119,7 @@
 
       <!-- 重要不紧急 -->
       <n-gi>
-        <n-card title="重要不紧急" class="quadrant-card important-not-urgent">
+        <n-card class="quadrant-card important-not-urgent">
           <template #header>
             <span class="quadrant-card-title">
               <span class="quadrant-icon-badge important-not-urgent"
@@ -177,7 +177,7 @@
 
       <!-- 不紧急不重要 -->
       <n-gi>
-        <n-card title="不紧急不重要" class="quadrant-card not-urgent-not-important">
+        <n-card class="quadrant-card not-urgent-not-important">
           <template #header>
             <span class="quadrant-card-title">
               <span class="quadrant-icon-badge not-urgent-not-important"
@@ -285,7 +285,6 @@
     </n-modal>
   </div>
 </template>
-
 <script setup>
 import { ref, onMounted } from 'vue'
 import { useMessage, useDialog } from 'naive-ui'
@@ -305,19 +304,19 @@ const todoForm = ref({
   quadrant_type: null,
   due_date: null,
   is_completed: false,
-  notes: '',
+  notes: ''
 })
 const rules = {
   title: {
     required: true,
     message: '请输入标题',
-    trigger: 'blur',
+    trigger: 'blur'
   },
   quadrant_type: {
     required: true,
     message: '请选择象限',
-    trigger: 'change',
-  },
+    trigger: 'change'
+  }
 }
 
 // 象限选项
@@ -325,7 +324,7 @@ const quadrantOptions = [
   { label: '重要且紧急', value: 'urgent_important' },
   { label: '紧急不重要', value: 'urgent_not_important' },
   { label: '重要不紧急', value: 'important_not_urgent' },
-  { label: '不紧急不重要', value: 'not_urgent_not_important' },
+  { label: '不紧急不重要', value: 'not_urgent_not_important' }
 ]
 
 // 待办事项相关
@@ -343,17 +342,17 @@ const fetchTodos = async () => {
   loading.value = true
   try {
     const params = {
-      is_completed: false,
+      is_completed: false
     }
     const response = await todoApi.getTodos(params)
     // 根据后端返回数据结构进行处理
     const todos = response.data || []
 
     // 分配到不同象限
-    todoList1.value = todos.filter((todo) => todo.quadrant_type === 'urgent_important')
-    todoList2.value = todos.filter((todo) => todo.quadrant_type === 'urgent_not_important')
-    todoList3.value = todos.filter((todo) => todo.quadrant_type === 'important_not_urgent')
-    todoList4.value = todos.filter((todo) => todo.quadrant_type === 'not_urgent_not_important')
+    todoList1.value = todos.filter(todo => todo.quadrant_type === 'urgent_important')
+    todoList2.value = todos.filter(todo => todo.quadrant_type === 'urgent_not_important')
+    todoList3.value = todos.filter(todo => todo.quadrant_type === 'important_not_urgent')
+    todoList4.value = todos.filter(todo => todo.quadrant_type === 'not_urgent_not_important')
   } catch (error) {
     console.error('获取待办列表失败:', error)
     message.error('获取待办列表失败')
@@ -365,16 +364,11 @@ const fetchTodos = async () => {
 // 获取象限类型
 const getQuadrantType = (index) => {
   switch (index) {
-    case 1:
-      return 'urgent_important'
-    case 2:
-      return 'urgent_not_important'
-    case 3:
-      return 'important_not_urgent'
-    case 4:
-      return 'not_urgent_not_important'
-    default:
-      return null
+    case 1: return 'urgent_important'
+    case 2: return 'urgent_not_important'
+    case 3: return 'important_not_urgent'
+    case 4: return 'not_urgent_not_important'
+    default: return null
   }
 }
 
@@ -387,7 +381,7 @@ const handleAddTodo = (quadrantIndex) => {
     quadrant_type: getQuadrantType(quadrantIndex),
     due_date: null,
     is_completed: false,
-    notes: '',
+    notes: ''
   }
   dialogVisible.value = true
 }
@@ -512,34 +506,33 @@ const handleTodoComplete = async (todo, event) => {
         '进步的每一步都值得庆祝！🌟',
         '坚持就是胜利，你做到了！🏆',
         '每完成一个任务都是成长！📈',
-        '优秀！你的努力正在变成成果！💯',
-      ]
-      const randomMessage =
-        motivationalMessages[Math.floor(Math.random() * motivationalMessages.length)]
-
+        '优秀！你的努力正在变成成果！💯'
+      ];
+      const randomMessage = motivationalMessages[Math.floor(Math.random() * motivationalMessages.length)];
+      
       await todoApi.updateTodo(todo.id, {
         is_completed: true,
-        completed_at: new Date().toISOString(),
-      })
-
+        completed_at: new Date().toISOString()
+      });
+      
       // 使用更有激励性的消息
-      message.success(randomMessage)
-
+      message.success(randomMessage);
+      
       // 立即刷新列表
-      fetchTodos()
+      fetchTodos();
     } else {
       await todoApi.updateTodo(todo.id, {
         is_completed: false,
-        completed_at: null,
-      })
-      message.info('已取消完成状态')
-      fetchTodos()
+        completed_at: null
+      });
+      message.info('已取消完成状态');
+      fetchTodos();
     }
   } catch (error) {
-    console.error('更新待办状态失败:', error)
-    message.error('更新状态失败')
+    console.error('更新待办状态失败:', error);
+    message.error('更新状态失败');
     // 恢复原状态
-    todo.is_completed = !todo.is_completed
+    todo.is_completed = !todo.is_completed;
   }
 }
 
@@ -559,7 +552,7 @@ const handleDeleteTodo = async (todo) => {
         console.error('删除待办失败:', error)
         message.error('删除失败')
       }
-    },
+    }
   })
 }
 
@@ -579,7 +572,7 @@ const handleDrop = async (event, targetQuadrant) => {
   event.preventDefault()
 
   // 恢复样式
-  document.querySelectorAll('.dragging').forEach((el) => {
+  document.querySelectorAll('.dragging').forEach(el => {
     el.classList.remove('dragging')
   })
 
@@ -588,16 +581,12 @@ const handleDrop = async (event, targetQuadrant) => {
   }
 
   try {
-    message.info(
-      `正在将待办从 ${getQuadrantLabel(draggedTodo.value.quadrant_type)} 移动到 ${getQuadrantLabel(
-        targetQuadrant
-      )}`
-    )
+    message.info(`正在将待办从 ${getQuadrantLabel(draggedTodo.value.quadrant_type)} 移动到 ${getQuadrantLabel(targetQuadrant)}`)
 
     // 更新待办事项象限
     await todoApi.updateTodo(draggedTodo.value.id, {
       ...draggedTodo.value,
-      quadrant_type: targetQuadrant,
+      quadrant_type: targetQuadrant
     })
 
     // 刷新列表
@@ -615,7 +604,7 @@ const getQuadrantLabel = (type) => {
     urgent_important: '重要且紧急',
     urgent_not_important: '紧急不重要',
     important_not_urgent: '重要不紧急',
-    not_urgent_not_important: '不紧急不重要',
+    not_urgent_not_important: '不紧急不重要'
   }
   return labels[type] || type
 }
