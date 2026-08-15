@@ -267,7 +267,7 @@ onMounted(fetchAll)
   position: absolute;
   left: 56px;
   right: 10px;
-  border-radius: var(--dt-radius-sm, 4px);
+  border-radius: 6px;
   padding: 2px 6px;
   font-size: 0.85em;
   color: #fff;
@@ -313,7 +313,7 @@ onMounted(fetchAll)
   transition: background 0.15s ease;
 }
 .unscheduled-item:hover {
-  background: var(--dt-page-bg);
+  background: var(--dt-surface-subtle);
 }
 .unscheduled-item:active {
   cursor: grabbing;

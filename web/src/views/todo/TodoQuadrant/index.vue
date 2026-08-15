@@ -629,6 +629,9 @@ onMounted(() => {
 .quadrant-card {
   height: 100%;
   margin-bottom: 16px;
+  border-radius: var(--dt-radius-lg);
+  overflow: hidden;
+  box-shadow: var(--dt-shadow-sm);
 }
 
 .urgent-important .n-card__content {
@@ -647,12 +650,6 @@ onMounted(() => {
   border-top: 4px solid var(--dt-quadrant-not-urgent-not-important, #909399);
 }
 
-.quadrant-card {
-  border-radius: var(--dt-radius-lg);
-  overflow: hidden;
-  box-shadow: var(--dt-shadow-sm);
-}
-
 .todo-list {
   min-height: 300px;
 }
@@ -662,7 +659,7 @@ onMounted(() => {
   align-items: center;
   margin-bottom: 8px;
   padding: 8px 12px;
-  background: var(--dt-page-bg, #f9f9f9);
+  background: var(--dt-surface-subtle, #f9f9f9);
   border-radius: var(--dt-radius-sm, 4px);
   transition: all 0.2s ease;
 }

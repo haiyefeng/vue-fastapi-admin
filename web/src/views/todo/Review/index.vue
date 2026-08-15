@@ -341,9 +341,14 @@ onActivated(loadAll)
 .metric-card {
   background: var(--dt-card-bg, transparent);
   border: 1px solid var(--dt-border);
-  border-radius: var(--dt-radius-md);
-  padding: 16px 18px;
+  border-radius: var(--dt-radius-lg);
+  padding: 22px 20px 18px;
   box-shadow: var(--dt-shadow-sm);
+  transition: box-shadow 0.25s ease, transform 0.25s ease;
+}
+.metric-card:hover {
+  box-shadow: var(--dt-shadow-md);
+  transform: translateY(-2px);
 }
 .metric-card h4 {
   margin: 0 0 0.6em;

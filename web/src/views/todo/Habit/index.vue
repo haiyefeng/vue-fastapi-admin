@@ -226,12 +226,12 @@ onActivated(fetchAll)
   padding: 0.6em 0.2em;
   border-bottom: 1px solid rgba(128, 128, 128, 0.12);
   margin-bottom: 0;
+  border-radius: 0;
+  background: transparent;
+  opacity: 0.7;
 }
 .habit-item.paused {
   opacity: 0.5;
-}
-.habit-item.archived {
-  opacity: 0.7;
 }
 .habit-content {
   flex: 1;
@@ -265,15 +265,15 @@ onActivated(fetchAll)
   margin-top: 0.2em;
 }
 .progress-bar {
-  height: 6px;
-  border-radius: 3px;
-  background: rgba(128, 128, 128, 0.15);
-  margin-top: 0.5em;
+  height: 8px;
+  border-radius: 4px;
+  background: var(--dt-surface-subtle, rgba(128, 128, 128, 0.15));
+  margin-top: 0.6em;
   overflow: hidden;
 }
 .progress-bar-inner {
   height: 100%;
-  border-radius: 3px;
+  border-radius: 4px;
   transition: width 0.3s ease;
 }
 .habit-actions {

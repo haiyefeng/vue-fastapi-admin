@@ -312,7 +312,7 @@ onMounted(() => {
   transition: background 0.15s ease;
 }
 .task-item:hover {
-  background: var(--dt-page-bg);
+  background: var(--dt-surface-subtle);
 }
 .task-item.completed .task-title {
   text-decoration: line-through;

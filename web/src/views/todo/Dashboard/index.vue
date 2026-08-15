@@ -511,7 +511,7 @@ onActivated(() => {
   transition: background 0.15s ease;
 }
 .schedule-row:hover {
-  background: var(--dt-page-bg);
+  background: var(--dt-surface-subtle);
 }
 .schedule-time {
   font-size: 11.5px;
@@ -535,7 +535,7 @@ onActivated(() => {
   transition: background 0.15s ease;
 }
 .task-row:hover {
-  background: var(--dt-page-bg);
+  background: var(--dt-surface-subtle);
 }
 .quadrant-bar {
   width: 3px;
@@ -558,7 +558,7 @@ onActivated(() => {
   transition: background 0.15s ease;
 }
 .habit-row:hover {
-  background: var(--dt-page-bg);
+  background: var(--dt-surface-subtle);
 }
 .habit-left {
   display: flex;

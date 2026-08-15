@@ -215,7 +215,10 @@ async def test_today_overview_isolated_per_user_via_time_block(client, test_user
     )
 
     resp = await client.get("/api/v1/dashboard/today")
-    assert resp.json()["data"]["tasks"] == []
+    data = resp.json()["data"]
+    assert data["tasks"] == []
+    assert data["total_task_count"] == 0
+    assert data["completed_task_count"] == 0
 
 
 async def test_today_overview_task_counts_include_completed_and_incomplete(client, test_user):

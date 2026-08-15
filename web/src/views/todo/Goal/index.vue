@@ -192,8 +192,8 @@ onActivated(fetchAll)
   padding: 0.6em 0.2em;
   border-bottom: 1px solid rgba(128, 128, 128, 0.12);
   margin-bottom: 0;
-}
-.goal-item.archived {
+  border-radius: 0;
+  background: transparent;
   opacity: 0.7;
 }
 .goal-content {
@@ -214,14 +214,14 @@ onActivated(fetchAll)
 .progress-bar {
   height: 8px;
   border-radius: 4px;
-  background: var(--dt-page-bg, rgba(128, 128, 128, 0.15));
+  background: var(--dt-surface-subtle, rgba(128, 128, 128, 0.15));
   margin-top: 0.6em;
   overflow: hidden;
 }
 .progress-bar-inner {
   height: 100%;
   border-radius: 4px;
-  background: var(--dt-habit, #1890ff);
+  background: var(--dt-habit, #10b981);
   transition: width 0.3s ease;
 }
 .goal-actions {
