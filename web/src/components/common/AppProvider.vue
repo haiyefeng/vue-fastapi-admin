@@ -20,7 +20,7 @@
 </template>
 
 <script setup>
-import { defineComponent, h } from 'vue'
+import { defineComponent, h, watch } from 'vue'
 import {
   zhCN,
   dateZhCN,
@@ -46,6 +46,18 @@ function setupCssVar() {
   }
 }
 
+// design-tokens.scss 里的 [data-theme='dark'] 选择器依赖这个 attribute，用来在暗色模式下
+// 切换中性色阶/阴影透明度；immediate 确保首次渲染就同步，不用等用户手动切一次主题
+function setupDesignTokenTheme() {
+  watch(
+    () => appStore.isDark,
+    (isDark) => {
+      document.documentElement.dataset.theme = isDark ? 'dark' : 'light'
+    },
+    { immediate: true }
+  )
+}
+
 // 挂载naive组件的方法至window, 以便在全局使用
 function setupNaiveTools() {
   window.$loadingBar = useLoadingBar()
@@ -59,6 +71,7 @@ const NaiveProviderContent = defineComponent({
   setup() {
     setupCssVar()
     setupNaiveTools()
+    setupDesignTokenTheme()
   },
   render() {
     return h('div')

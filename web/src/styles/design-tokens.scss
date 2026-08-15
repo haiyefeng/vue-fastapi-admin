@@ -1,0 +1,45 @@
+:root {
+  // 圆角
+  --dt-radius-sm: 10px;
+  --dt-radius-md: 14px;
+  --dt-radius-lg: 20px;
+
+  // 阴影（浅色主题）
+  --dt-shadow-sm: 0 1px 2px rgba(28, 25, 23, 0.04), 0 1px 1px rgba(28, 25, 23, 0.03);
+  --dt-shadow-md: 0 4px 16px rgba(28, 25, 23, 0.06), 0 1px 4px rgba(28, 25, 23, 0.04);
+  --dt-shadow-lg: 0 12px 32px rgba(28, 25, 23, 0.08), 0 2px 8px rgba(28, 25, 23, 0.04);
+
+  // 四象限语义色——数值照抄现有代码里反复出现的十六进制，只是集中定义，不改变任何一个色值
+  --dt-quadrant-urgent-important: #f5222d;
+  --dt-quadrant-urgent-not-important: #faad14;
+  --dt-quadrant-important-not-urgent: #1890ff;
+  --dt-quadrant-not-urgent-not-important: #909399;
+
+  // 板块辅助色（日程/习惯专属，四象限之外全新引入的语义色）
+  --dt-schedule: #6366f1;
+  --dt-schedule-soft: #eef2ff;
+  --dt-habit: #10b981;
+  --dt-habit-soft: #ecfdf5;
+
+  // 中性色阶（浅色主题）
+  --dt-ink: #1c1917;
+  --dt-ink-muted: #78716c;
+  --dt-ink-faint: #a8a29e;
+  --dt-card-bg: #ffffff;
+  --dt-page-bg: #faf9f7;
+  --dt-border: #efece8;
+}
+
+[data-theme='dark'] {
+  --dt-shadow-sm: 0 1px 2px rgba(0, 0, 0, 0.24), 0 1px 1px rgba(0, 0, 0, 0.18);
+  --dt-shadow-md: 0 4px 16px rgba(0, 0, 0, 0.32), 0 1px 4px rgba(0, 0, 0, 0.24);
+  --dt-shadow-lg: 0 12px 32px rgba(0, 0, 0, 0.4), 0 2px 8px rgba(0, 0, 0, 0.28);
+  --dt-ink: #e7e5e4;
+  --dt-ink-muted: #a8a29e;
+  --dt-ink-faint: #6b6560;
+  --dt-card-bg: #232120;
+  --dt-page-bg: #1a1817;
+  --dt-border: #322f2d;
+  --dt-schedule-soft: #23264a;
+  --dt-habit-soft: #0f2e24;
+}
