@@ -172,8 +172,26 @@ onActivated(fetchAll)
   align-items: center;
   justify-content: space-between;
   gap: 1em;
-  padding: 0.8em 0.2em;
+  padding: 0.9em 1em;
+  border-radius: var(--dt-radius-md);
+  background: var(--dt-card-bg, transparent);
+  border: 1px solid var(--dt-border);
+  box-shadow: var(--dt-shadow-sm);
+  margin-bottom: 0.6em;
+  transition:
+    box-shadow 0.2s ease,
+    transform 0.2s ease;
+}
+.goal-item:hover {
+  box-shadow: var(--dt-shadow-md);
+  transform: translateY(-1px);
+}
+.goal-item.archived {
+  border: none;
+  box-shadow: none;
+  padding: 0.6em 0.2em;
   border-bottom: 1px solid rgba(128, 128, 128, 0.12);
+  margin-bottom: 0;
 }
 .goal-item.archived {
   opacity: 0.7;
@@ -194,16 +212,17 @@ onActivated(fetchAll)
   margin-top: 0.2em;
 }
 .progress-bar {
-  height: 6px;
-  border-radius: 3px;
-  background: rgba(128, 128, 128, 0.15);
-  margin-top: 0.5em;
+  height: 8px;
+  border-radius: 4px;
+  background: var(--dt-page-bg, rgba(128, 128, 128, 0.15));
+  margin-top: 0.6em;
   overflow: hidden;
 }
 .progress-bar-inner {
   height: 100%;
-  background: #1890ff;
-  transition: width 0.2s;
+  border-radius: 4px;
+  background: var(--dt-habit, #1890ff);
+  transition: width 0.3s ease;
 }
 .goal-actions {
   display: flex;
