@@ -338,18 +338,32 @@ onActivated(loadAll)
   grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
   gap: 1.5em;
 }
+.metric-card {
+  background: var(--dt-card-bg, transparent);
+  border: 1px solid var(--dt-border);
+  border-radius: var(--dt-radius-md);
+  padding: 16px 18px;
+  box-shadow: var(--dt-shadow-sm);
+}
+.metric-card h4 {
+  margin: 0 0 0.6em;
+  font-size: 0.95em;
+  font-weight: 700;
+}
 .metric-card p {
   margin: 0.4em 0;
   font-size: 0.92em;
 }
 .reflection-step {
-  margin-bottom: 1.5em;
-  padding: 1em 1.2em;
-  background-color: rgba(128, 128, 128, 0.06);
-  border-radius: 8px;
+  margin-bottom: 1.2em;
+  padding: 1.2em 1.4em;
+  background-color: var(--dt-page-bg, rgba(128, 128, 128, 0.06));
+  border: 1px solid var(--dt-border);
+  border-radius: var(--dt-radius-md);
 }
 .reflection-step h4 {
   margin: 0 0 0.5em;
+  font-weight: 700;
 }
 .step-guidance {
   opacity: 0.65;
