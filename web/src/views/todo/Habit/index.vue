@@ -206,8 +206,26 @@ onActivated(fetchAll)
   align-items: center;
   justify-content: space-between;
   gap: 1em;
-  padding: 0.8em 0.2em;
+  padding: 0.9em 1em;
+  border-radius: var(--dt-radius-md);
+  background: var(--dt-card-bg, transparent);
+  border: 1px solid var(--dt-border);
+  box-shadow: var(--dt-shadow-sm);
+  margin-bottom: 0.6em;
+  transition:
+    box-shadow 0.2s ease,
+    transform 0.2s ease;
+}
+.habit-item:hover {
+  box-shadow: var(--dt-shadow-md);
+  transform: translateY(-1px);
+}
+.habit-item.archived {
+  border: none;
+  box-shadow: none;
+  padding: 0.6em 0.2em;
   border-bottom: 1px solid rgba(128, 128, 128, 0.12);
+  margin-bottom: 0;
 }
 .habit-item.paused {
   opacity: 0.5;
@@ -224,7 +242,15 @@ onActivated(fetchAll)
   font-weight: 500;
 }
 .habit-icon {
-  margin-right: 0.4em;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 26px;
+  height: 26px;
+  margin-right: 0.5em;
+  border-radius: var(--dt-radius-sm);
+  background: var(--dt-habit-soft);
+  font-size: 0.9em;
 }
 .paused-tag {
   font-size: 0.8em;
@@ -247,7 +273,8 @@ onActivated(fetchAll)
 }
 .progress-bar-inner {
   height: 100%;
-  transition: width 0.2s;
+  border-radius: 3px;
+  transition: width 0.3s ease;
 }
 .habit-actions {
   display: flex;
