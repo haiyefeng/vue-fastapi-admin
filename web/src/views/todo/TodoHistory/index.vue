@@ -73,6 +73,16 @@ const sortConfig = ref({
   order: ''
 })
 
+// 象限色沿用 design-tokens.scss 里 --dt-quadrant-* 的同一组数值——图表走 echarts canvas 渲染，
+// 拿不到 CSS 自定义属性，这里用 JS 常量集中定义一份，和 CSS token 保持同源但各自维护，
+// 与本仓库"小型格式化/配置各文件自己写一份"的既定做法一致
+const QUADRANT_COLOR = {
+  urgent_important: '#f5222d',
+  urgent_not_important: '#faad14',
+  important_not_urgent: '#1890ff',
+  not_urgent_not_important: '#909399'
+}
+
 // 表格列定义
 const columns = ref([
   {
@@ -85,10 +95,10 @@ const columns = ref([
     key: 'quadrant_type',
     render(row) {
       const typeMap = {
-        urgent_important: { text: '重要且紧急', color: '#f5222d' },
-        urgent_not_important: { text: '紧急不重要', color: '#faad14' },
-        important_not_urgent: { text: '重要不紧急', color: '#1890ff' },
-        not_urgent_not_important: { text: '不紧急不重要', color: '#909399' }
+        urgent_important: { text: '重要且紧急', color: QUADRANT_COLOR.urgent_important },
+        urgent_not_important: { text: '紧急不重要', color: QUADRANT_COLOR.urgent_not_important },
+        important_not_urgent: { text: '重要不紧急', color: QUADRANT_COLOR.important_not_urgent },
+        not_urgent_not_important: { text: '不紧急不重要', color: QUADRANT_COLOR.not_urgent_not_important }
       };
       const config = typeMap[row.quadrant_type] || { text: row.quadrant_type, color: '#909399' };
       return h(NTag, { 
@@ -255,7 +265,8 @@ const updateDailyChart = (data) => {
         type: 'bar',
         data: completedCounts,
         itemStyle: {
-          color: '#18a058'
+          color: '#10b981',
+          borderRadius: [6, 6, 0, 0]
         }
       }
     ]
@@ -283,10 +294,10 @@ const updateQuadrantChart = (data) => {
         type: 'pie',
         radius: '50%',
         data: [
-          { value: data.urgent_important || 0, name: '重要且紧急', itemStyle: { color: '#d03050' } },
-          { value: data.urgent_not_important || 0, name: '紧急不重要', itemStyle: { color: '#f0a020' } },
-          { value: data.important_not_urgent || 0, name: '重要不紧急', itemStyle: { color: '#1890ff' } },
-          { value: data.not_urgent_not_important || 0, name: '不紧急不重要', itemStyle: { color: '#909399' } }
+          { value: data.urgent_important || 0, name: '重要且紧急', itemStyle: { color: QUADRANT_COLOR.urgent_important } },
+          { value: data.urgent_not_important || 0, name: '紧急不重要', itemStyle: { color: QUADRANT_COLOR.urgent_not_important } },
+          { value: data.important_not_urgent || 0, name: '重要不紧急', itemStyle: { color: QUADRANT_COLOR.important_not_urgent } },
+          { value: data.not_urgent_not_important || 0, name: '不紧急不重要', itemStyle: { color: QUADRANT_COLOR.not_urgent_not_important } }
         ],
         emphasis: {
           itemStyle: {
@@ -495,10 +506,10 @@ const renderDetailModal = () => {
 // 获取象限类型配置
 const getQuadrantTypeConfig = (type) => {
   const typeMap = {
-    urgent_important: { text: '重要且紧急', color: '#f5222d' },
-    urgent_not_important: { text: '紧急不重要', color: '#faad14' },
-    important_not_urgent: { text: '重要不紧急', color: '#1890ff' },
-    not_urgent_not_important: { text: '不紧急不重要', color: '#909399' }
+    urgent_important: { text: '重要且紧急', color: QUADRANT_COLOR.urgent_important },
+    urgent_not_important: { text: '紧急不重要', color: QUADRANT_COLOR.urgent_not_important },
+    important_not_urgent: { text: '重要不紧急', color: QUADRANT_COLOR.important_not_urgent },
+    not_urgent_not_important: { text: '不紧急不重要', color: QUADRANT_COLOR.not_urgent_not_important }
   };
   return typeMap[type] || { text: type || '未知', color: '#909399' };
 }
@@ -542,13 +553,13 @@ onUnmounted(() => {
 }
 
 .detail-label {
-  color: #555;
+  color: var(--dt-ink-muted, #555);
   font-size: 14px;
   font-weight: 500;
 }
 
 .detail-value {
-  color: #333;
+  color: var(--dt-ink, #333);
   font-size: 15px;
 }
 
