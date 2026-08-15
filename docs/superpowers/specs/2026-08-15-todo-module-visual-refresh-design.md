@@ -71,9 +71,11 @@
 
 暗色主题的判定复用现有 `appStore.isDark` 机制——`AppProvider.vue` 已经在 `<n-config-provider>` 上根据 `appStore.isDark` 切换 `darkTheme`；这里额外在根元素加一个 `data-theme` attribute（在 `AppProvider.vue` 的 `setupCssVar` 附近新增几行，`watch(() => appStore.isDark, ...)` 同步到 `document.documentElement.dataset.theme`），供上面这套 token 的 `[data-theme='dark']` 选择器使用。四象限色/日程色/习惯色本身在深浅色主题下不变（保持可识别性），只有中性色阶、阴影透明度需要跟着切换。
 
-### Naive UI 主题微调
+### Naive UI 组件视觉调整（改为页面级 scoped 样式，不用全局主题覆盖）
 
-`web/settings/theme.json` 的 `naiveThemeOverrides` 里追加 `Card`/`Button`/`Modal` 组件级 override（圆角对齐 `--dt-radius-md`，卡片默认加轻阴影），让页面里裸用的 `n-card`/`n-button`/`n-modal`（详情弹窗、表单弹窗等）不用每处手动加 class 也能获得统一的精致感。**不改动 `common.primaryColor` 等全局主色，只加组件级的形状类 override**。
+最初考虑过在 `web/settings/theme.json` 的 `naiveThemeOverrides` 里加 `Card`/`Button`/`Modal` 组件级 override 来统一圆角/阴影。**写计划阶段核实 Naive UI 源码后发现这个思路有问题并已改正**：`naiveThemeOverrides` 是通过唯一的一个 `<n-config-provider>` 全局生效的，组件级 override（哪怕只写 `Card.borderRadius`）会影响应用里**每一个** `n-card`/`n-button` 实例，包括系统管理模块（用户/角色/菜单/API/部门/审计日志）——直接违反本设计"系统管理模块不在本次范围内"的边界。
+
+改为：每个待办模块页面在自己的 `<style scoped>` 里用 Vue 的 `:deep()` 选择器覆盖该页面内渲染的 `n-card`/`n-button` 样式（如 `:deep(.n-card) { border-radius: var(--dt-radius-lg); box-shadow: var(--dt-shadow-sm); }`）。`scoped` 样式天然只作用于当前组件模板范围内渲染的元素，不会外溢到其他页面，这是 Vue 里"局部覆盖第三方组件库默认样式"的标准做法，不需要引入任何新机制。
 
 ### 共享空状态组件（新组件，唯一值得抽取共享的部分）
 
