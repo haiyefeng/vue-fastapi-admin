@@ -1,6 +1,6 @@
 <template>
   <div class="todo-quadrant">
-    <n-grid :cols="2" :x-gap="20">
+    <n-grid :cols="2" :x-gap="24" :y-gap="24">
       <!-- 重要且紧急 -->
       <n-gi>
         <n-card class="quadrant-card urgent-important">

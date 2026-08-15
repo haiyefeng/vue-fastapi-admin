@@ -314,6 +314,8 @@ onActivated(() => {
 <style scoped>
 .dashboard-page {
   max-width: 1100px;
+  margin: 0 auto;
+  padding: 20px 24px;
 }
 .dashboard-header {
   display: flex;

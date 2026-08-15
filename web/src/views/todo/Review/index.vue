@@ -313,6 +313,8 @@ onActivated(loadAll)
 <style scoped>
 .review-page {
   max-width: 960px;
+  margin: 0 auto;
+  padding: 20px 24px;
 }
 .review-header {
   display: flex;

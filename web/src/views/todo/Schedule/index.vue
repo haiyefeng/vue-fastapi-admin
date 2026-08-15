@@ -55,6 +55,9 @@ onMounted(async () => {
 </script>
 
 <style scoped>
+.schedule-page {
+  padding: 16px;
+}
 .schedule-view-toggle {
   display: flex;
   gap: 0.4em;

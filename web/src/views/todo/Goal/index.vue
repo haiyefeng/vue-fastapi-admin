@@ -160,6 +160,8 @@ onActivated(fetchAll)
 <style scoped>
 .goal-page {
   max-width: 900px;
+  margin: 0 auto;
+  padding: 20px 24px;
 }
 .goal-header {
   display: flex;

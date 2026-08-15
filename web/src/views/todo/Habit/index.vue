@@ -194,6 +194,8 @@ onActivated(fetchAll)
 <style scoped>
 .habit-page {
   max-width: 900px;
+  margin: 0 auto;
+  padding: 20px 24px;
 }
 .habit-header {
   display: flex;
