@@ -60,7 +60,7 @@
                 </span>
                 <span v-else>无截止时间</span>
                 <span>
-                  <span class="quadrant-dot" :style="{ background: quadrantColor(todo.quadrant_type) }"></span>
+                  <span class="quadrant-bar" :style="{ background: quadrantColor(todo.quadrant_type) }"></span>
                   {{ quadrantLabel(todo.quadrant_type) }}
                 </span>
                 <span v-if="todo.subtask_total">{{ todo.subtask_completed }}/{{ todo.subtask_total }} 子任务</span>
@@ -275,8 +275,28 @@ onMounted(() => {
 }
 .quick-add {
   display: flex;
+  align-items: center;
   gap: 0.5em;
-  margin-bottom: 1em;
+  margin-bottom: 1.2em;
+  background: var(--dt-card-bg, #fff);
+  border: 1px solid var(--dt-border);
+  border-radius: 999px;
+  padding: 4px 6px 4px 16px;
+  box-shadow: var(--dt-shadow-sm);
+  transition: border-color 0.2s ease;
+}
+.quick-add:focus-within {
+  border-color: var(--primary-color, #f4511e);
+}
+.quick-add :deep(.n-input) {
+  --n-border: none !important;
+  --n-border-hover: none !important;
+  --n-border-focus: none !important;
+  --n-box-shadow-focus: none !important;
+  background: transparent;
+}
+.quick-add :deep(.n-button) {
+  border-radius: 999px;
 }
 .group-title {
   margin: 1em 0 0.5em 0.2em;
@@ -287,8 +307,12 @@ onMounted(() => {
   display: flex;
   align-items: center;
   gap: 0.6em;
-  padding: 0.5em 0.2em;
-  border-bottom: 1px solid rgba(128, 128, 128, 0.12);
+  padding: 0.6em 0.5em;
+  border-radius: var(--dt-radius-sm);
+  transition: background 0.15s ease;
+}
+.task-item:hover {
+  background: var(--dt-page-bg);
 }
 .task-item.completed .task-title {
   text-decoration: line-through;
@@ -313,11 +337,12 @@ onMounted(() => {
   color: #f5222d;
   opacity: 1;
 }
-.quadrant-dot {
+.quadrant-bar {
   display: inline-block;
-  width: 8px;
-  height: 8px;
-  border-radius: 50%;
-  margin-right: 0.3em;
+  width: 3px;
+  height: 11px;
+  border-radius: 3px;
+  margin-right: 0.4em;
+  vertical-align: middle;
 }
 </style>
