@@ -216,3 +216,69 @@ async def test_today_overview_isolated_per_user_via_time_block(client, test_user
 
     resp = await client.get("/api/v1/dashboard/today")
     assert resp.json()["data"]["tasks"] == []
+
+
+async def test_today_overview_task_counts_include_completed_and_incomplete(client, test_user):
+    today = date.today()
+    await TodoItem.create(
+        title="已完成的今日任务",
+        user_id=test_user.id,
+        quadrant_type=QuadrantType.URGENT_IMPORTANT,
+        due_date=datetime.combine(today, time(18, 0)),
+        is_completed=True,
+    )
+    await TodoItem.create(
+        title="未完成的今日任务",
+        user_id=test_user.id,
+        quadrant_type=QuadrantType.URGENT_IMPORTANT,
+        due_date=datetime.combine(today, time(9, 0)),
+    )
+
+    resp = await client.get("/api/v1/dashboard/today")
+    data = resp.json()["data"]
+    assert data["total_task_count"] == 2
+    assert data["completed_task_count"] == 1
+
+
+async def test_today_overview_task_counts_zero_when_no_tasks(client, test_user):
+    resp = await client.get("/api/v1/dashboard/today")
+    data = resp.json()["data"]
+    assert data["total_task_count"] == 0
+    assert data["completed_task_count"] == 0
+
+
+async def test_today_overview_task_counts_exclude_habit_generated(client, test_user):
+    habit = await Habit.create(user_id=test_user.id, name="打卡", frequency_type=HabitFrequencyType.DAILY)
+    today = date.today()
+    await TodoItem.create(
+        title="习惯待办",
+        user_id=test_user.id,
+        habit_id=habit.id,
+        quadrant_type=QuadrantType.IMPORTANT_NOT_URGENT,
+        due_date=datetime.combine(today, time(18, 0)),
+        generated_date=today,
+        is_completed=True,
+    )
+
+    resp = await client.get("/api/v1/dashboard/today")
+    data = resp.json()["data"]
+    assert data["total_task_count"] == 0
+    assert data["completed_task_count"] == 0
+
+
+async def test_today_overview_task_counts_include_scheduled_today_without_due_date(client, test_user):
+    todo = await TodoItem.create(
+        title="只排了时间块", user_id=test_user.id, quadrant_type=QuadrantType.IMPORTANT_NOT_URGENT
+    )
+    today = date.today()
+    await TimeBlock.create(
+        todo_item_id=todo.id,
+        user_id=test_user.id,
+        start_time=datetime.combine(today, time(8, 0)),
+        end_time=datetime.combine(today, time(9, 0)),
+    )
+
+    resp = await client.get("/api/v1/dashboard/today")
+    data = resp.json()["data"]
+    assert data["total_task_count"] == 1
+    assert data["completed_task_count"] == 0
