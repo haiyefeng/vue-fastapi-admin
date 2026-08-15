@@ -254,7 +254,7 @@ onMounted(fetchAll)
   box-sizing: border-box;
 }
 .hour-slot.drop-hint {
-  background: rgba(24, 144, 255, 0.12);
+  background: var(--dt-schedule-soft);
 }
 .hour-label {
   position: absolute;
@@ -267,7 +267,7 @@ onMounted(fetchAll)
   position: absolute;
   left: 56px;
   right: 10px;
-  border-radius: 4px;
+  border-radius: var(--dt-radius-sm, 4px);
   padding: 2px 6px;
   font-size: 0.85em;
   color: #fff;
@@ -275,15 +275,21 @@ onMounted(fetchAll)
   z-index: 2;
   box-sizing: border-box;
   cursor: pointer;
+  box-shadow: var(--dt-shadow-sm);
+  transition: filter 0.15s ease;
+}
+.day-event:hover {
+  filter: brightness(0.94);
 }
 .now-line {
   position: absolute;
   left: 0;
   right: 0;
   height: 2px;
-  background: #f5222d;
+  background: var(--dt-quadrant-urgent-important, #f5222d);
   z-index: 3;
   pointer-events: none;
+  box-shadow: 0 0 4px rgba(245, 34, 45, 0.4);
 }
 .unscheduled-section {
   margin-top: 2em;
@@ -301,9 +307,13 @@ onMounted(fetchAll)
   display: flex;
   align-items: center;
   gap: 0.5em;
-  padding: 0.5em 0.2em;
-  border-bottom: 1px solid rgba(128, 128, 128, 0.12);
+  padding: 0.6em 0.5em;
+  border-radius: var(--dt-radius-sm);
   cursor: grab;
+  transition: background 0.15s ease;
+}
+.unscheduled-item:hover {
+  background: var(--dt-page-bg);
 }
 .unscheduled-item:active {
   cursor: grabbing;

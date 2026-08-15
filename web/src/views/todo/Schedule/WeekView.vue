@@ -371,8 +371,9 @@ onUnmounted(() => {
   overflow: hidden;
 }
 .day-col.today .day-head {
-  background: rgba(24, 144, 255, 0.12);
-  color: #1890ff;
+  background: var(--dt-schedule-soft);
+  color: var(--dt-schedule);
+  font-weight: 700;
 }
 .col-body {
   position: relative;
@@ -407,15 +408,16 @@ onUnmounted(() => {
   left: 0;
   right: 0;
   height: 2px;
-  background: #f5222d;
+  background: var(--dt-quadrant-urgent-important, #f5222d);
   z-index: 3;
   pointer-events: none;
+  box-shadow: 0 0 4px rgba(245, 34, 45, 0.4);
 }
 .event-block {
   position: absolute;
   left: 2px;
   right: 2px;
-  border-radius: 4px;
+  border-radius: var(--dt-radius-sm, 4px);
   padding: 1px 4px;
   font-size: 0.76em;
   color: #fff;
@@ -425,5 +427,10 @@ onUnmounted(() => {
   z-index: 2;
   box-sizing: border-box;
   cursor: pointer;
+  box-shadow: var(--dt-shadow-sm);
+  transition: filter 0.15s ease;
+}
+.event-block:hover {
+  filter: brightness(0.94);
 }
 </style>
