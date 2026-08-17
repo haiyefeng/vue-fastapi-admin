@@ -498,7 +498,7 @@ onActivated(() => {
   font-size: 11px;
   font-weight: 700;
   color: var(--dt-ink-faint);
-  background: var(--dt-page-bg);
+  background: var(--dt-surface-subtle);
   padding: 2px 8px;
   border-radius: 999px;
   border: 1px solid var(--dt-border);

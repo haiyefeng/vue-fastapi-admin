@@ -43,7 +43,7 @@ const router = useRouter()
   width: 44px;
   height: 44px;
   border-radius: var(--dt-radius-md);
-  background: var(--dt-page-bg);
+  background: var(--dt-surface-subtle);
   border: 1px dashed var(--dt-border);
   display: flex;
   align-items: center;
