@@ -69,7 +69,7 @@
           </div>
         </div>
 
-        <n-empty v-if="!todos.length" description="暂无任务" />
+        <EmptyState v-if="!todos.length" icon="material-symbols:checklist" text="暂无任务" />
       </div>
     </div>
 
@@ -89,6 +89,7 @@ import { useMessage } from 'naive-ui'
 import api from '@/api'
 import ProjectNav from './ProjectNav.vue'
 import TaskDetailModal from './TaskDetailModal.vue'
+import EmptyState from '@/components/common/EmptyState.vue'
 
 const message = useMessage()
 

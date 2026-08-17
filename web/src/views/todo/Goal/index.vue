@@ -27,7 +27,7 @@
           </n-dropdown>
         </div>
       </div>
-      <n-empty v-if="!goals.length" description="还没有计划，点右上角添加一个" />
+      <EmptyState v-if="!goals.length" icon="material-symbols:flag-outline" text="还没有计划，点右上角添加一个" />
     </section>
 
     <n-collapse v-if="archivedGoals.length" class="archived-collapse">
@@ -56,6 +56,7 @@ import { useMessage, useDialog } from 'naive-ui'
 import api from '@/api'
 import GoalFormModal from './GoalFormModal.vue'
 import GoalDetailModal from './GoalDetailModal.vue'
+import EmptyState from '@/components/common/EmptyState.vue'
 
 defineOptions({ name: '计划' })
 

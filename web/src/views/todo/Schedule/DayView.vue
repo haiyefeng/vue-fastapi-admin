@@ -46,7 +46,7 @@
           <span class="task-meta">{{ dueLabel(todo) }}</span>
         </li>
       </ul>
-      <n-empty v-if="!unscheduledTodos.length" description="没有未安排的任务" />
+      <EmptyState v-if="!unscheduledTodos.length" icon="material-symbols:inbox-outline" text="没有未安排的任务" />
     </section>
   </div>
 </template>
@@ -54,6 +54,7 @@
 <script setup>
 import { ref, computed, onMounted } from 'vue'
 import api from '@/api'
+import EmptyState from '@/components/common/EmptyState.vue'
 
 defineEmits(['edit-todo'])
 

@@ -47,7 +47,7 @@
               </template>
               <template v-else> 完成 {{ habit.completed }} / {{ habit.expected }} 次 </template>
             </p>
-            <n-empty v-if="!summary.habits.length" description="还没有进行中的习惯" size="small" />
+            <EmptyState v-if="!summary.habits.length" icon="material-symbols:eco-outline" text="还没有进行中的习惯" />
           </div>
           <div class="metric-card">
             <h4>计划进展</h4>
@@ -58,7 +58,7 @@
               </template>
               <template v-else> 无明显进展 </template>
             </p>
-            <n-empty v-if="!summary.goals.length" description="还没有进行中的计划" size="small" />
+            <EmptyState v-if="!summary.goals.length" icon="material-symbols:flag-outline" text="还没有进行中的计划" />
           </div>
         </div>
       </section>
@@ -120,7 +120,7 @@
         >
         <span class="history-status">{{ item.status === 'completed' ? '已完成' : '草稿' }}</span>
       </div>
-      <n-empty v-if="!historyList.length" description="还没有历史回顾" />
+      <EmptyState v-if="!historyList.length" icon="material-symbols:history" text="还没有历史回顾" />
     </n-modal>
   </div>
 </template>
@@ -130,6 +130,7 @@ import { ref, computed, watch, onActivated } from 'vue'
 import { useMessage } from 'naive-ui'
 import api from '@/api'
 import GoalFormModal from '../Goal/GoalFormModal.vue'
+import EmptyState from '@/components/common/EmptyState.vue'
 
 defineOptions({ name: '回顾总结' })
 

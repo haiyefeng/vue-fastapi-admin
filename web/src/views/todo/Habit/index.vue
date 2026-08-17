@@ -41,7 +41,7 @@
           </n-dropdown>
         </div>
       </div>
-      <n-empty v-if="!habits.length" description="还没有习惯，点右上角添加一个" />
+      <EmptyState v-if="!habits.length" icon="material-symbols:eco-outline" text="还没有习惯，点右上角添加一个" />
     </section>
 
     <n-collapse v-if="archivedHabits.length" class="archived-collapse">
@@ -67,6 +67,7 @@ import { ref, onActivated } from 'vue'
 import { useMessage, useDialog } from 'naive-ui'
 import api from '@/api'
 import HabitFormModal from './HabitFormModal.vue'
+import EmptyState from '@/components/common/EmptyState.vue'
 
 defineOptions({ name: '习惯' })
 
