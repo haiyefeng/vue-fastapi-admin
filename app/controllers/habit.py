@@ -6,6 +6,7 @@ from fastapi import HTTPException
 from app.core.crud import CRUDBase
 from app.models.todo import Goal, Habit, HabitFrequencyType, TodoItem
 from app.schemas.habit import HabitCreate, HabitUpdate
+from app.utils.time_helpers import to_naive_time
 
 
 class HabitController(CRUDBase[Habit, HabitCreate, HabitUpdate]):
@@ -115,15 +116,11 @@ class HabitController(CRUDBase[Habit, HabitCreate, HabitUpdate]):
             if should_generate:
                 exists = await TodoItem.filter(habit_id=habit.id, generated_date=today).exists()
                 if not exists:
-                    # habit.reminder_time 是从 DB 读回的 TimeField：tortoise 在非 UTC 时区下会给它挂上
-                    # pytz 时区对象作为 tzinfo，但由于没有日期上下文，pytz 会用 LMT（历史时区，Asia/Shanghai
-                    # 为 +8:06 而非 +8:00）兜底，导致 datetime.combine 后的时间被错误偏移几分钟。这里的
-                    # reminder_time 本质是纯挂钟时间，用之前先剥离这个虚假 tzinfo，避免污染 reminder_at。
-                    reminder_at = (
-                        datetime.combine(today, habit.reminder_time.replace(tzinfo=None))
-                        if habit.reminder_time
-                        else None
-                    )
+                    # habit.reminder_time 是从 DB 读回的 TimeField，不同后端读回的 python 类型不一致
+                    # （MySQL 固定读回 timedelta，SQLite 读回 time 但可能挂着虚假 tzinfo），统一交给
+                    # to_naive_time 归一化为纯挂钟时间，详见该函数的说明
+                    reminder_time = to_naive_time(habit.reminder_time)
+                    reminder_at = datetime.combine(today, reminder_time) if reminder_time else None
                     await TodoItem.create(
                         title=habit.name,
                         habit_id=habit.id,

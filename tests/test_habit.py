@@ -415,6 +415,18 @@ async def test_update_habit_with_other_user_goal_id_returns_404(client, test_use
     assert resp.status_code == 404
 
 
+async def test_to_dict_serializes_reminder_time_when_read_back_as_timedelta(test_user):
+    """MySQL 的 asyncmy 驱动读回 TimeField 时固定是 timedelta 而非 time（见
+    tortoise.fields.data.TimeField.to_python_value），SQLite 测试库读回的始终是 time，
+    没法通过真实 DB 往返复现，这里直接在内存对象上模拟该读回值。"""
+    habit = Habit(user_id=test_user.id, name="早起", frequency_type=HabitFrequencyType.DAILY)
+    habit.reminder_time = timedelta(hours=7, minutes=30)
+
+    data = await habit.to_dict()
+
+    assert data["reminder_time"] == "07:30:00"
+
+
 async def test_create_habit_with_own_goal_id_succeeds(client, test_user):
     from app.models.todo import Goal
 

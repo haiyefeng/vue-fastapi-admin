@@ -1,9 +1,10 @@
 import asyncio
-from datetime import datetime
+from datetime import datetime, timedelta
 
 from tortoise import fields, models
 
 from app.settings import settings
+from app.utils.time_helpers import to_naive_time
 
 
 class BaseModel(models.Model):
@@ -19,6 +20,10 @@ class BaseModel(models.Model):
                 value = getattr(self, field)
                 if isinstance(value, datetime):
                     value = value.strftime(settings.DATETIME_FORMAT)
+                elif isinstance(value, timedelta):
+                    # MySQL 下 TimeField 读回的是 timedelta（无 isoformat 方法），归一化成
+                    # time 后再序列化，详见 to_naive_time 的说明
+                    value = to_naive_time(value).isoformat()
                 elif hasattr(value, "isoformat"):  # 处理 date 和其他有 isoformat 方法的类型
                     value = value.isoformat()
                 d[field] = value
