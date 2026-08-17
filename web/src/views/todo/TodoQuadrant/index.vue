@@ -624,6 +624,8 @@ onMounted(() => {
 <style>
 .todo-quadrant {
   padding: 16px;
+  height: 100%;
+  overflow-y: auto;
 }
 
 .quadrant-card {
@@ -652,6 +654,8 @@ onMounted(() => {
 
 .todo-list {
   min-height: 300px;
+  max-height: 420px;
+  overflow-y: auto;
 }
 
 .todo-item {

@@ -57,6 +57,8 @@ onMounted(async () => {
 <style scoped>
 .schedule-page {
   padding: 16px;
+  height: 100%;
+  overflow-y: auto;
 }
 .schedule-view-toggle {
   display: flex;

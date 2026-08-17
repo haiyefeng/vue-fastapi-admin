@@ -316,6 +316,8 @@ onActivated(() => {
   max-width: 1100px;
   margin: 0 auto;
   padding: 20px 24px;
+  height: 100%;
+  overflow-y: auto;
 }
 .dashboard-header {
   display: flex;

@@ -255,6 +255,11 @@ onMounted(() => {
 </script>
 
 <style scoped>
+.task-list-page {
+  height: 100%;
+  overflow-y: auto;
+  padding: 16px;
+}
 .tasks-layout {
   display: flex;
   gap: 1.5em;

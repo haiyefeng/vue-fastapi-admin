@@ -163,6 +163,8 @@ onActivated(fetchAll)
   max-width: 900px;
   margin: 0 auto;
   padding: 20px 24px;
+  height: 100%;
+  overflow-y: auto;
 }
 .goal-header {
   display: flex;
