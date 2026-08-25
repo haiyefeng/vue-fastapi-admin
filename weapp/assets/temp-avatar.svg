@@ -1,0 +1,35 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512">
+  <defs>
+    <linearGradient id="bg" x1="0" y1="0" x2="0" y2="1">
+      <stop offset="0" stop-color="#ff9a5a"/>
+      <stop offset="0.5" stop-color="#f5611f"/>
+      <stop offset="1" stop-color="#f4511e"/>
+    </linearGradient>
+    <linearGradient id="sand" x1="0" y1="0" x2="0" y2="1">
+      <stop offset="0" stop-color="#ffe0a1"/>
+      <stop offset="1" stop-color="#ffb84d"/>
+    </linearGradient>
+    <radialGradient id="glow" cx="0.5" cy="0.30" r="0.6">
+      <stop offset="0" stop-color="#ffffff" stop-opacity="0.45"/>
+      <stop offset="1" stop-color="#ffffff" stop-opacity="0"/>
+    </radialGradient>
+  </defs>
+
+  <rect width="512" height="512" rx="112" fill="url(#bg)"/>
+  <rect width="512" height="512" rx="112" fill="url(#glow)"/>
+
+  <!-- 拾光·四芒星（缩小，放顶部） -->
+  <path d="M256 46 C261 82 273 94 309 98 C273 102 261 114 256 150 C251 114 239 102 203 98 C239 94 251 82 256 46 Z" fill="#fff"/>
+  <path d="M356 70 C358 84 363 89 377 91 C363 93 358 98 356 112 C354 98 349 93 335 91 C349 89 354 84 356 70 Z" fill="#ffe9c2"/>
+
+  <!-- 沙漏：玻璃轮廓（奶油白描边） -->
+  <path d="M188 186 L324 186 L324 198 L262 296 L324 394 L324 406 L188 406 L188 394 L250 296 L188 198 Z"
+        fill="none" stroke="#fff8ee" stroke-width="18" stroke-linejoin="round"/>
+
+  <!-- 底部沙（琥珀渐变，填充下腔内部） -->
+  <path d="M250 296 L188 394 L187 406 L325 406 L324 394 L262 296 Z" fill="url(#sand)"/>
+
+  <!-- 顶层残沙 + 落沙细流 -->
+  <path d="M234 196 L278 196 L256 226 Z" fill="url(#sand)"/>
+  <rect x="253" y="226" width="6" height="70" rx="3" fill="url(#sand)"/>
+</svg>

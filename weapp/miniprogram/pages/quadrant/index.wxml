@@ -1,0 +1,57 @@
+<view class="page">
+  <view class="grid">
+    <view class="card" wx:for="{{quadrants}}" wx:key="key" wx:for-item="q">
+      <view class="card-head">
+        <view class="card-title">
+          <view class="dot" style="background: {{q.color}};"></view>
+          <text style="color: {{q.color}};">{{q.label}}</text>
+        </view>
+        <view class="add-btn" style="color: {{q.color}}; border-color: {{q.color}};" data-key="{{q.key}}" bindtap="openAdd">+ 添加</view>
+      </view>
+
+      <view class="empty" wx:if="{{loading}}">加载中…</view>
+      <view class="empty" wx:elif="{{!q.todos.length}}">暂无待办</view>
+
+      <view class="todo" wx:for="{{q.todos}}" wx:key="_id" wx:for-item="t">
+        <view class="todo-main">
+          <view class="check" bindtap="toggleComplete" data-id="{{t._id}}"></view>
+          <view class="todo-body" data-id="{{t._id}}" bindtap="openEdit" bindlongpress="onMove">
+            <view class="todo-title">{{t.title}}</view>
+            <view class="todo-meta">
+              <text wx:if="{{t.due_date}}" class="due">截止 {{t.due_text}}</text>
+              <text wx:if="{{t.notes}}" class="note">备注</text>
+            </view>
+          </view>
+        </view>
+        <view class="todo-actions">
+          <text class="act" data-id="{{t._id}}" bindtap="openEdit">编辑</text>
+          <text class="act" data-id="{{t._id}}" bindtap="onMove">移动</text>
+          <text class="act danger" data-id="{{t._id}}" bindtap="onDelete">删除</text>
+        </view>
+      </view>
+    </view>
+  </view>
+
+  <view class="mask" wx:if="{{dialogVisible}}" bindtap="closeDialog">
+    <view class="dialog" catchtap="noop">
+      <view class="dialog-title">{{dialogType === 'add' ? '添加待办' : '编辑待办'}}</view>
+      <input class="input" placeholder="请输入标题" value="{{form.title}}" bindinput="onInputTitle" />
+      <picker mode="selector" range="{{quadrantNames}}" value="{{quadrantIndex}}" bindchange="onPickQuadrant">
+        <view class="picker">象限：{{form.quadrant_label}} ▾</view>
+      </picker>
+      <view class="picker-row">
+        <picker mode="date" value="{{dueDateText}}" bindchange="onPickDue" class="picker-flex">
+          <view class="picker">截止：{{dueDateText || '请选择'}}</view>
+        </picker>
+        <text class="clear" wx:if="{{dueDateText}}" bindtap="onClearDue">清除</text>
+      </view>
+      <textarea class="textarea" placeholder="备注（可记录完成方法、收获等）" value="{{form.notes}}" bindinput="onInputNotes" />
+      <view class="dialog-footer">
+        <button class="btn" bindtap="closeDialog">取消</button>
+        <button class="btn primary" bindtap="onSave" disabled="{{saving}}">{{saving ? '保存中…' : '保存'}}</button>
+      </view>
+    </view>
+  </view>
+
+  <view wx:if="{{catTip}}" class="cat-bubble" bindtap="closeCatTip">🐱 {{catTip}}</view>
+</view>

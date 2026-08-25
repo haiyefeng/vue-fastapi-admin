@@ -1,0 +1,36 @@
+{
+  "pages": [
+    "pages/today/index",
+    "pages/tasks/index",
+    "pages/quadrant/index",
+    "pages/calendar/index",
+    "pages/goals/index",
+    "pages/habits/index",
+    "pages/review/index",
+    "pages/stats/index",
+    "pages/pet/index",
+    "pages/task-detail/index"
+  ],
+  "window": {
+    "backgroundColor": "#F6F6F6",
+    "backgroundTextStyle": "light",
+    "navigationBarBackgroundColor": "#F6F6F6",
+    "navigationBarTitleText": "待办事项",
+    "navigationBarTextStyle": "black"
+  },
+  "tabBar": {
+    "color": "#999999",
+    "selectedColor": "#f4511e",
+    "backgroundColor": "#ffffff",
+    "borderStyle": "black",
+    "list": [
+      { "pagePath": "pages/today/index", "text": "今日" },
+      { "pagePath": "pages/tasks/index", "text": "任务" },
+      { "pagePath": "pages/quadrant/index", "text": "四象限" },
+      { "pagePath": "pages/calendar/index", "text": "日历" }
+    ]
+  },
+  "sitemapLocation": "sitemap.json",
+  "style": "v2",
+  "lazyCodeLoading": "requiredComponents"
+}

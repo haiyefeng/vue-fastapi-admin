@@ -1,0 +1,26 @@
+.page { background: #f6f6f6; min-height: 100vh; padding: 20rpx; box-sizing: border-box; }
+.switcher { display: flex; align-items: center; gap: 16rpx; background: #fff; border-radius: 12rpx; padding: 16rpx 20rpx; margin-bottom: 20rpx; }
+.pt { font-size: 26rpx; color: #f4511e; font-weight: 600; }
+.nav { flex: 1; display: flex; align-items: center; justify-content: center; gap: 12rpx; font-size: 26rpx; }
+.nav text { color: #1890ff; font-size: 32rpx; }
+.range { color: #666; font-size: 22rpx; }
+.hist { color: #1890ff; font-size: 24rpx; }
+.loading { text-align: center; color: #999; padding: 80rpx 0; }
+.card { background: #fff; border-radius: 16rpx; padding: 24rpx; margin-bottom: 20rpx; }
+.sec-title { font-size: 28rpx; font-weight: 700; margin-bottom: 12rpx; }
+.metric { font-size: 26rpx; color: #555; margin: 8rpx 0; }
+.hb-row { font-size: 24rpx; color: #777; padding: 6rpx 0; }
+.step-title { font-size: 28rpx; font-weight: 700; }
+.step-guide { font-size: 22rpx; color: #999; line-height: 1.6; margin: 8rpx 0 12rpx; }
+.textarea { border: 1rpx solid #e5e5e5; border-radius: 12rpx; padding: 16rpx; font-size: 26rpx; width: 100%; box-sizing: border-box; min-height: 120rpx; }
+.footer { display: flex; gap: 20rpx; margin: 10rpx 0 40rpx; }
+.btn { flex: 1; background: #f0f0f0; border-radius: 999rpx; font-size: 28rpx; line-height: 80rpx; }
+.btn::after { border: none; }
+.btn.primary { background: #f4511e; color: #fff; }
+.mask { position: fixed; top: 0; left: 0; right: 0; bottom: 0; background: rgba(0,0,0,0.45); display: flex; align-items: center; justify-content: center; z-index: 100; }
+.dialog { width: 84%; max-height: 80vh; overflow-y: auto; background: #fff; border-radius: 20rpx; padding: 32rpx; }
+.dialog-title { font-size: 30rpx; font-weight: 700; text-align: center; margin-bottom: 20rpx; }
+.h-row { display: flex; justify-content: space-between; padding: 16rpx 0; border-bottom: 1rpx solid #f0f0f0; font-size: 24rpx; color: #555; }
+.h-st { color: #999; }
+.empty { text-align: center; color: #bbb; padding: 60rpx 0; }
+.dialog-footer { display: flex; justify-content: flex-end; margin-top: 20rpx; }

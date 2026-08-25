@@ -1,0 +1,42 @@
+/**app.wxss**/
+.container {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  box-sizing: border-box;
+} 
+
+button {
+  background: initial;
+}
+
+button:focus{
+  outline: 0;
+}
+
+button::after{
+  border: none;
+}
+
+
+page {
+  background: #f6f6f6;
+  display: flex;
+  flex-direction: column;
+  justify-content: flex-start;
+}
+
+.cat-bubble {
+  position: fixed;
+  left: 24rpx;
+  right: 24rpx;
+  bottom: 48rpx;
+  background: #fff;
+  border: 1rpx solid #ffe0c2;
+  border-radius: 16rpx;
+  padding: 20rpx 24rpx;
+  font-size: 26rpx;
+  color: #333;
+  box-shadow: 0 6rpx 20rpx rgba(0,0,0,0.1);
+  z-index: 999;
+}

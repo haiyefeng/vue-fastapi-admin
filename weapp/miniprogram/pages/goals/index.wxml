@@ -1,0 +1,62 @@
+<view class="page">
+  <view class="head">
+    <view class="h-title">进行中的计划</view>
+    <view class="add" bindtap="openCreate">+ 添加</view>
+  </view>
+
+  <view class="goal" wx:for="{{goals}}" wx:key="_id" data-id="{{item._id}}" bindtap="openDetail">
+    <view class="g-name">{{item.name}}</view>
+    <view class="g-meta">
+      <text wx:if="{{item.target_date}}">目标 {{item.target_date}}</text>
+      <text wx:else>无目标日期</text>
+      <text>任务 {{item.task_completed}}/{{item.task_total}}</text>
+      <text wx:if="{{item.habit_count}}">习惯 {{item.habit_count}} 个</text>
+    </view>
+    <view class="pbar"><view class="pbar-in" style="width: {{item.task_total ? item.task_completed / item.task_total * 100 : 0}}%;"></view></view>
+    <view class="g-actions" catchtap="noop">
+      <text data-id="{{item._id}}" bindtap="openEdit">编辑</text>
+      <text data-id="{{item._id}}" bindtap="archive">归档</text>
+      <text class="danger" data-id="{{item._id}}" bindtap="onDelete">删除</text>
+    </view>
+  </view>
+  <view wx:if="{{!goals.length}}" class="empty">还没有计划，点右上角添加</view>
+
+  <view class="arch-head" wx:if="{{archivedGoals.length}}" bindtap="toggleArchived">
+    已归档（{{archivedGoals.length}}）{{showArchived ? '▴' : '▾'}}
+  </view>
+  <view wx:if="{{showArchived}}" class="goal archived" wx:for="{{archivedGoals}}" wx:key="_id" wx:for-item="g">
+    <view class="g-name">{{g.name}}</view>
+    <view class="g-actions" catchtap="noop">
+      <text data-id="{{g._id}}" bindtap="unarchive">恢复</text>
+      <text class="danger" data-id="{{g._id}}" bindtap="onDelete">删除</text>
+    </view>
+  </view>
+
+  <view class="mask" wx:if="{{showForm}}" bindtap="closeForm">
+    <view class="dialog" catchtap="noop">
+      <view class="dialog-title">{{editingGoal ? '编辑计划' : '添加计划'}}</view>
+      <input class="input" value="{{form.name}}" bindinput="onInputName" placeholder="计划名称" />
+      <textarea class="textarea" value="{{form.description}}" bindinput="onInputDesc" placeholder="描述" />
+      <picker mode="date" value="{{form.target_date}}" bindchange="onPickTarget">
+        <view class="input picker">目标日期：{{form.target_date || '请选择'}}</view>
+      </picker>
+      <view class="dialog-footer">
+        <button class="btn" bindtap="closeForm">取消</button>
+        <button class="btn primary" bindtap="onSave">保存</button>
+      </view>
+    </view>
+  </view>
+
+  <view class="mask" wx:if="{{showDetail}}" bindtap="closeDetail">
+    <view class="dialog" catchtap="noop">
+      <view class="dialog-title">{{detail.name}}</view>
+      <view class="detail-sec">关联任务（{{detail.tasks.length}}）</view>
+      <view class="d-row" wx:for="{{detail.tasks}}" wx:key="_id">{{item.title}} <text class="st {{item.is_completed ? 'ok' : ''}}">{{item.is_completed ? '✓ 已完成' : '未完成'}}</text></view>
+      <view class="detail-sec">关联习惯（{{detail.habits.length}}）</view>
+      <view class="d-row" wx:for="{{detail.habits}}" wx:key="_id">{{item.name}}</view>
+      <view class="dialog-footer">
+        <button class="btn primary" bindtap="closeDetail">关闭</button>
+      </view>
+    </view>
+  </view>
+</view>

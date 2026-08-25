@@ -1,0 +1,33 @@
+.page { background: #f6f6f6; min-height: 100vh; padding: 20rpx; box-sizing: border-box; }
+.head { display: flex; justify-content: space-between; align-items: center; margin-bottom: 20rpx; }
+.h-title { font-size: 30rpx; font-weight: 700; }
+.add { color: #f4511e; font-size: 26rpx; }
+.habit { background: #fff; border-radius: 16rpx; padding: 24rpx; margin-bottom: 20rpx; }
+.habit.paused { opacity: 0.55; }
+.habit.archived { opacity: 0.7; }
+.hb-main { margin-bottom: 14rpx; }
+.hb-title { font-size: 28rpx; font-weight: 600; }
+.icon { margin-right: 8rpx; }
+.paused-tag { font-size: 22rpx; color: #999; margin-left: 8rpx; }
+.hb-meta { display: flex; gap: 16rpx; font-size: 22rpx; color: #999; margin-top: 8rpx; flex-wrap: wrap; }
+.hb-actions { display: flex; align-items: center; justify-content: space-between; }
+.checkin { background: #f4511e; color: #fff; border-radius: 999rpx; font-size: 24rpx; line-height: 60rpx; padding: 0 28rpx; margin: 0; }
+.checkin::after { border: none; }
+.checkin.done { background: #f0f0f0; color: #10b981; }
+.more { display: flex; gap: 20rpx; font-size: 24rpx; color: #1890ff; }
+.more .danger { color: #f5222d; }
+.empty { text-align: center; color: #bbb; padding: 80rpx 0; }
+.arch-head { color: #999; font-size: 24rpx; padding: 10rpx 0 20rpx; }
+.mask { position: fixed; top: 0; left: 0; right: 0; bottom: 0; background: rgba(0,0,0,0.45); display: flex; align-items: center; justify-content: center; z-index: 100; }
+.dialog { width: 84%; max-height: 82vh; overflow-y: auto; background: #fff; border-radius: 20rpx; padding: 32rpx; }
+.dialog-title { font-size: 30rpx; font-weight: 700; text-align: center; margin-bottom: 24rpx; }
+.input { border: 1rpx solid #e5e5e5; border-radius: 12rpx; padding: 16rpx; font-size: 28rpx; margin-bottom: 20rpx; }
+.picker { color: #333; }
+.label { font-size: 24rpx; color: #888; margin-bottom: 8rpx; }
+.week-pick { display: flex; gap: 12rpx; margin-bottom: 20rpx; flex-wrap: wrap; }
+.wd { width: 76rpx; height: 76rpx; line-height: 76rpx; text-align: center; border-radius: 50%; background: #f0f0f0; color: #666; font-size: 26rpx; }
+.wd.on { background: #f4511e; color: #fff; }
+.dialog-footer { display: flex; justify-content: flex-end; gap: 20rpx; }
+.btn { background: #f0f0f0; border-radius: 999rpx; font-size: 28rpx; line-height: 72rpx; padding: 0 40rpx; }
+.btn::after { border: none; }
+.btn.primary { background: #f4511e; color: #fff; }

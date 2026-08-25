@@ -1,0 +1,37 @@
+<view class="page">
+  <view class="range">
+    <picker mode="date" value="{{startStr}}" bindchange="onPickStart"><view class="r">{{startStr}}</view></picker>
+    <text class="tilde">~</text>
+    <picker mode="date" value="{{endStr}}" bindchange="onPickEnd"><view class="r">{{endStr}}</view></picker>
+  </view>
+
+  <view class="card">
+    <view class="sec-title">每日完成数量</view>
+    <view class="bars">
+      <view class="bar-col" wx:for="{{series}}" wx:key="label">
+        <view class="bar" style="height: {{maxCount ? item.count / maxCount * 180 : 2}}rpx;"></view>
+        <view class="bar-count">{{item.count}}</view>
+        <view class="bar-label">{{item.label}}</view>
+      </view>
+    </view>
+  </view>
+
+  <view class="card">
+    <view class="sec-title">四象限分布</view>
+    <view class="q" wx:for="{{quadrants}}" wx:key="key">
+      <view class="q-dot" style="background: {{item.color}};"></view>
+      <text class="q-label">{{item.label}}</text>
+      <view class="q-bar"><view class="q-in" style="width: {{maxCount2 ? item.count / maxCount2 * 100 : 0}}%; background: {{item.color}};"></view></view>
+      <text class="q-count">{{item.count}}</text>
+    </view>
+  </view>
+
+  <view class="card">
+    <view class="sec-title">已完成待办</view>
+    <view class="done" wx:for="{{completed}}" wx:key="_id">
+      <view class="d-title">{{item.title}}</view>
+      <view class="d-meta">{{item.quadrant_label}} · {{item.completed_text}}</view>
+    </view>
+    <view wx:if="{{!completed.length}}" class="empty">该范围内暂无已完成待办</view>
+  </view>
+</view>

@@ -1,0 +1,24 @@
+.page { padding: 20rpx; background: #f6f6f6; min-height: 100vh; box-sizing: border-box; }
+.loading { text-align: center; color: #999; padding: 80rpx 0; }
+.card { background: #fff; border-radius: 16rpx; padding: 24rpx; margin-bottom: 20rpx; }
+.label { font-size: 24rpx; color: #888; margin: 16rpx 0 8rpx; }
+.input { border: 1rpx solid #e5e5e5; border-radius: 12rpx; padding: 16rpx; font-size: 28rpx; }
+.picker { color: #333; }
+.grow { flex: 1; }
+.row { display: flex; align-items: center; gap: 16rpx; }
+.clear { color: #999; font-size: 24rpx; flex-shrink: 0; }
+.textarea { border: 1rpx solid #e5e5e5; border-radius: 12rpx; padding: 16rpx; font-size: 28rpx; width: 100%; box-sizing: border-box; min-height: 140rpx; }
+.section-title { font-size: 28rpx; font-weight: 700; margin-bottom: 12rpx; }
+.subtask { display: flex; align-items: center; gap: 12rpx; padding: 14rpx 0; border-bottom: 1rpx solid #f0f0f0; }
+.check { width: 32rpx; height: 32rpx; border: 2rpx solid #c0c0c0; border-radius: 50%; text-align: center; line-height: 30rpx; font-size: 22rpx; color: #fff; flex-shrink: 0; }
+.check.on { background: #10b981; border-color: #10b981; }
+.subtitle { flex: 1; font-size: 26rpx; color: #333; word-break: break-all; }
+.subtitle.done { color: #aaa; text-decoration: line-through; }
+.del { color: #f5222d; font-size: 24rpx; flex-shrink: 0; }
+.mini-btn { background: #f4511e; color: #fff; border-radius: 8rpx; font-size: 24rpx; line-height: 60rpx; padding: 0 20rpx; margin: 0; }
+.mini-btn::after { border: none; }
+.footer { display: flex; gap: 20rpx; margin: 30rpx 0; }
+.btn { flex: 1; border-radius: 999rpx; font-size: 28rpx; line-height: 80rpx; }
+.btn::after { border: none; }
+.btn.danger { background: #fff; color: #f5222d; border: 1rpx solid #f5222d; }
+.btn.primary { background: #f4511e; color: #fff; }

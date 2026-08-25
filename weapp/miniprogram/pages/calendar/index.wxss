@@ -1,0 +1,68 @@
+.page { background: #f6f6f6; min-height: 100vh; padding-bottom: 200rpx; }
+.week-bar { display: flex; align-items: center; background: #fff; padding: 16rpx 8rpx; }
+.arrow { width: 48rpx; text-align: center; color: #999; font-size: 36rpx; }
+.day { flex: 1; text-align: center; padding: 10rpx 0; border-radius: 12rpx; }
+.day.sel { background: #f4511e; color: #fff; }
+.day.sel .dow { color: #fff; }
+.dow { font-size: 20rpx; color: #999; }
+.dom { font-size: 24rpx; font-weight: 700; margin-top: 4rpx; }
+.day.today .dom { color: #f4511e; }
+.day.sel.today .dom { color: #fff; }
+
+.timeline-scroll { height: 720rpx; background: #fff; margin: 16rpx 20rpx 0; border-radius: 16rpx; }
+.timeline { position: relative; padding-left: 96rpx; }
+.hour-row { border-top: 1rpx solid #f0f0f0; box-sizing: border-box; position: relative; }
+.hour-label { position: absolute; left: -88rpx; top: -16rpx; width: 80rpx; text-align: right; font-size: 20rpx; color: #bbb; }
+.event { position: absolute; left: 96rpx; right: 12rpx; background: #fff7f2; border-left: 6rpx solid #f4511e; border-radius: 8rpx; padding: 8rpx 12rpx; box-shadow: 0 2rpx 6rpx rgba(0,0,0,0.06); overflow: hidden; }
+.event-time { display: block; font-size: 20rpx; color: #1890ff; font-weight: 700; }
+.event-title { display: block; font-size: 24rpx; color: #333; }
+.now-line { position: absolute; left: 96rpx; right: 0; height: 2rpx; background: #f5222d; }
+.now-line::before { content: ''; position: absolute; left: -8rpx; top: -6rpx; width: 12rpx; height: 12rpx; border-radius: 50%; background: #f5222d; }
+
+.empty { text-align: center; color: #bbb; padding: 40rpx 0; }
+.empty.small { padding: 20rpx 0; font-size: 24rpx; }
+
+.unscheduled { margin: 20rpx; }
+.unscheduled-title { font-size: 24rpx; color: #999; margin-bottom: 12rpx; }
+.unscheduled-list { background: #fff; border-radius: 16rpx; overflow: hidden; }
+.uitem { display: flex; align-items: center; gap: 16rpx; padding: 20rpx; border-bottom: 1rpx solid #f5f5f5; }
+.uitem:last-child { border-bottom: none; }
+.dot { width: 12rpx; height: 12rpx; border-radius: 50%; flex-shrink: 0; }
+.uitem-title { font-size: 26rpx; color: #333; flex: 1; word-break: break-all; }
+
+.fab { position: fixed; right: 30rpx; bottom: 60rpx; background: #f4511e; color: #fff; border-radius: 999rpx; padding: 20rpx 32rpx; font-size: 28rpx; box-shadow: 0 6rpx 16rpx rgba(244,81,30,0.3); }
+.mask { position: fixed; top: 0; left: 0; right: 0; bottom: 0; background: rgba(0,0,0,0.45); display: flex; align-items: center; justify-content: center; z-index: 100; }
+.dialog { width: 82%; background: #fff; border-radius: 20rpx; padding: 32rpx; }
+.dialog-title { font-size: 30rpx; font-weight: 700; text-align: center; margin-bottom: 24rpx; }
+.input { border: 1rpx solid #e5e5e5; border-radius: 12rpx; padding: 16rpx; font-size: 28rpx; margin-bottom: 20rpx; }
+.input.readonly { background: #f7f7f7; color: #666; }
+.picker { color: #333; }
+.row { display: flex; gap: 16rpx; }
+.grow { flex: 1; }
+.dialog-footer { display: flex; justify-content: flex-end; gap: 20rpx; margin-top: 8rpx; }
+.btn { background: #f0f0f0; border-radius: 999rpx; font-size: 28rpx; line-height: 72rpx; padding: 0 40rpx; }
+.btn::after { border: none; }
+.btn.primary { background: #f4511e; color: #fff; }
+
+/* ---- 选择时段 ---- */
+.sel-bar { display: flex; align-items: center; gap: 12rpx; padding: 12rpx 20rpx 0; }
+.sel-btn { font-size: 24rpx; color: #555; background: #f2f3f5; border-radius: 24rpx; padding: 8rpx 20rpx; }
+.sel-btn.on { background: #e6f7ff; color: #1890ff; }
+.sel-btn.primary { background: #1890ff; color: #fff; }
+.sel-summary { flex: 1; font-size: 22rpx; color: #999; }
+
+/* 选择态下覆盖在日程之上，保证点击落到格子而不是日程块 */
+.slot-layer { position: absolute; left: 96rpx; right: 0; top: 0; bottom: 0; z-index: 5; }
+.slot { position: absolute; left: 0; right: 0; box-sizing: border-box; }
+.slot.sel { background: rgba(24, 144, 255, 0.28); border-top: 1rpx solid #1890ff; border-bottom: 1rpx solid #1890ff; }
+.slot.anchor { background: rgba(24, 144, 255, 0.5); }
+
+.range-list { background: #f7f8fa; border-radius: 12rpx; padding: 16rpx; margin-bottom: 16rpx; }
+.range-list-title { font-size: 22rpx; color: #999; margin-bottom: 8rpx; }
+.range-item { display: block; font-size: 26rpx; color: #333; line-height: 1.8; }
+
+.sel-bar { flex-wrap: wrap; }
+.gran-group { display: flex; border: 1rpx solid #d9d9d9; border-radius: 8rpx; overflow: hidden; }
+.gran { font-size: 22rpx; color: #666; padding: 6rpx 16rpx; border-right: 1rpx solid #d9d9d9; }
+.gran:last-child { border-right: none; }
+.gran.on { background: #1890ff; color: #fff; }

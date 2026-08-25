@@ -1,0 +1,94 @@
+<view class="page">
+  <view class="week-bar">
+    <view class="arrow" bindtap="prevWeek">‹</view>
+    <view class="day {{item.isToday ? 'today' : ''}} {{selectedStr === item.date ? 'sel' : ''}}" wx:for="{{weekDays}}" wx:key="date" data-date="{{item.date}}" bindtap="selectDay">
+      <view class="dow">{{item.dayLabel}}</view>
+      <view class="dom">{{item.dateStr}}</view>
+    </view>
+    <view class="arrow" bindtap="nextWeek">›</view>
+  </view>
+
+  <view class="sel-bar">
+    <view class="sel-btn {{selMode ? 'on' : ''}}" bindtap="toggleSelMode">{{selMode ? '退出选择' : '选择时段'}}</view>
+    <view wx:if="{{selMode}}" class="gran-group">
+      <view
+        class="gran {{gran === item.value ? 'on' : ''}}"
+        wx:for="{{granOptions}}" wx:key="value"
+        data-gran="{{item.value}}"
+        bindtap="onPickGran"
+      >{{item.label}}</view>
+    </view>
+    <text class="sel-summary">{{selSummary}}</text>
+    <view wx:if="{{selMode && selRanges.length}}" class="sel-btn" bindtap="clearSelection">清空</view>
+    <view wx:if="{{selMode && selRanges.length}}" class="sel-btn primary" bindtap="openAddWithSlots">创建任务</view>
+  </view>
+
+  <scroll-view class="timeline-scroll" scroll-y="true" scroll-top="{{scrollTop}}" scroll-with-animation="true">
+    <view class="timeline" style="height: {{timelineHeight}}px;">
+      <view class="hour-row" wx:for="{{hours}}" wx:key="*this" style="height: {{hourPx}}px;">
+        <text class="hour-label">{{item}}</text>
+      </view>
+      <view
+        class="event"
+        wx:for="{{blocks}}" wx:key="_id"
+        data-id="{{item.todo_id}}"
+        bindtap="openTask"
+        style="top: {{item.top}}px; height: {{item.height}}px; border-left-color: {{item.color}};"
+      >
+        <text class="event-time">{{item.start_text}}–{{item.end_text}}</text>
+        <text class="event-title">{{item.title}}</text>
+      </view>
+      <view class="now-line" wx:if="{{nowTop >= 0}}" style="top: {{nowTop}}px;"></view>
+      <view class="slot-layer" wx:if="{{selMode}}">
+        <view
+          class="slot {{item.sel ? 'sel' : ''}} {{item.anchor ? 'anchor' : ''}}"
+          wx:for="{{slots}}" wx:key="min"
+          data-min="{{item.min}}"
+          bindtap="onSlotTap"
+          style="top: {{item.top}}px; height: {{slotPx}}px;"
+        ></view>
+      </view>
+    </view>
+  </scroll-view>
+  <view wx:if="{{!blocks.length}}" class="empty">这一天还没有日程</view>
+
+  <view class="unscheduled">
+    <view class="unscheduled-title">未排程任务（点击安排时间）</view>
+    <view class="unscheduled-list" wx:if="{{unscheduledTodos.length}}">
+      <view class="uitem" wx:for="{{unscheduledTodos}}" wx:key="_id" data-id="{{item._id}}" bindtap="openSchedule">
+        <view class="dot" style="background: {{item.color}};"></view>
+        <text class="uitem-title">{{item.title}}</text>
+      </view>
+    </view>
+    <view wx:else class="empty small">没有未排程的任务</view>
+  </view>
+
+  <view class="fab" bindtap="openAdd">+ 添加日程</view>
+
+  <view class="mask" wx:if="{{showAdd}}" bindtap="closeAdd">
+    <view class="dialog" catchtap="noop">
+      <view class="dialog-title">{{scheduling ? '安排时间' : '添加日程'}}</view>
+      <input wx:if="{{!scheduling}}" class="input" value="{{form.title}}" bindinput="onFormTitle" placeholder="任务标题" />
+      <view wx:else class="input readonly">{{form.title}}</view>
+      <picker mode="date" value="{{form.date}}" bindchange="onFormDate">
+        <view class="input picker">{{form.date || '选择日期'}}</view>
+      </picker>
+      <view wx:if="{{formRanges.length}}" class="range-list">
+        <view class="range-list-title">已选 {{formRanges.length}} 个时间段</view>
+        <text class="range-item" wx:for="{{formRanges}}" wx:key="start">{{item.text}}</text>
+      </view>
+      <view wx:else class="row">
+        <picker mode="time" value="{{form.start}}" bindchange="onFormStart" class="grow">
+          <view class="input picker">{{form.start}}</view>
+        </picker>
+        <picker mode="time" value="{{form.end}}" bindchange="onFormEnd" class="grow">
+          <view class="input picker">{{form.end}}</view>
+        </picker>
+      </view>
+      <view class="dialog-footer">
+        <button class="btn" bindtap="closeAdd">取消</button>
+        <button class="btn primary" bindtap="addSchedule">{{scheduling ? '安排' : '添加'}}</button>
+      </view>
+    </view>
+  </view>
+</view>

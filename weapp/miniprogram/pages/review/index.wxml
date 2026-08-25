@@ -1,0 +1,46 @@
+<view class="page">
+  <view class="switcher">
+    <picker mode="selector" range="{{periodOptions}}" range-key="label" value="{{periodIndex}}" bindchange="onPickPeriod">
+      <view class="pt">周期：{{periodOptions[periodIndex].label}} ▾</view>
+    </picker>
+    <view class="nav"><text bindtap="prev">‹</text><text class="range">{{rangeLabel}}</text><text bindtap="next">›</text></view>
+    <view class="hist" bindtap="openHistory">历史</view>
+  </view>
+
+  <view wx:if="{{loading}}" class="loading">加载中…</view>
+
+  <block wx:elif="{{summary}}">
+    <view class="card">
+      <view class="sec-title">数据回顾</view>
+      <view class="metric">任务完成：{{summary.task_completion.completed}} / {{summary.task_completion.total}}</view>
+      <view class="metric">重要且紧急：{{summary.task_completion.urgent_important_completed}} / {{summary.task_completion.urgent_important_total}}</view>
+      <view class="metric" wx:if="{{summary.habits.length}}">习惯打卡：</view>
+      <view class="hb-row" wx:for="{{summary.habits}}" wx:key="habit_id">{{item.name}}：{{item.completed}}/{{item.expected}}<text wx:if="{{item.streak != null}}"> · 连续 {{item.streak}} 天</text></view>
+      <view class="metric" wx:if="{{summary.goals.length}}">计划进展：</view>
+      <view class="hb-row" wx:for="{{summary.goals}}" wx:key="goal_id">{{item.name}}：本周期完成 {{item.newly_completed}}（累计 {{item.total_linked_tasks}}）</view>
+    </view>
+
+    <view class="card" wx:for="{{steps}}" wx:key="key" wx:for-item="s">
+      <view class="step-title">{{s.title}}</view>
+      <view class="step-guide">{{s.guide}}</view>
+      <textarea class="textarea" value="{{s.value}}" data-k="{{s.key}}" bindinput="onAnswer" placeholder="写下你的思考…" />
+    </view>
+
+    <view class="footer">
+      <button class="btn" data-status="draft" bindtap="save">存草稿</button>
+      <button class="btn primary" data-status="completed" bindtap="save">完成本次回顾</button>
+    </view>
+  </block>
+
+  <view class="mask" wx:if="{{showHistory}}" bindtap="closeHistory">
+    <view class="dialog" catchtap="noop">
+      <view class="dialog-title">历史回顾</view>
+      <view class="h-row" wx:for="{{historyList}}" wx:key="_id" data-i="{{index}}" bindtap="jumpTo">
+        <text>{{item.period_type === 'week' ? '周' : item.period_type === 'month' ? '月' : item.period_type === 'quarter' ? '季度' : '年'}} · {{item.period_start}} ~ {{item.period_end}}</text>
+        <text class="h-st">{{item.status === 'completed' ? '已完成' : '草稿'}}</text>
+      </view>
+      <view wx:if="{{!historyList.length}}" class="empty">还没有历史回顾</view>
+      <view class="dialog-footer"><button class="btn primary" bindtap="closeHistory">关闭</button></view>
+    </view>
+  </view>
+</view>

@@ -1,0 +1,58 @@
+<view class="page">
+  <view class="hero">
+    <view class="eyebrow">{{dateLabel}}</view>
+    <view class="greet">{{greeting}} 👋</view>
+    <view class="sub">{{summarySub}}</view>
+    <view class="ring-row">
+      <view class="ring" style="background: conic-gradient(#f4511e {{percent}}%, #f0f0f0 0);">
+        <view class="ring-inner">{{percent}}%</view>
+      </view>
+      <view class="ring-copy">
+        <view class="num">{{completed}} / {{total}}</view>
+        <view class="lbl">今日完成</view>
+      </view>
+    </view>
+  </view>
+
+  <view class="quick">
+    <input class="qa-input" value="{{quickAdd}}" bindinput="onInputQuick" placeholder="随手记一件事…" bindconfirm="addQuick" />
+    <button class="qa-btn" bindtap="addQuick" disabled="{{adding}}">{{adding ? '添加中…' : '添加'}}</button>
+  </view>
+
+  <view class="card">
+    <view class="sec">今日日程（{{schedule.length}}）</view>
+    <view class="row" wx:for="{{schedule}}" wx:key="_id" data-id="{{item.todo_item_id}}" bindtap="openTask">
+      <view class="bar" style="background: {{item.color}};"></view>
+      <text class="time">{{item.time_text}}</text>
+      <text class="t">{{item.title}}</text>
+    </view>
+    <view wx:if="{{loading}}" class="empty">加载中…</view>
+    <view wx:elif="{{!schedule.length}}" class="empty">今天还没有安排</view>
+  </view>
+
+  <view class="card">
+    <view class="sec">今日待办（{{tasks.length}}）</view>
+    <view class="row" wx:for="{{tasks}}" wx:key="_id" data-id="{{item._id}}" bindtap="openTask">
+      <view class="bar" style="background: {{item.color}};"></view>
+      <text class="t">{{item.title}}</text>
+    </view>
+    <view wx:if="{{loading}}" class="empty">加载中…</view>
+    <view wx:elif="{{!tasks.length}}" class="empty">今天的待办都清空啦</view>
+  </view>
+
+  <view class="card">
+    <view class="sec">今日习惯（{{habits.length}}）</view>
+    <view class="hb" wx:for="{{habits}}" wx:key="_id">
+      <view class="hb-l"><text class="icon">{{item.icon || '⭐'}}</text><view><view class="hb-name">{{item.name}}</view><view class="hb-meta">{{item.meta}}</view></view></view>
+      <button class="checkin {{item.today_completed ? 'done' : ''}}" data-id="{{item.today_todo_id}}" bindtap="checkIn">{{item.today_completed ? '已打卡 ✓' : '打卡'}}</button>
+    </view>
+    <view wx:if="{{loading}}" class="empty">加载中…</view>
+    <view wx:elif="{{!habits.length}}" class="empty">今天没有需要打卡的习惯</view>
+  </view>
+
+  <view class="more">
+    <view class="link" wx:for="{{moreLinks}}" wx:key="path" data-path="{{item.path}}" bindtap="goLink">{{item.label}}</view>
+  </view>
+
+  <view wx:if="{{catTip}}" class="cat-bubble" bindtap="closeCatTip">🐱 {{catTip}}</view>
+</view>

@@ -1,0 +1,73 @@
+<view class="page">
+  <view wx:if="{{loading}}" class="loading">加载中…</view>
+  <block wx:elif="{{todo}}">
+    <view class="card">
+      <view class="label">标题</view>
+      <input class="input" value="{{todo.title}}" bindinput="onInputTitle" placeholder="任务标题" />
+
+      <view class="label">象限</view>
+      <picker mode="selector" range="{{quadrantNames}}" value="{{quadrantIndex}}" bindchange="onPickQuadrant">
+        <view class="input picker">四象限：{{quadrantNames[quadrantIndex]}} ▾</view>
+      </picker>
+
+      <view class="label">截止时间</view>
+      <view class="row">
+        <picker mode="date" value="{{dueDateText}}" bindchange="onPickDue" class="grow">
+          <view class="input picker">{{dueDateText || '请选择'}}</view>
+        </picker>
+        <text class="clear" wx:if="{{dueDateText}}" bindtap="onClearDue">清除</text>
+      </view>
+
+      <view class="label">所属项目</view>
+      <picker mode="selector" range="{{projectNames}}" value="{{projectIndex}}" bindchange="onPickProject">
+        <view class="input picker">项目：{{projectNames[projectIndex]}} ▾</view>
+      </picker>
+
+      <view class="label">关联计划</view>
+      <picker mode="selector" range="{{goalNames}}" value="{{goalIndex}}" bindchange="onPickGoal">
+        <view class="input picker">计划：{{goalNames[goalIndex]}} ▾</view>
+      </picker>
+
+      <view class="label">备注</view>
+      <textarea class="textarea" value="{{todo.notes}}" bindinput="onInputNotes" placeholder="备注（可记录完成方法、收获等）" />
+    </view>
+
+    <view class="card">
+      <view class="section-title">子任务（{{todo.subtasks.length}}）</view>
+      <view class="subtask" wx:for="{{todo.subtasks}}" wx:key="_id">
+        <view class="check {{item.is_completed ? 'on' : ''}}" data-id="{{item._id}}" data-done="{{item.is_completed}}" bindtap="toggleSubtask">{{item.is_completed ? '✓' : ''}}</view>
+        <view class="subtitle {{item.is_completed ? 'done' : ''}}">{{item.title}}</view>
+        <text class="del" data-id="{{item._id}}" bindtap="removeSubtask">删除</text>
+      </view>
+      <view class="row">
+        <input class="input grow" value="{{newSubtask}}" bindinput="onInputSubtask" placeholder="添加子任务" />
+        <button class="mini-btn" bindtap="addSubtask">添加</button>
+      </view>
+    </view>
+
+    <view class="card">
+      <view class="section-title">时间块（{{todo.time_blocks.length}}）</view>
+      <view class="subtask" wx:for="{{todo.time_blocks}}" wx:key="_id">
+        <view class="subtitle">{{item.start_text}} – {{item.end_text}}</view>
+        <text class="del" data-id="{{item._id}}" bindtap="removeBlock">删除</text>
+      </view>
+      <picker mode="date" value="{{blockDate}}" bindchange="onPickBlockDate">
+        <view class="input picker">{{blockDate || '选择日期'}}</view>
+      </picker>
+      <view class="row">
+        <picker mode="time" value="{{blockStart}}" bindchange="onPickBlockStart" class="grow">
+          <view class="input picker">{{blockStart || '开始'}}</view>
+        </picker>
+        <picker mode="time" value="{{blockEnd}}" bindchange="onPickBlockEnd" class="grow">
+          <view class="input picker">{{blockEnd || '结束'}}</view>
+        </picker>
+        <button class="mini-btn" bindtap="addBlock">添加</button>
+      </view>
+    </view>
+
+    <view class="footer">
+      <button class="btn danger" bindtap="onDelete">删除</button>
+      <button class="btn primary" bindtap="onSave">保存</button>
+    </view>
+  </block>
+</view>

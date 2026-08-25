@@ -1,0 +1,31 @@
+.page { background: #f6f6f6; min-height: 100vh; padding: 20rpx; box-sizing: border-box; }
+.hero { background: #fff; border-radius: 16rpx; padding: 28rpx; margin-bottom: 20rpx; }
+.eyebrow { font-size: 22rpx; color: #999; }
+.greet { font-size: 40rpx; font-weight: 700; margin-top: 8rpx; }
+.sub { font-size: 24rpx; color: #999; margin-top: 8rpx; }
+.ring-row { display: flex; align-items: center; gap: 20rpx; margin-top: 20rpx; }
+.ring { width: 110rpx; height: 110rpx; border-radius: 50%; display: flex; align-items: center; justify-content: center; }
+.ring-inner { width: 82rpx; height: 82rpx; border-radius: 50%; background: #fff; text-align: center; line-height: 82rpx; font-size: 24rpx; font-weight: 700; color: #f4511e; }
+.num { font-size: 30rpx; font-weight: 700; }
+.lbl { font-size: 22rpx; color: #999; }
+.quick { display: flex; gap: 12rpx; margin-bottom: 20rpx; }
+.qa-input { flex: 1; background: #fff; border-radius: 999rpx; padding: 14rpx 24rpx; font-size: 28rpx; }
+.qa-btn { background: #f4511e; color: #fff; border-radius: 999rpx; font-size: 26rpx; line-height: 60rpx; padding: 0 30rpx; margin: 0; }
+.qa-btn::after { border: none; }
+.card { background: #fff; border-radius: 16rpx; padding: 24rpx; margin-bottom: 20rpx; }
+.sec { font-size: 28rpx; font-weight: 700; margin-bottom: 16rpx; }
+.row { display: flex; align-items: center; gap: 12rpx; padding: 12rpx 0; }
+.bar { width: 8rpx; height: 30rpx; border-radius: 4rpx; flex-shrink: 0; }
+.time { font-size: 22rpx; color: #1890ff; font-weight: 700; flex-shrink: 0; }
+.t { font-size: 26rpx; color: #333; flex: 1; }
+.hb { display: flex; align-items: center; justify-content: space-between; padding: 12rpx 0; }
+.hb-l { display: flex; align-items: center; gap: 12rpx; }
+.icon { width: 52rpx; height: 52rpx; line-height: 52rpx; text-align: center; background: #f0f9f5; border-radius: 12rpx; }
+.hb-name { font-size: 26rpx; font-weight: 600; }
+.hb-meta { font-size: 20rpx; color: #999; }
+.checkin { background: #f4511e; color: #fff; border-radius: 999rpx; font-size: 24rpx; line-height: 56rpx; padding: 0 24rpx; margin: 0; }
+.checkin::after { border: none; }
+.checkin.done { background: #f0f0f0; color: #10b981; }
+.empty { text-align: center; color: #bbb; padding: 40rpx 0; }
+.more { display: flex; gap: 16rpx; margin-bottom: 40rpx; }
+.link { flex: 1; text-align: center; background: #fff; border-radius: 12rpx; padding: 20rpx 0; font-size: 26rpx; color: #555; }

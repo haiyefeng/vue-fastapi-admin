@@ -1,0 +1,21 @@
+.page { background: #f6f6f6; min-height: 100vh; padding: 20rpx; box-sizing: border-box; }
+.range { display: flex; align-items: center; justify-content: center; gap: 16rpx; background: #fff; border-radius: 12rpx; padding: 16rpx; margin-bottom: 20rpx; }
+.r { font-size: 26rpx; color: #1890ff; }
+.tilde { color: #999; }
+.card { background: #fff; border-radius: 16rpx; padding: 24rpx; margin-bottom: 20rpx; }
+.sec-title { font-size: 28rpx; font-weight: 700; margin-bottom: 20rpx; }
+.bars { display: flex; align-items: flex-end; gap: 10rpx; }
+.bar-col { flex: 1; display: flex; flex-direction: column; align-items: center; }
+.bar { width: 60%; background: #10b981; border-radius: 6rpx 6rpx 0 0; min-height: 2rpx; }
+.bar-count { font-size: 20rpx; color: #666; margin-top: 4rpx; }
+.bar-label { font-size: 18rpx; color: #999; margin-top: 4rpx; }
+.q { display: flex; align-items: center; gap: 12rpx; margin-bottom: 16rpx; }
+.q-dot { width: 16rpx; height: 16rpx; border-radius: 50%; flex-shrink: 0; }
+.q-label { width: 150rpx; font-size: 24rpx; color: #555; }
+.q-bar { flex: 1; height: 16rpx; background: #f0f0f0; border-radius: 8rpx; overflow: hidden; }
+.q-in { height: 100%; border-radius: 8rpx; }
+.q-count { width: 60rpx; text-align: right; font-size: 24rpx; color: #333; }
+.done { border-bottom: 1rpx solid #f0f0f0; padding: 16rpx 0; }
+.d-title { font-size: 26rpx; color: #333; }
+.d-meta { font-size: 22rpx; color: #999; margin-top: 6rpx; }
+.empty { text-align: center; color: #bbb; padding: 60rpx 0; }

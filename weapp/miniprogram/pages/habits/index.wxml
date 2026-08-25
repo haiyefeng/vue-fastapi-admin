@@ -1,0 +1,72 @@
+<view class="page">
+  <view class="head">
+    <view class="h-title">进行中的习惯</view>
+    <view class="add" bindtap="openCreate">+ 添加</view>
+  </view>
+
+  <view class="habit {{item.is_paused ? 'paused' : ''}}" wx:for="{{habits}}" wx:key="_id">
+    <view class="hb-main">
+      <view class="hb-title"><text class="icon" wx:if="{{item.icon}}">{{item.icon}}</text>{{item.name}}<text class="paused-tag" wx:if="{{item.is_paused}}">(已暂停)</text></view>
+      <view class="hb-meta">
+        <text>{{item.freq_label}}</text>
+        <text wx:if="{{item.streak != null}}">连续 {{item.streak}} 天</text>
+        <text wx:if="{{item.week_progress}}">本周 {{item.week_progress}}</text>
+      </view>
+    </view>
+    <view class="hb-actions">
+      <button class="checkin {{item.today_completed ? 'done' : ''}}" data-id="{{item._id}}" bindtap="checkIn">{{item.today_completed ? '已打卡 ✓' : '打卡'}}</button>
+      <view class="more" data-id="{{item._id}}" catchtap="noop">
+        <text data-id="{{item._id}}" bindtap="openEdit">编辑</text>
+        <text data-id="{{item._id}}" bindtap="togglePause">{{item.is_paused ? '恢复' : '暂停'}}</text>
+        <text data-id="{{item._id}}" bindtap="archive">归档</text>
+        <text class="danger" data-id="{{item._id}}" bindtap="onDelete">删除</text>
+      </view>
+    </view>
+  </view>
+  <view wx:if="{{!habits.length}}" class="empty">还没有习惯，点右上角添加</view>
+
+  <view class="arch-head" wx:if="{{archivedHabits.length}}" bindtap="toggleArchived">已归档（{{archivedHabits.length}}）{{showArchived ? '▴' : '▾'}}</view>
+  <view wx:if="{{showArchived}}" class="habit archived" wx:for="{{archivedHabits}}" wx:key="_id" wx:for-item="h">
+    <view class="hb-main"><view class="hb-title">{{h.name}}</view></view>
+    <view class="hb-actions">
+      <text data-id="{{h._id}}" bindtap="unarchive">恢复</text>
+      <text class="danger" data-id="{{h._id}}" bindtap="onDelete">删除</text>
+    </view>
+  </view>
+
+  <view class="mask" wx:if="{{showForm}}" bindtap="closeForm">
+    <view class="dialog" catchtap="noop">
+      <view class="dialog-title">{{editingHabit ? '编辑习惯' : '添加习惯'}}</view>
+      <input class="input" value="{{form.name}}" bindinput="onInputName" placeholder="习惯名称" />
+      <input class="input" value="{{form.icon}}" bindinput="onInputIcon" placeholder="图标（emoji，可选）" />
+      <picker mode="selector" range="{{freqOptions}}" range-key="label" value="{{freqIndex}}" bindchange="onPickFreq">
+        <view class="input picker">频率：{{freqOptions[freqIndex].label}} ▾</view>
+      </picker>
+
+      <block wx:if="{{freqOptions[freqIndex].value == 'weekly_days'}}">
+        <view class="label">选择星期</view>
+        <view class="week-pick">
+          <view class="wd {{item.on ? 'on' : ''}}" wx:for="{{dayStates}}" wx:key="d" data-d="{{item.d}}" bindtap="toggleDay">{{weekNames[index]}}</view>
+        </view>
+      </block>
+      <block wx:if="{{freqOptions[freqIndex].value == 'weekly_count'}}">
+        <input class="input" type="number" value="{{form.count}}" bindinput="onInputCount" placeholder="每周次数" />
+      </block>
+      <block wx:if="{{freqOptions[freqIndex].value == 'interval_days'}}">
+        <input class="input" type="number" value="{{form.interval}}" bindinput="onInputInterval" placeholder="间隔天数" />
+      </block>
+
+      <picker mode="selector" range="{{goalNames}}" value="{{goalIndex}}" bindchange="onPickGoal">
+        <view class="input picker">关联计划：{{goalNames[goalIndex]}} ▾</view>
+      </picker>
+
+      <input class="input" value="{{form.reminder_time}}" bindinput="onInputReminder" placeholder="提醒时间 HH:mm（可选）" />
+      <view class="dialog-footer">
+        <button class="btn" bindtap="closeForm">取消</button>
+        <button class="btn primary" bindtap="onSave">保存</button>
+      </view>
+    </view>
+  </view>
+
+  <view wx:if="{{catTip}}" class="cat-bubble" bindtap="closeCatTip">🐱 {{catTip}}</view>
+</view>

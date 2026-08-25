@@ -1,0 +1,86 @@
+<view class="page">
+  <scroll-view scroll-x class="nav">
+    <view class="nav-item {{selection.type == 'inbox' ? 'active' : ''}}" bindtap="selectInbox">收件箱</view>
+    <view class="nav-item {{selection.type == 'project' && selection._id == item._id ? 'active' : ''}}" wx:for="{{projects}}" wx:key="_id" data-id="{{item._id}}" data-name="{{item.name}}" bindtap="selectProject">{{item.name}}</view>
+    <view class="nav-item add" bindtap="openNewProject">+ 新建</view>
+    <view class="nav-item manage" bindtap="openManage">⋯ 管理</view>
+  </scroll-view>
+
+  <view class="filter">
+    <text class="f {{statusFilter === 'incomplete' ? 'on' : ''}}" data-v="incomplete" bindtap="onStatusFilter">未完成</text>
+    <text class="f {{statusFilter === 'completed' ? 'on' : ''}}" data-v="completed" bindtap="onStatusFilter">已完成</text>
+    <text class="f {{statusFilter === 'all' ? 'on' : ''}}" data-v="all" bindtap="onStatusFilter">全部</text>
+  </view>
+
+  <view class="quick-add">
+    <input class="qa-input" value="{{quickAdd}}" bindinput="onInputQuick" placeholder="添加任务到{{selection.name}}…" bindconfirm="addQuick" />
+    <button class="qa-btn" bindtap="addQuick" disabled="{{adding}}">{{adding ? '添加中…' : '添加'}}</button>
+  </view>
+
+  <view class="group" wx:for="{{groups}}" wx:key="key" wx:for-item="g">
+    <view class="group-title" style="color: {{g.color}};">{{g.label}}（{{g.items.length}}）</view>
+    <view class="task {{item.is_completed ? 'done' : ''}}" wx:for="{{g.items}}" wx:key="_id" wx:for-item="item">
+      <view class="check {{item.is_completed ? 'on' : ''}}" data-id="{{item._id}}" data-done="{{item.is_completed}}" bindtap="toggleComplete">{{item.is_completed ? '✓' : ''}}</view>
+      <view class="task-body" data-id="{{item._id}}" bindtap="openDetail">
+        <view class="task-title">{{item.title}}</view>
+        <view class="task-meta">
+          <view class="qbar" style="background: {{item.quadrant_color}};"></view>
+          <text class="q">{{item.quadrant_label}}</text>
+          <text class="due {{item.is_overdue ? 'overdue' : ''}}">{{item.due_text || '无截止'}}</text>
+        </view>
+      </view>
+    </view>
+  </view>
+
+  <view wx:if="{{loading}}" class="empty">加载中…</view>
+  <view wx:elif="{{!groups.length}}" class="empty">暂无任务</view>
+
+  <view class="mask" wx:if="{{showNewProject}}" bindtap="closeNewProject">
+    <view class="dialog" catchtap="noop">
+      <view class="dialog-title">新建项目/清单</view>
+      <input class="input" value="{{newProjectName}}" bindinput="onInputProjectName" placeholder="名称" />
+      <picker mode="selector" range="{{['项目', '清单']}}" bindchange="onPickProjectType">
+        <view class="input picker">类型：{{newProjectType === 'project' ? '项目' : '清单'}} ▾</view>
+      </picker>
+      <picker mode="selector" range="{{categoryNames}}" value="{{categoryIndex}}" bindchange="onPickCategory">
+        <view class="input picker">分类：{{categoryNames[categoryIndex]}} ▾</view>
+      </picker>
+      <input wx:if="{{categoryIndex === categoryNames.length - 1}}" class="input" value="{{newCategoryName}}" bindinput="onInputNewCategory" placeholder="新分类名称" />
+      <view class="dialog-footer">
+        <button class="btn" bindtap="closeNewProject">取消</button>
+        <button class="btn primary" bindtap="createProject">创建</button>
+      </view>
+    </view>
+  </view>
+
+  <view class="mask" wx:if="{{showManage}}" bindtap="closeManage">
+    <view class="dialog manage-dialog" catchtap="noop">
+      <view class="dialog-title">管理项目/清单</view>
+      <scroll-view scroll-y class="manage-scroll">
+        <view class="manage-section-title">进行中</view>
+        <view class="manage-row" wx:for="{{projects}}" wx:key="_id">
+          <text class="manage-name">{{item.name}}</text>
+          <view class="manage-actions">
+            <text class="mbtn" data-id="{{item._id}}" data-name="{{item.name}}" bindtap="renameProject">改名</text>
+            <text class="mbtn" data-id="{{item._id}}" bindtap="archiveProject">归档</text>
+            <text class="mbtn danger" data-id="{{item._id}}" bindtap="deleteProject">删除</text>
+          </view>
+        </view>
+        <view wx:if="{{!projects.length}}" class="empty small">还没有项目/清单</view>
+
+        <view class="manage-section-title">已归档</view>
+        <view class="manage-row" wx:for="{{archivedProjects}}" wx:key="_id">
+          <text class="manage-name">{{item.name}}</text>
+          <view class="manage-actions">
+            <text class="mbtn" data-id="{{item._id}}" bindtap="unarchiveProject">取消归档</text>
+            <text class="mbtn danger" data-id="{{item._id}}" bindtap="deleteProject">删除</text>
+          </view>
+        </view>
+        <view wx:if="{{!archivedProjects.length}}" class="empty small">没有已归档项目</view>
+      </scroll-view>
+      <view class="dialog-footer">
+        <button class="btn primary" bindtap="closeManage">完成</button>
+      </view>
+    </view>
+  </view>
+</view>
