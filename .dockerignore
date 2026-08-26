@@ -1,9 +1,22 @@
-# 依赖与虚拟环境（注意：Docker 的 ignore 不做前缀模糊匹配，
-# 写 venv 匹配不到 .venv —— 原先正是这个规则失效，导致 128MB
-# 本机虚拟环境（含 macOS 二进制）被打进镜像）
+# 依赖与虚拟环境
+#
+# 注意两点：
+# 1) Docker 的 ignore 不做前缀模糊匹配 —— 写 venv 匹配不到 .venv。
+#    原先正是这个规则失效，导致 128MB 本机虚拟环境（含 macOS 二进制）被打进镜像。
+# 2) Docker 的裸模式**只锚定构建上下文根目录、不递归进子目录**，
+#    这与 .gitignore / tar --exclude-from 的 basename 递归语义不同。
+#    所以嵌套位置（如 .worktrees/*/.venv）必须用 **/ 形式才排得掉。
 .venv
 venv
+**/.venv
+**/venv
 web/node_modules
+**/node_modules
+
+# 并行开发用的 git worktree（见 .gitignore:8）。每个 worktree 都带一份
+# 自己的 .venv 与 node_modules，本仓库实测该目录达 1.7GB。
+# build-image.sh 是直接对工作目录构建，不排除它会白传这些体积。
+.worktrees
 
 # 版本控制与编辑器
 .git
