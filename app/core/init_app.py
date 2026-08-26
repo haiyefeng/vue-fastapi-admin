@@ -401,7 +401,8 @@ async def init_miniprogram_role():
     role = await Role.filter(name=settings.MINIPROGRAM_ROLE_NAME).first()
     if role is None:
         role = await Role.create(
-            name=settings.MINIPROGRAM_ROLE_NAME, desc="小程序用户角色，仅含待办事项相关接口"
+            name=settings.MINIPROGRAM_ROLE_NAME,
+            desc="小程序用户角色，含待办事项/子任务/时间块/分类/习惯/计划/项目/回顾/概览等业务接口，不含 RBAC 管理接口",
         )
 
     apis = await Api.filter(tags__in=MINIPROGRAM_API_TAGS)
