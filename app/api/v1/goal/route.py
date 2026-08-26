@@ -15,19 +15,7 @@ router = APIRouter()
 
 @router.get("/list", summary="获取当前用户进行中的计划列表")
 async def list_goals(current_user: User = Depends(AuthControl.is_authed)):
-    goals = await goal_controller.get_active_goals(current_user.id)
-    goal_ids = [g.id for g in goals]
-    task_counts = await goal_controller.get_task_counts(goal_ids)
-    habit_counts = await goal_controller.get_habit_counts(goal_ids)
-
-    result = []
-    for goal in goals:
-        data = await goal_controller.to_out_dict(goal)
-        task_total, task_completed = task_counts.get(goal.id, (0, 0))
-        data["task_total"] = task_total
-        data["task_completed"] = task_completed
-        data["habit_count"] = habit_counts.get(goal.id, 0)
-        result.append(GoalOut(**data).model_dump())
+    result = [GoalOut(**d).model_dump() for d in await goal_controller.list_active_out(current_user.id)]
     return Success(data=result)
 
 
@@ -36,6 +24,16 @@ async def list_archived_goals(current_user: User = Depends(AuthControl.is_authed
     goals = await goal_controller.get_archived_goals(current_user.id)
     result = [GoalOut(**(await goal_controller.to_out_dict(g))).model_dump() for g in goals]
     return Success(data=result)
+
+
+@router.get("/bootstrap", summary="计划页首屏聚合（进行中 + 已归档）")
+async def bootstrap_goals(current_user: User = Depends(AuthControl.is_authed)):
+    active = [GoalOut(**d).model_dump() for d in await goal_controller.list_active_out(current_user.id)]
+    archived = [
+        GoalOut(**(await goal_controller.to_out_dict(g))).model_dump()
+        for g in await goal_controller.get_archived_goals(current_user.id)
+    ]
+    return Success(data={"list": active, "archived": archived})
 
 
 @router.get("/detail", summary="获取计划详情（含关联任务/习惯列表）")

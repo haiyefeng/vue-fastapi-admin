@@ -88,6 +88,26 @@ class GoalController(CRUDBase[Goal, GoalCreate, GoalUpdate]):
         )
         return {row["goal_id"]: row["cnt"] for row in rows}
 
+    async def list_active_out(self, user_id: int) -> List[dict]:
+        """进行中计划的输出字典列表，附带关联任务数与习惯数。
+
+        /list 与 /bootstrap 共用，避免两处拼装逻辑各自漂移。
+        """
+        goals = await self.get_active_goals(user_id)
+        goal_ids = [g.id for g in goals]
+        task_counts = await self.get_task_counts(goal_ids)
+        habit_counts = await self.get_habit_counts(goal_ids)
+
+        result = []
+        for goal in goals:
+            data = await self.to_out_dict(goal)
+            task_total, task_completed = task_counts.get(goal.id, (0, 0))
+            data["task_total"] = task_total
+            data["task_completed"] = task_completed
+            data["habit_count"] = habit_counts.get(goal.id, 0)
+            result.append(data)
+        return result
+
     async def get_goal_detail(self, goal_id: int, user_id: int) -> Optional[dict]:
         goal = await Goal.filter(id=goal_id, user_id=user_id).first()
         if not goal:
