@@ -5,7 +5,6 @@ venv/
 .vscode
 .ruff_cache/
 .pytest_cache/
-migrations/
 .worktrees/
 web/node_modules/
 
@@ -13,6 +12,8 @@ db.sqlite3
 db.sqlite3-journal
 db.sqlite3-shm
 db.sqlite3-wal
+
+.env
 
 .DS_Store
 ._.DS_Store
