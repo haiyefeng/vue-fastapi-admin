@@ -1,10 +1,37 @@
-web/node_modules
-.git
-.vscode
+# 依赖与虚拟环境（注意：Docker 的 ignore 不做前缀模糊匹配，
+# 写 venv 匹配不到 .venv —— 原先正是这个规则失效，导致 128MB
+# 本机虚拟环境（含 macOS 二进制）被打进镜像）
+.venv
 venv
+web/node_modules
+
+# 版本控制与编辑器
+.git
+.gitignore
+.vscode
+.claude
+
+# Python 产物
 __pycache__
 *.pyc
 *.pyo
 *.pyd
 .Python
+.pytest_cache
+
+# 本地数据库
 db.sqlite3
+
+# 后端镜像用不到的目录
+weapp
+docs
+openspec
+tests
+.superpowers
+
+# 凭据绝不进镜像
+.env
+
+# 注意：migrations/ 必须保留在构建上下文里。
+# 启动流程只应用迁移、不再自动生成，镜像里没有迁移文件的话
+# 容器会带着空 schema 正常启动，直到第一次查询才失败。
