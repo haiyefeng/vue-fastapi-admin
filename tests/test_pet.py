@@ -1,3 +1,4 @@
+from app.core.init_app import init_pet_config
 from app.models.pet import PetCat, PetLine, PetProfile
 
 
@@ -34,3 +35,27 @@ async def test_pet_line_cat_code_nullable_means_universal(db):
     )
     assert line.cat_code is None
     assert len(line.texts) == 1
+
+
+async def test_init_pet_config_is_idempotent(db):
+    await init_pet_config()
+    first_count = await PetCat.all().count()
+    await init_pet_config()
+    assert await PetCat.all().count() == first_count
+    assert first_count == 3
+
+
+async def test_init_pet_config_seeds_lines(db):
+    await init_pet_config()
+    assert await PetLine.all().count() == 13
+    universal = await PetLine.filter(cat_code=None).count()
+    assert universal == 13, "移植阶段所有台词都是通用的（云函数里 cat_id 全是 '*'）"
+
+
+async def test_init_pet_config_updates_changed_text(db):
+    await init_pet_config()
+    line = await PetLine.get(code="p_idle")
+    await PetLine.filter(code="p_idle").update(texts=["被改坏了"])
+    await init_pet_config()
+    reloaded = await PetLine.get(code="p_idle")
+    assert reloaded.texts != ["被改坏了"], "重跑初始化应把配置改回种子里的内容"

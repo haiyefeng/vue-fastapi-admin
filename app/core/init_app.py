@@ -21,8 +21,11 @@ from app.core.exceptions import (
     ResponseValidationError,
     ResponseValidationHandle,
 )
+from app.core.pet_seed import CATS as PET_CATS
+from app.core.pet_seed import LINES as PET_LINES
 from app.log import logger
 from app.models.admin import Api, Menu, Role
+from app.models.pet import PetCat, PetLine
 from app.schemas.menus import MenuType
 from app.settings.config import settings
 
@@ -410,6 +413,18 @@ async def init_miniprogram_role():
         await role.apis.add(*apis)
 
 
+async def init_pet_config():
+    """幂等地写入养成猫的配置数据（猫 + 台词）。
+
+    按 code upsert：改了 pet_seed.py 里的文案，重启即生效；
+    updated_at 随之刷新，客户端的 config_version 因此变化并自动拉取新配置。
+    """
+    for cat in PET_CATS:
+        await PetCat.update_or_create(code=cat["code"], defaults={k: v for k, v in cat.items() if k != "code"})
+    for line in PET_LINES:
+        await PetLine.update_or_create(code=line["code"], defaults={k: v for k, v in line.items() if k != "code"})
+
+
 async def init_data():
     await init_db()
     await init_superuser()
@@ -417,3 +432,4 @@ async def init_data():
     await init_apis()
     await init_roles()
     await init_miniprogram_role()
+    await init_pet_config()
