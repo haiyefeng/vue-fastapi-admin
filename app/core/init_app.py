@@ -413,16 +413,30 @@ async def init_miniprogram_role():
         await role.apis.add(*apis)
 
 
+async def _upsert_pet_config(model, data: dict) -> None:
+    """按 code 写入一行配置；已存在且各字段全等时跳过写入，避免无谓推进 updated_at"""
+    defaults = {k: v for k, v in data.items() if k != "code"}
+    existing = await model.filter(code=data["code"]).first()
+    if existing is None:
+        await model.create(**data)
+        return
+    if all(getattr(existing, field) == value for field, value in defaults.items()):
+        return
+    await existing.update_from_dict(defaults).save()
+
+
 async def init_pet_config():
     """幂等地写入养成猫的配置数据（猫 + 台词）。
 
-    按 code upsert：改了 pet_seed.py 里的文案，重启即生效；
-    updated_at 随之刷新，客户端的 config_version 因此变化并自动拉取新配置。
+    只在内容真的变化时才写库：updated_at 是 auto_now，无条件 save() 会让每次应用启动
+    都推进时间戳，而客户端用两张配置表的 max(updated_at) 当 config_version——
+    那样服务每重启一次，所有客户端都要白拉一遍配置，缓存永远命中不了。
+    改了 pet_seed.py 里的文案，重启即生效；没改则时间戳不动，客户端缓存继续命中。
     """
     for cat in PET_CATS:
-        await PetCat.update_or_create(code=cat["code"], defaults={k: v for k, v in cat.items() if k != "code"})
+        await _upsert_pet_config(PetCat, cat)
     for line in PET_LINES:
-        await PetLine.update_or_create(code=line["code"], defaults={k: v for k, v in line.items() if k != "code"})
+        await _upsert_pet_config(PetLine, line)
 
 
 async def init_data():

@@ -59,3 +59,18 @@ async def test_init_pet_config_updates_changed_text(db):
     await init_pet_config()
     reloaded = await PetLine.get(code="p_idle")
     assert reloaded.texts != ["被改坏了"], "重跑初始化应把配置改回种子里的内容"
+
+
+async def test_init_pet_config_does_not_bump_updated_at_when_unchanged(db):
+    """内容没变时重跑初始化不应推进 updated_at —— 客户端的 config_version 依赖这一点
+
+    回归用：曾用 update_or_create 无条件 save()，导致每次应用启动都刷新时间戳，
+    客户端每次服务重启都要白拉一份配置。
+    """
+    await init_pet_config()
+    before = {c.code: c.updated_at for c in await PetCat.all()}
+
+    await init_pet_config()
+    after = {c.code: c.updated_at for c in await PetCat.all()}
+
+    assert after == before
