@@ -23,6 +23,9 @@ class Settings(BaseSettings):
     SECRET_KEY: str = "3488a63e1765035d386f05409663f55c83bfae3b3c61a932744b20ad14244dcf"  # openssl rand -hex 32
     JWT_ALGORITHM: str = "HS256"
     JWT_ACCESS_TOKEN_EXPIRE_MINUTES: int = 60 * 24 * 7  # 7 day
+    # 微信小程序凭据，务必通过环境变量注入，不要把真实值写进代码
+    WX_APPID: str = os.getenv("WX_APPID", "")
+    WX_SECRET: str = os.getenv("WX_SECRET", "")
     TORTOISE_ORM: dict = {
         "connections": {
             # SQLite configuration
