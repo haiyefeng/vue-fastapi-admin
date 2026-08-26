@@ -1,5 +1,3 @@
-import shutil
-
 from aerich import Command
 from fastapi import FastAPI
 from fastapi.middleware import Middleware
@@ -337,20 +335,18 @@ async def init_apis():
 
 
 async def init_db():
+    """应用版本库中的迁移。
+
+    只应用（upgrade），不生成（migrate），也不删除迁移目录。原先这里会在取不到
+    模型历史时 rmtree("migrations") 再从当前模型重建——那让 schema 的来源在
+    「评审过的迁移文件」与「此刻的模型代码」之间摇摆，且因为往被监听的目录写文件，
+    与 run.py 的 reload=True 叠加会形成重启循环（已两次把开发库弄成半途状态）。
+
+    模型变更后由开发者显式执行 `make migrate` 生成迁移并随代码提交；
+    模型与迁移是否一致，由 tests/test_migration_consistency.py 在提交前拦截。
+    """
     command = Command(tortoise_config=settings.TORTOISE_ORM)
-    try:
-        await command.init_db(safe=True)
-    except FileExistsError:
-        pass
-
     await command.init()
-    try:
-        await command.migrate()
-    except AttributeError:
-        logger.warning("unable to retrieve model history from database, model history will be created from scratch")
-        shutil.rmtree("migrations")
-        await command.init_db(safe=True)
-
     await command.upgrade(run_in_transaction=True)
 
 
