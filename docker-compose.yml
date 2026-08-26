@@ -2,7 +2,8 @@
 # 与开发者本机已有的 MySQL 完全隔离 —— 容器里怎么折腾都碰不到 plan 库的数据。
 # 代价：容器里是一套空数据，admin/123456 由 init_superuser() 重新创建。
 #
-# NAS 部署用 docker-compose.nas.yml（那份保留了 /volume2/... 的绑定挂载）。
+# NAS 部署用 docker-compose.nas.yml —— 默认同样是 named volume，文件里保留着
+# /volume2/... 绑定挂载的注释行，部署到 NAS 前需手动取消注释启用。
 #
 # 用法：cp .env.example .env 并填好，然后 docker compose up --build
 

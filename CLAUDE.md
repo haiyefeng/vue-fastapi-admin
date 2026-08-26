@@ -48,7 +48,7 @@ make clean-db         # 清空 migrations/ 和 sqlite 数据库（破坏性操�
 | 文件 | 用途 |
 |---|---|
 | `docker-compose.yml` | 本机。app + mysql 跑在容器里，用独立 named volume，与本机已有的 MySQL 完全隔离（容器里是空数据） |
-| `docker-compose.nas.yml` | 群晖 NAS。保留 `/volume2/docker/life_plan/` 的绑定挂载 |
+| `docker-compose.nas.yml` | 群晖 NAS。默认同样是 named volume，文件里保留着 `/volume2/docker/life_plan/` 绑定挂载的注释行，部署前需手动取消注释启用 |
 
 跑之前先 `cp .env.example .env` 并填好，其中 `WX_APPID` / `WX_SECRET` 不填不影响启动，但微信登录会返回 40013。
 
@@ -65,7 +65,7 @@ make clean-db         # 清空 migrations/ 和 sqlite 数据库（破坏性操�
 - **待办事项（`app/api/v1/todos`）** — 四象限待办事项模块，与其余资源路由一样挂载在 `dependencies=[DependPermission]` 之下，但路由处理函数内部直接用 `Depends(AuthControl.is_authed)` 取当前用户，不依赖 RBAC 细分权限，且所有查询都以 `user_id` 过滤，天然按用户隔离数据。核心模型 `TodoItem`（`app/models/todo.py`）按 `QuadrantType` 枚举（紧急/重要的四种组合）分类，`app/controllers/todo.py::TodoController` 提供按象限、完成状态、日期范围筛选，以及按日期/象限的完成数统计（供 `GET /todo/statistics/daily`、`GET /todo/statistics/quadrant` 使用）。前端对应 `web/src/views/todo/TodoQuadrant`（四象限看板）与 `web/src/views/todo/TodoHistory`（历史统计），同样由 `Menu` 记录驱动路由，无需手改静态路由文件。`app/models/todo.py` 中还定义了 `Category`、`Project` 模型，但目前没有对应的 schema/controller/路由，是尚未接入的预留结构。
 - **RBAC 数据模型**（`app/models/admin.py`）：`User` ↔ `Role`（多对多）↔ `Api`/`Menu`（多对多）。权限校验以 `Api` 表中存储的 `(http_method, path)` 元组为键，而不是按角色/权限名称。
 - **动态 API 注册表** — `app/controllers/api.py::ApiController.refresh_api()` 在运行时反射 `app.routes`，将 `Api` 表与所有带 `dependencies`（即所有受保护路由）的路由同步，删除过时条目、创建新条目。这使得"API 管理"后台页面和权限校验表始终与代码中的实际路由保持一致。首次启动时通过 `init_apis()` 自动运行一次；也可以从前端手动触发（"刷新 API" 按钮 → `POST /api/v1/api/refresh`）。
-- **`app/core/init_app.py`** — 通过 `init_data()` 运行的启动流程：`init_db`（aerich migrate/upgrade，首次运行自动创建 `migrations/`）→ `init_superuser`（若无用户则创建 admin/123456）→ `init_menus`（初始化默认菜单树）→ `init_apis`（见上文）→ `init_roles`（初始化"管理员"/"普通用户"角色并预分配 API/菜单权限）。
+- **`app/core/init_app.py`** — 通过 `init_data()` 运行的启动流程：`init_db`（只应用 `migrations/` 里已有的迁移，不生成新文件）→ `init_superuser`（若无用户则创建 admin/123456）→ `init_menus`（初始化默认菜单树）→ `init_apis`（见上文）→ `init_roles`（初始化"管理员"/"普通用户"角色并预分配 API/菜单权限）。
 - **`app/core/middlewares.py`** — `HttpAuditLogMiddleware` 会将匹配指定方法（默认 GET/POST/PUT/DELETE，排除 `exclude_paths`）的每个请求记录到 `AuditLog` 模型，包含请求参数和大小受限的响应体。`BackGroundTaskMiddleware` + `app/core/bgtask.py` 提供响应后的后台任务队列（`BgTasks`）。
 - **`app/schemas/`** — 各资源对应的 Pydantic 请求/响应模型，在路由模块中以 `from app.schemas.<x> import *` 方式导入（因此需要 ruff 的 `F403`/`F405` 豁免）。
 - **Menu 与 Dept 的区别** — `Menu` 驱动前端的动态侧边栏/路由（`menu_type`、`component`、`path`、`parent_id`）；`Dept` 是独立的组织架构层级（配合 `DeptClosure` 做祖先/后代查询），与路由无关。
