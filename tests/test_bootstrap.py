@@ -1,4 +1,4 @@
-from app.models.todo import Goal, Habit, HabitFrequencyType
+from app.models.todo import Category, Goal, Habit, HabitFrequencyType, Project
 
 
 async def test_habit_bootstrap_returns_active_and_archived(client, test_user):
@@ -45,3 +45,24 @@ async def test_goal_bootstrap_matches_separate_endpoints(client, test_user):
 
     assert merged["list"] == listed
     assert merged["archived"] == archived
+
+
+async def test_project_bootstrap_returns_projects_and_categories(client, test_user):
+    category = await Category.create(user_id=test_user.id, name="工作")
+    await Project.create(user_id=test_user.id, name="上线计划", category_id=category.id)
+
+    data = (await client.get("/api/v1/project/bootstrap")).json()["data"]
+    assert [p["name"] for p in data["list"]] == ["上线计划"]
+    assert [c["name"] for c in data["categories"]] == ["工作"]
+
+
+async def test_project_bootstrap_matches_separate_endpoints(client, test_user):
+    await Category.create(user_id=test_user.id, name="生活")
+    await Project.create(user_id=test_user.id, name="搬家")
+
+    merged = (await client.get("/api/v1/project/bootstrap")).json()["data"]
+    projects = (await client.get("/api/v1/project/list")).json()["data"]
+    categories = (await client.get("/api/v1/category/list")).json()["data"]
+
+    assert merged["list"] == projects
+    assert merged["categories"] == categories
