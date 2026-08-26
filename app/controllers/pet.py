@@ -136,6 +136,25 @@ class PetController:
             "version": version,
         }
 
+    async def update_profile(self, user_id: int, active_cat_id: Optional[str], pet_name: Optional[str]) -> PetProfile:
+        """更新用户的猫。切换到未解锁的猫会抛 ValueError，由路由转成 400。"""
+        profile = await self.ensure_profile(user_id)
+        fields = ["updated_at"]
+
+        if active_cat_id is not None:
+            owned = {o.get("cat_id") for o in (profile.owned_cats or [])}
+            if active_cat_id not in owned:
+                raise ValueError("这只猫还没解锁")
+            profile.active_cat_code = active_cat_id
+            fields.append("active_cat_code")
+
+        if pet_name is not None:
+            profile.pet_name = str(pet_name)[:20]
+            fields.append("pet_name")
+
+        await profile.save(update_fields=fields)
+        return profile
+
     def profile_out(self, profile: PetProfile) -> Dict[str, Any]:
         """客户端 saveBootstrap 消费的字段集合"""
         return {

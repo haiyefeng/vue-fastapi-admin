@@ -132,3 +132,46 @@ async def test_pet_bootstrap_touch_false_does_not_update_visit(client, test_user
     await client.get("/api/v1/pet/bootstrap", params={"touch": "false"})
     profile = await PetProfile.get(user_id=test_user.id)
     assert profile.last_seen_at == before
+
+
+async def test_pet_update_switches_to_owned_cat(client, test_user):
+    await init_pet_config()
+    await PetProfile.create(
+        user_id=test_user.id,
+        owned_cats=[{"cat_id": "orange", "at": 0}, {"cat_id": "cow", "at": 0}],
+    )
+
+    resp = await client.post("/api/v1/pet/update", json={"active_cat_id": "cow"})
+    assert resp.status_code == 200
+    assert resp.json()["data"]["active_cat_id"] == "cow"
+
+    profile = await PetProfile.get(user_id=test_user.id)
+    assert profile.active_cat_code == "cow"
+
+
+async def test_pet_update_rejects_locked_cat(client, test_user):
+    await init_pet_config()
+    await PetProfile.create(user_id=test_user.id, owned_cats=[{"cat_id": "orange", "at": 0}])
+
+    resp = await client.post("/api/v1/pet/update", json={"active_cat_id": "calico"})
+    assert resp.json()["code"] == 400
+    assert "解锁" in resp.json()["msg"]
+
+    profile = await PetProfile.get(user_id=test_user.id)
+    assert profile.active_cat_code == "orange"
+
+
+async def test_pet_update_truncates_long_name(client, test_user):
+    await init_pet_config()
+    await PetProfile.create(user_id=test_user.id, owned_cats=[{"cat_id": "orange", "at": 0}])
+
+    long_name = "喵" * 30
+    resp = await client.post("/api/v1/pet/update", json={"pet_name": long_name})
+    assert resp.json()["data"]["pet_name"] == "喵" * 20
+
+
+async def test_pet_update_creates_profile_if_missing(client, test_user):
+    await init_pet_config()
+    resp = await client.post("/api/v1/pet/update", json={"pet_name": "小橘"})
+    assert resp.json()["data"]["pet_name"] == "小橘"
+    assert await PetProfile.filter(user_id=test_user.id).count() == 1

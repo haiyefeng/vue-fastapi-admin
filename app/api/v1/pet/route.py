@@ -5,7 +5,8 @@ from fastapi import APIRouter, Depends, Query
 from app.controllers.pet import pet_controller
 from app.core.dependency import AuthControl
 from app.models.admin import User
-from app.schemas.base import Success
+from app.schemas.base import Fail, Success
+from app.schemas.pet import PetUpdate
 
 logger = logging.getLogger(__name__)
 
@@ -39,3 +40,14 @@ async def bootstrap_pet(
         data["config"] = config
 
     return Success(data=data)
+
+
+@router.post("/update", summary="切换陪伴的猫 / 给猫起名")
+async def update_pet(pet_in: PetUpdate, current_user: User = Depends(AuthControl.is_authed)):
+    try:
+        profile = await pet_controller.update_profile(
+            user_id=current_user.id, active_cat_id=pet_in.active_cat_id, pet_name=pet_in.pet_name
+        )
+    except ValueError as e:
+        return Fail(code=400, msg=str(e))
+    return Success(data=pet_controller.profile_out(profile))
