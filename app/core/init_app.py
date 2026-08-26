@@ -400,6 +400,12 @@ async def init_miniprogram_role():
 
     每次启动都跑：init_apis() 刚刷新完 Api 表，这里把新出现的业务 API 补授权给该角色，
     否则小程序用户（非超管）会在新接口上吃 403。
+
+    注意：本角色的 API 授权由代码托管（`MINIPROGRAM_API_TAGS` 白名单），只做增量授权、
+    从不移除——管理员在后台「角色管理」页对该角色做的手工改动（无论是加还是删白名单外/内的
+    API），都会在下次应用启动时被这里的逻辑覆盖回来（新增的会重新补上；被管理员删除的白名单
+    内 API 同样会被重新加回，因为这里从不 remove）。若要支持管理员手工调整不被覆盖，需要产品
+    决策后再实现（比如加一个「脱离托管」标记），本次不做。
     """
     role = await Role.filter(name=settings.MINIPROGRAM_ROLE_NAME).first()
     if role is None:
@@ -409,8 +415,11 @@ async def init_miniprogram_role():
         )
 
     apis = await Api.filter(tags__in=MINIPROGRAM_API_TAGS)
-    if apis:
-        await role.apis.add(*apis)
+    existing_ids = set(await role.apis.all().values_list("id", flat=True))
+    new_apis = [api for api in apis if api.id not in existing_ids]
+    if new_apis:
+        await role.apis.add(*new_apis)
+        logger.info(f"小程序用户角色新增 {len(new_apis)} 条 API 授权：{[a.path for a in new_apis]}")
 
 
 async def _upsert_pet_config(model, data: dict) -> None:

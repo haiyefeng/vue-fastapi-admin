@@ -189,8 +189,8 @@ class HabitController(CRUDBase[Habit, HabitCreate, HabitUpdate]):
             interval = config.get("interval", 1)
             anchor = habit.created_at.date()
             diff = (day - anchor).days
-            # 必须先判 diff >= 0：Python 的负数取模会归一到非负（(-2) % 2 == 0），
-            # 少了这一步，创建日之前、间隔整数倍的那些天会被误判成计划日
+            # 必须先判 diff >= 0：习惯创建之前的日子不算计划日；
+            # 云函数 habit/index.js:38 有同一守卫
             return diff >= 0 and diff % interval == 0
         return False
 

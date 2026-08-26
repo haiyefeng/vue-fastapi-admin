@@ -2,8 +2,10 @@ from datetime import datetime
 from typing import List, Optional
 
 from fastapi.exceptions import HTTPException
+from tortoise.exceptions import IntegrityError
 
 from app.core.crud import CRUDBase
+from app.log import logger
 from app.models.admin import Role, User
 from app.schemas.login import CredentialsSchema
 from app.schemas.users import UserCreate, UserUpdate
@@ -56,17 +58,27 @@ class UserController(CRUDBase[User, UserCreate, UserUpdate]):
         username 上限 20 字符而 openid 是 28 位，所以取后 16 位拼前缀；
         email 是 unique 且非空，用占位域名满足约束。
         """
-        user = await User.create(
-            username=f"wx_{openid[-16:]}",
-            email=f"{openid}@wx.local",
-            password=None,
-            openid=openid,
-            is_active=True,
-            is_superuser=False,
-        )
+        try:
+            user = await User.create(
+                username=f"wx_{openid[-16:]}",
+                email=f"{openid}@wx.local",
+                password=None,
+                openid=openid,
+                is_active=True,
+                is_superuser=False,
+            )
+        except IntegrityError:
+            # 并发首次登录：另一个请求刚建好同一个 openid 的用户，回查复用即可
+            user = await User.get_or_none(openid=openid)
+            if user is None:
+                raise
+            return user
+
         role = await Role.get_or_none(name=settings.MINIPROGRAM_ROLE_NAME)
         if role:
             await user.roles.add(role)
+        else:
+            logger.warning(f"小程序角色 {settings.MINIPROGRAM_ROLE_NAME!r} 不存在，用户 {user.username} 未绑定任何角色")
         return user
 
     async def reset_password(self, user_id: int):

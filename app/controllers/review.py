@@ -3,12 +3,11 @@ from typing import Dict, List, Optional, Tuple
 
 from tortoise.functions import Count
 
+from app.controllers.habit import habit_controller
 from app.core.crud import CRUDBase
 from app.models.todo import (
     Category,
     Goal,
-    Habit,
-    HabitFrequencyType,
     QuadrantType,
     Review,
     ReviewPeriodType,
@@ -146,55 +145,9 @@ class ReviewController(CRUDBase[Review, ReviewSaveIn, ReviewSaveIn]):
         }
 
     async def _get_habit_checkin_summary(self, user_id: int, period_start: date, period_end: date) -> List[dict]:
-        from app.controllers.habit import habit_controller
-
-        habits = await Habit.filter(user_id=user_id, is_archived=False, is_paused=False)
-        today = date.today()
-        result = []
-        for habit in habits:
-            if habit.frequency_type == HabitFrequencyType.WEEKLY_COUNT:
-                count = (habit.frequency_config or {}).get("count", 0)
-                total_days = (period_end - period_start).days + 1
-                full_weeks = total_days // 7
-                expected = full_weeks * count
-                completed = await TodoItem.filter(
-                    habit_id=habit.id,
-                    is_completed=True,
-                    generated_date__gte=period_start,
-                    generated_date__lte=period_end,
-                ).count()
-                streak = None
-            else:
-                range_start = max(period_start, habit.created_at.date())
-                range_end = min(period_end, today)
-
-                todos = await TodoItem.filter(
-                    habit_id=habit.id, generated_date__gte=period_start, generated_date__lte=period_end
-                ).values("generated_date", "is_completed")
-                completed_map = {t["generated_date"]: t["is_completed"] for t in todos}
-
-                expected = 0
-                completed = 0
-                cursor = range_start
-                while cursor <= range_end:
-                    if await habit_controller.should_generate_today(habit, cursor):
-                        expected += 1
-                        if completed_map.get(cursor):
-                            completed += 1
-                    cursor += timedelta(days=1)
-                streak = await habit_controller.calc_streak(habit, today)
-
-            result.append(
-                {
-                    "habit_id": habit.id,
-                    "name": habit.name,
-                    "frequency_type": habit.frequency_type,
-                    "completed": completed,
-                    "expected": expected,
-                    "streak": streak,
-                }
-            )
-        return result
+        """周期内的习惯坚持度。与 /habit/summary 共用同一套算法（habit_controller.summary），
+        避免两处各自实现后随时间漂移（曾是逐行相同的两份代码）。"""
+        return await habit_controller.summary(user_id, period_start, period_end, date.today())
 
     async def _get_goal_progress_summary(self, user_id: int, period_start: date, period_end: date) -> List[dict]:
         goals = await Goal.filter(user_id=user_id, is_archived=False)

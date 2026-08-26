@@ -28,10 +28,15 @@ async def code2session(code: str, *, transport: httpx.AsyncBaseTransport | None 
         "js_code": code,
         "grant_type": "authorization_code",
     }
-    async with httpx.AsyncClient(timeout=TIMEOUT_SECONDS, transport=transport) as client:
-        response = await client.get(CODE2SESSION_URL, params=params)
+    try:
+        async with httpx.AsyncClient(timeout=TIMEOUT_SECONDS, transport=transport) as client:
+            response = await client.get(CODE2SESSION_URL, params=params)
+        data = response.json()
+    except httpx.RequestError as e:
+        raise WeChatError(f"请求微信接口失败: {e}") from e
+    except ValueError as e:
+        raise WeChatError("微信返回了非 JSON 响应") from e
 
-    data = response.json()
     if data.get("errcode"):
         raise WeChatError(f"微信返回错误 {data.get('errcode')}: {data.get('errmsg')}")
 

@@ -54,6 +54,9 @@
 6. **habit 请求不再传 `today_str`/`today_start_ms`/`today_end_ms`**：「今天」由服务端 `date.today()` 决定，需接受服务端时区口径。
 7. **可以少发两次请求**：`/dashboard/today` 已内联 `habits`（不必再调 habit list）、`/review/data-summary` 已内联 `habits`（不必再调 habit summary）。
 8. **全局字段名 `_id` → `id`**（含 `schedule[].id`、`tasks[].id`、`goal.tasks[].id` 等）。
+9. **`daily` 的返回形状完全不同**：云函数 `statisticsDaily` 返回原始文档列表 `[{completed_at, quadrant_type}]`，小程序自己在 `weapp/miniprogram/pages/stats/index.js:38-42` 按日 group；后端 `/todo/statistics/daily` 返回的是**已聚合**的 `TodoStatisticsByDate` 列表（`{date, urgent_important, ..., total}`）。阶段二必须删掉客户端那段 `byDate` 分组循环，改成直接读 `d.total`。
+10. **日期参数单位变了**：stats 页现在传 `start_ms`/`end_ms`/`completed_start`/`completed_end` 四个**毫秒时间戳**；后端 `stats-bootstrap` 收的是 `start_date`/`end_date` 两个 `YYYY-MM-DD`。（第 6 条只提了 habit 的 `today_*`，没提这一组，一并列入。）
+11. **分页字段的位置不同**：`/todo/list` 走 `SuccessExtra`，`total`/`page`/`page_size` 在**顶层**（与 `data` 平级）；`/todo/stats-bootstrap` 的同名字段嵌在 `data.completed` 里面。两种都对（前者是仓库既有约定，后者对齐云函数 `statsBootstrap`），但客户端 http 层要分别处理。
 
 ## 校对中注意到但**未改**的事（供后续判断，本轮不动）
 

@@ -1,7 +1,14 @@
 import httpx
+import jwt as pyjwt
 import pytest
+from httpx import ASGITransport, AsyncClient
 
-from app.models.admin import User
+from app import app as fastapi_app
+from app.controllers.user import user_controller
+from app.core.init_app import init_miniprogram_role
+from app.models.admin import Api, Role, User
+from app.settings import settings
+from app.utils import wechat
 from app.utils.wechat import WeChatError, code2session
 
 
@@ -47,12 +54,40 @@ async def test_code2session_raises_when_openid_missing():
         await code2session("weird-code", transport=transport)
 
 
-import jwt as pyjwt
-from httpx import ASGITransport, AsyncClient
+async def test_code2session_raises_wechaterror_on_timeout():
+    """微信接口超时/连接失败：httpx.RequestError 要被兜住转成 WeChatError，而不是原样上抛"""
 
-from app import app as fastapi_app
-from app.settings import settings
-from app.utils import wechat
+    def handler(request: httpx.Request) -> httpx.Response:
+        raise httpx.ConnectTimeout("timeout")
+
+    transport = httpx.MockTransport(handler)
+    with pytest.raises(WeChatError):
+        await code2session("the-code", transport=transport)
+
+
+def _mock_transport_text(text: str, status_code: int = 200):
+    def handler(request: httpx.Request) -> httpx.Response:
+        return httpx.Response(status_code, text=text)
+
+    return httpx.MockTransport(handler)
+
+
+async def test_code2session_raises_wechaterror_on_non_json_response():
+    """微信返回非 JSON 体（WAF/代理的 HTML 错误页）：不应把原始 ValueError 抛出去"""
+    transport = _mock_transport_text("<html>error</html>")
+    with pytest.raises(WeChatError):
+        await code2session("the-code", transport=transport)
+
+
+async def test_create_wx_user_reuses_existing_on_integrity_error(db):
+    """并发首次登录：两个请求带同一个新 openid 同时通过 get_or_none 判空，
+    第二个撞唯一约束时应回查复用已存在的用户，而不是把 IntegrityError 原样抛给客户端"""
+    existing = await user_controller.create_wx_user("o_concurrent_openid_1")
+
+    user = await user_controller.create_wx_user("o_concurrent_openid_1")
+
+    assert user.id == existing.id
+    assert await User.filter(openid="o_concurrent_openid_1").count() == 1
 
 
 def _patch_code2session(monkeypatch, openid: str):
@@ -125,10 +160,6 @@ async def test_wx_login_rejects_inactive_user(db, monkeypatch):
         resp = await ac.post("/api/v1/base/wx_login", json={"code": "any"})
 
     assert resp.json()["code"] == 403
-
-
-from app.core.init_app import init_miniprogram_role
-from app.models.admin import Api, Role
 
 
 async def test_init_miniprogram_role_is_idempotent(db):

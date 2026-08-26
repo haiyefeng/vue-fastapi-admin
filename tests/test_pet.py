@@ -55,7 +55,6 @@ async def test_init_pet_config_seeds_lines(db):
 
 async def test_init_pet_config_updates_changed_text(db):
     await init_pet_config()
-    line = await PetLine.get(code="p_idle")
     await PetLine.filter(code="p_idle").update(texts=["被改坏了"])
     await init_pet_config()
     reloaded = await PetLine.get(code="p_idle")
