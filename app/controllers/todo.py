@@ -78,6 +78,10 @@ class TodoController(CRUDBase[TodoItem, TodoItemCreate, TodoItemUpdate]):
         sort_order: Optional[str] = None,
     ) -> Tuple[int, List[TodoItem]]:
         """获取用户的待办事项列表"""
+        # 钳制分页入参：page < 1 会算出负 offset，Tortoise 直接抛 ParamsError 变成 500；
+        # page_size < 1 会返回空列表。两者都按云函数 pageArgs 的口径回落到合法下界。
+        page = max(1, page)
+        page_size = max(1, page_size)
         query = Q(user_id=user_id)
 
         if quadrant_type:

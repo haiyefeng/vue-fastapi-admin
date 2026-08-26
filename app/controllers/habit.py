@@ -188,7 +188,10 @@ class HabitController(CRUDBase[Habit, HabitCreate, HabitUpdate]):
         if habit.frequency_type == HabitFrequencyType.INTERVAL_DAYS:
             interval = config.get("interval", 1)
             anchor = habit.created_at.date()
-            return (day - anchor).days % interval == 0
+            diff = (day - anchor).days
+            # 必须先判 diff >= 0：Python 的负数取模会归一到非负（(-2) % 2 == 0），
+            # 少了这一步，创建日之前、间隔整数倍的那些天会被误判成计划日
+            return diff >= 0 and diff % interval == 0
         return False
 
     async def summary(self, user_id: int, start: date, end: date, today: date) -> List[Dict[str, Any]]:

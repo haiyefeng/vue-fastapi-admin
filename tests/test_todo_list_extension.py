@@ -244,3 +244,22 @@ async def test_create_todo_with_own_goal_id_succeeds(client, test_user):
     )
     assert resp.status_code == 200
     assert resp.json()["data"]["goal_id"] == goal.id
+
+
+async def test_list_page_below_one_falls_back_to_first_page(client, test_user):
+    """page < 1 时回落到第一页，而不是让 Tortoise 因负 offset 抛错（对齐云函数 pageArgs 的钳制）"""
+    await TodoItem.create(title="任务A", quadrant_type=QuadrantType.URGENT_IMPORTANT, user_id=test_user.id)
+
+    resp = await client.get("/api/v1/todo/list", params={"page": 0, "page_size": 10})
+    assert resp.status_code == 200
+    assert [t["title"] for t in resp.json()["data"]] == ["任务A"]
+
+
+async def test_list_page_size_below_one_falls_back_to_one(client, test_user):
+    """page_size < 1 时回落到 1 条，而不是返回空列表（对齐云函数 pageArgs 的钳制）"""
+    await TodoItem.create(title="任务A", quadrant_type=QuadrantType.URGENT_IMPORTANT, user_id=test_user.id)
+    await TodoItem.create(title="任务B", quadrant_type=QuadrantType.URGENT_IMPORTANT, user_id=test_user.id)
+
+    resp = await client.get("/api/v1/todo/list", params={"page": 1, "page_size": 0})
+    assert resp.status_code == 200
+    assert len(resp.json()["data"]) == 1

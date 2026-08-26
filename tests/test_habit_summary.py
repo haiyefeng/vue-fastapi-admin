@@ -117,3 +117,21 @@ async def test_summary_endpoint_returns_list(client, test_user):
     data = resp.json()["data"]
     assert isinstance(data, list)
     assert data[0]["name"] == "喝水"
+
+
+async def test_is_scheduled_day_interval_days_before_creation_is_false(db, test_user):
+    """锚点之前的日期一律不是计划日：对齐云函数 isScheduledDay 的 `diff >= 0` 判定。
+
+    Python 的负数取模会归一到非负（(-2) % 2 == 0），若不显式判定 diff >= 0，
+    创建日之前、间隔整数倍的那些天会被误判成计划日。
+    """
+    habit = await Habit.create(
+        user_id=test_user.id,
+        name="每两天",
+        frequency_type=HabitFrequencyType.INTERVAL_DAYS,
+        frequency_config={"interval": 2},
+    )
+    anchor = habit.created_at.date()
+    assert habit_controller.is_scheduled_day(habit, anchor - timedelta(days=2)) is False
+    assert habit_controller.is_scheduled_day(habit, anchor - timedelta(days=4)) is False
+    assert habit_controller.is_scheduled_day(habit, anchor - timedelta(days=1)) is False
