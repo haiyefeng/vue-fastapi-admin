@@ -1,8 +1,17 @@
+# 本机开发/验证用。数据库跑在容器里、用独立的 named volume，
+# 与开发者本机已有的 MySQL 完全隔离 —— 容器里怎么折腾都碰不到 plan 库的数据。
+# 代价：容器里是一套空数据，admin/123456 由 init_superuser() 重新创建。
+#
+# NAS 部署用 docker-compose.nas.yml（那份保留了 /volume2/... 的绑定挂载）。
+#
+# 用法：cp .env.example .env 并填好，然后 docker compose up --build
+
 services:
   app:
+    build: .
     image: vue-fastapi-admin-app
     container_name: vue-fastapi-admin
-    restart: always
+    restart: unless-stopped
     ports:
       - "7777:80"
     depends_on:
@@ -12,33 +21,36 @@ services:
       - DB_HOST=mysql
       - DB_PORT=3306
       - DB_USER=root
-      - DB_PASSWORD=password123
-      - DB_NAME=vue_fastapi_admin
-    volumes:
-      - app_data:/opt/vue-fastapi-admin/data
-      # - /volume2/docker/life_plan/app:/opt/vue-fastapi-admin/data
+      - DB_PASSWORD=${DB_PASSWORD}
+      - DB_NAME=${DB_NAME}
+      - WX_APPID=${WX_APPID}
+      - WX_SECRET=${WX_SECRET}
+    # 不挂数据卷：本应用只往 stdout 写日志（app/log/log.py 里的文件 sink 是注释掉的，
+    # settings.LOGS_ROOT 全仓无人使用），日志交给容器运行时收集即可。
+    # 原编排挂的 app_data:/opt/vue-fastapi-admin/data 同样没有任何代码写入，一并去掉。
     networks:
       - app-network
 
   mysql:
     image: mysql:8.1
     container_name: vue-fastapi-admin-mysql
-    restart: always
+    restart: unless-stopped
     ports:
       - "3380:3306"
     environment:
-      - MYSQL_ROOT_PASSWORD=password123
-      - MYSQL_DATABASE=vue_fastapi_admin
-      - MYSQL_USER=app_user
-      - MYSQL_PASSWORD=app_password
+      - MYSQL_ROOT_PASSWORD=${DB_PASSWORD}
+      - MYSQL_DATABASE=${DB_NAME}
     volumes:
       - mysql_data:/var/lib/mysql
-      # - /volume2/docker/life_plan/mysql:/var/lib/mysql
     networks:
       - app-network
-    command: --default-authentication-plugin=mysql_native_password --character-set-server=utf8mb4 --collation-server=utf8mb4_unicode_ci --log-error-suppression-list="MY-013360"
+    command: >
+      --default-authentication-plugin=mysql_native_password
+      --character-set-server=utf8mb4
+      --collation-server=utf8mb4_unicode_ci
+      --log-error-suppression-list="MY-013360"
     healthcheck:
-      test: [ "CMD", "mysqladmin", "ping", "-h", "localhost", "-u", "root", "-ppassword123" ]
+      test: ["CMD", "mysqladmin", "ping", "-h", "localhost", "-u", "root", "-p${DB_PASSWORD}"]
       interval: 10s
       timeout: 10s
       retries: 15
@@ -50,4 +62,3 @@ networks:
 
 volumes:
   mysql_data:
-  app_data:
