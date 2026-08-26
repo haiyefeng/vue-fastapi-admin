@@ -27,7 +27,7 @@ def _warn_missing_wechat_credentials() -> None:
     missing = [name for name in ("WX_APPID", "WX_SECRET") if not getattr(settings, name)]
     if missing:
         logger.warning(
-            "微信小程序凭据缺失：%s。后端可正常启动，但 /api/v1/base/wx_login 会返回微信的 "
+            "微信小程序凭据缺失：{}。后端可正常启动，但 /api/v1/base/wx_login 会返回微信的 "
             "40013 invalid appid，小程序无法登录。在 .env 中配置后重启即可。",
             "、".join(missing),
         )
