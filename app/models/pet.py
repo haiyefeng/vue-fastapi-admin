@@ -13,10 +13,8 @@ class PetProfile(BaseModel, TimestampMixin):
     user = fields.OneToOneField("models.User", related_name="pet_profile", description="所属用户")
     active_cat_code = fields.CharField(max_length=32, default="orange", description="当前陪伴的猫")
     pet_name = fields.CharField(max_length=20, null=True, description="用户给猫起的名字")
-    stats = fields.JSONField(default=dict, description="分维度累计计数，如 {'todo_completed': 12}")
-    owned_cats = fields.JSONField(
-        default=list, description="已解锁的猫，如 [{'cat_id': 'orange', 'at': 1690000000000}]"
-    )
+    stats = fields.JSONField(default=dict, description="分维度累计计数，键为维度名、值为累计次数")
+    owned_cats = fields.JSONField(default=list, description="已解锁的猫，元素含 cat_id 与解锁时间戳 at")
     visit_streak = fields.IntField(default=1, description="连续来访天数")
     last_seen_at = fields.DatetimeField(null=True, description="最近一次来访时间")
 

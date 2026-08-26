@@ -212,3 +212,24 @@ async def test_updating_title_does_not_increment(client, test_user):
     await client.post("/api/v1/todo/update", json={"id": todo.id, "title": "改个标题"})
 
     assert await PetProfile.filter(user_id=test_user.id).count() == 0, "非完成动作不该建猫"
+
+
+async def test_no_model_description_contains_single_quote(db):
+    """模型字段的 description 不能含单引号，否则 aerich 生成的迁移会在 MySQL 上语法错误。
+
+    根因：aerich 把单引号转义成 \\' 写进迁移文件，但迁移文件是 Python 源码，
+    \\' 在字符串字面量里被 Python 求值成裸单引号，MySQL 收到的 COMMENT '...'...'
+    会提前终止字符串。用 generate_schemas() 建表（测试用的 SQLite）不经过这条路径，
+    所以这类问题只会在真实迁移时暴露 —— 这条测试就是为了在提交前拦住它。
+    """
+    from tortoise import Tortoise
+
+    offenders = []
+    for app_models in Tortoise.apps.values():
+        for model in app_models.values():
+            for name, field in model._meta.fields_map.items():
+                desc = getattr(field, "description", None)
+                if desc and "'" in desc:
+                    offenders.append(f"{model.__name__}.{name}: {desc}")
+
+    assert not offenders, "以下字段的 description 含单引号，会破坏 MySQL 迁移：\n" + "\n".join(offenders)

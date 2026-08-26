@@ -163,7 +163,7 @@ class Habit(BaseModel, TimestampMixin):
     default_quadrant = fields.CharEnumField(
         QuadrantType, default=QuadrantType.IMPORTANT_NOT_URGENT, description="生成待办的默认象限"
     )
-    goal_desc = fields.CharField(max_length=100, null=True, description="目标描述，如'30分钟'，仅展示")
+    goal_desc = fields.CharField(max_length=100, null=True, description="目标描述，如「30分钟」，仅展示")
     reminder_time = fields.TimeField(null=True, description="每日提醒时间，写入生成待办的 reminder_at")
     is_paused = fields.BooleanField(default=False, description="暂停后停止生成新待办，历史保留")
     is_archived = fields.BooleanField(default=False, description="归档后从主列表隐藏，历史保留")
