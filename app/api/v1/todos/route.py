@@ -181,7 +181,9 @@ async def stats_bootstrap(
     sort_order: Optional[str] = Query("desc", description="已完成列表排序方向"),
     current_user: User = Depends(AuthControl.is_authed),
 ):
-    """统计页三块数据一次返回，替代小程序原先的 3 次云函数往返"""
+    """统计页三块数据一次返回，替代小程序原先的 3 次云函数往返。
+    日期范围统一按「完成时间」口径：daily 与 completed 两块都筛 completed_at，
+    保证同一次请求里的数据人群一致。"""
     statistics = await todo_controller.get_statistics_by_date(
         user_id=current_user.id, start_date=start_date, end_date=end_date
     )
@@ -191,8 +193,8 @@ async def stats_bootstrap(
         page=page,
         page_size=page_size,
         is_completed=True,
-        start_date=start_date,
-        end_date=end_date,
+        completed_start=start_date,
+        completed_end=end_date,
         sort_by=sort_by,
         sort_order=sort_order,
     )

@@ -118,3 +118,28 @@ async def test_stats_bootstrap_sections_match_separate_endpoints(client, test_us
 
     assert merged["daily"] == daily
     assert merged["quadrant"] == quadrant
+
+
+async def test_stats_bootstrap_filters_completed_list_by_completion_time(client, test_user):
+    """创建于窗口外、完成于窗口内的待办，应同时出现在 completed 列表与 daily 统计中。
+
+    回归用：日期范围曾被错误地传给筛「创建时间」的参数，导致这类待办只进 daily 不进列表。
+    """
+    todo = await TodoItem.create(
+        title="上月创建本月完成",
+        user_id=test_user.id,
+        quadrant_type=QuadrantType.URGENT_IMPORTANT,
+        is_completed=True,
+        completed_at=datetime(2026, 8, 20, 10, 0, 0),
+    )
+    # created_at 是 auto_now_add，需要绕过它单独改成窗口之前
+    await TodoItem.filter(id=todo.id).update(created_at=datetime(2026, 7, 1, 9, 0, 0))
+
+    resp = await client.get(
+        "/api/v1/todo/stats-bootstrap",
+        params={"start_date": "2026-08-01", "end_date": "2026-08-31"},
+    )
+    data = resp.json()["data"]
+
+    assert [t["title"] for t in data["completed"]["list"]] == ["上月创建本月完成"]
+    assert sum(d["urgent_important"] for d in data["daily"]) == 1

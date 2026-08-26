@@ -68,6 +68,8 @@ class TodoController(CRUDBase[TodoItem, TodoItemCreate, TodoItemUpdate]):
         is_completed: Optional[bool] = None,
         start_date: Optional[date] = None,
         end_date: Optional[date] = None,
+        completed_start: Optional[date] = None,
+        completed_end: Optional[date] = None,
         project_id: Optional[int] = None,
         inbox_only: Optional[bool] = None,
         unscheduled_only: Optional[bool] = None,
@@ -91,6 +93,14 @@ class TodoController(CRUDBase[TodoItem, TodoItemCreate, TodoItemUpdate]):
         if end_date:
             query &= Q(created_at__lte=datetime.combine(end_date, datetime.max.time()))
 
+        # 完成时间范围。与 start_date/end_date（筛创建时间）是两组独立参数，
+        # 统计页要的是「这段时间内完成了什么」，用的是这一组。
+        if completed_start:
+            query &= Q(completed_at__gte=datetime.combine(completed_start, datetime.min.time()))
+
+        if completed_end:
+            query &= Q(completed_at__lte=datetime.combine(completed_end, datetime.max.time()))
+
         if inbox_only:
             query &= Q(project_id__isnull=True)
         elif project_id is not None:
@@ -107,7 +117,7 @@ class TodoController(CRUDBase[TodoItem, TodoItemCreate, TodoItemUpdate]):
         if sort_by is None:
             order = ["-created_at"]
         else:
-            field = sort_by if sort_by in ("due_date", "quadrant_type", "created_at") else "created_at"
+            field = sort_by if sort_by in ("due_date", "quadrant_type", "created_at", "completed_at") else "created_at"
             direction = "-" if sort_order == "desc" else ""
             order = [f"{direction}{field}"]
 
