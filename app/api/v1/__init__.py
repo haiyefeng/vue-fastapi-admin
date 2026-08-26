@@ -11,6 +11,7 @@ from .depts import depts_router
 from .goal import goal_router
 from .habit import habit_router
 from .menus import menus_router
+from .pet import pet_router
 from .project import project_router
 from .review import review_router
 from .roles import roles_router
@@ -37,3 +38,4 @@ v1_router.include_router(timeblock_router, prefix="/timeblock", dependencies=[De
 v1_router.include_router(habit_router, prefix="/habit", dependencies=[DependPermission])
 v1_router.include_router(review_router, prefix="/review", dependencies=[DependPermission])
 v1_router.include_router(dashboard_router, prefix="/dashboard", dependencies=[DependPermission])
+v1_router.include_router(pet_router, prefix="/pet", dependencies=[DependPermission])

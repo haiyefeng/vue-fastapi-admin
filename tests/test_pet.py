@@ -74,3 +74,61 @@ async def test_init_pet_config_does_not_bump_updated_at_when_unchanged(db):
     after = {c.code: c.updated_at for c in await PetCat.all()}
 
     assert after == before
+
+
+async def test_pet_bootstrap_creates_profile_on_first_call(client, test_user):
+    await init_pet_config()
+    resp = await client.get("/api/v1/pet/bootstrap")
+    assert resp.status_code == 200
+    data = resp.json()["data"]
+
+    assert data["pet"]["active_cat_id"] == "orange"
+    assert data["pet"]["owned_cats"] == [{"cat_id": "orange", "at": data["pet"]["owned_cats"][0]["at"]}]
+    assert data["total"] == 0
+    assert await PetProfile.filter(user_id=test_user.id).count() == 1
+
+
+async def test_pet_bootstrap_returns_config_in_client_shape(client, test_user):
+    await init_pet_config()
+    data = (await client.get("/api/v1/pet/bootstrap")).json()["data"]
+
+    config = data["config"]
+    assert config["version"] == data["config_version"]
+    assert {c["_id"] for c in config["cats"]} == {"orange", "cow", "calico"}
+    # 通用台词的 cat_id 必须是 "*"，cat.js 的过滤逻辑依赖这个字面量
+    assert all(line["cat_id"] == "*" for line in config["lines"])
+    assert all("_id" in line for line in config["lines"])
+
+
+async def test_pet_bootstrap_omits_config_when_version_matches(client, test_user):
+    await init_pet_config()
+    first = (await client.get("/api/v1/pet/bootstrap")).json()["data"]
+    version = first["config_version"]
+
+    second = (await client.get("/api/v1/pet/bootstrap", params={"config_version": version})).json()["data"]
+    assert "config" not in second, "版本一致时不应回传配置体，这是热页面零流量的前提"
+    assert second["config_version"] == version
+
+
+async def test_pet_bootstrap_unlocks_cat_when_total_reaches_threshold(client, test_user):
+    await init_pet_config()
+    await PetProfile.create(
+        user_id=test_user.id, stats={"todo_completed": 60}, owned_cats=[{"cat_id": "orange", "at": 0}]
+    )
+
+    data = (await client.get("/api/v1/pet/bootstrap")).json()["data"]
+    assert data["total"] == 60
+    assert "cow" in data["newly_unlocked"]
+    assert {o["cat_id"] for o in data["pet"]["owned_cats"]} == {"orange", "cow"}
+    assert "calico" not in data["newly_unlocked"], "150 的门槛还没到"
+
+
+async def test_pet_bootstrap_touch_false_does_not_update_visit(client, test_user):
+    await init_pet_config()
+    await client.get("/api/v1/pet/bootstrap")
+    profile = await PetProfile.get(user_id=test_user.id)
+    before = profile.last_seen_at
+
+    await client.get("/api/v1/pet/bootstrap", params={"touch": "false"})
+    profile = await PetProfile.get(user_id=test_user.id)
+    assert profile.last_seen_at == before
