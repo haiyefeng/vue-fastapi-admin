@@ -125,3 +125,33 @@ async def test_wx_login_rejects_inactive_user(db, monkeypatch):
         resp = await ac.post("/api/v1/base/wx_login", json={"code": "any"})
 
     assert resp.json()["code"] == 403
+
+
+from app.core.init_app import init_miniprogram_role
+from app.models.admin import Api, Role
+
+
+async def test_init_miniprogram_role_is_idempotent(db):
+    await Api.create(path="/api/v1/todo/list", method="GET", summary="列表", tags="待办事项")
+    await Api.create(path="/api/v1/user/list", method="GET", summary="用户", tags="用户管理")
+
+    await init_miniprogram_role()
+    await init_miniprogram_role()
+
+    roles = await Role.filter(name=settings.MINIPROGRAM_ROLE_NAME)
+    assert len(roles) == 1
+
+    apis = await roles[0].apis.all()
+    paths = {a.path for a in apis}
+    assert "/api/v1/todo/list" in paths
+    assert "/api/v1/user/list" not in paths, "小程序角色不应拿到 RBAC 管理类 API"
+
+
+async def test_init_miniprogram_role_picks_up_new_apis(db):
+    await init_miniprogram_role()
+    await Api.create(path="/api/v1/pet/bootstrap", method="GET", summary="猫", tags="养成猫")
+    await init_miniprogram_role()
+
+    role = await Role.get(name=settings.MINIPROGRAM_ROLE_NAME)
+    paths = {a.path for a in await role.apis.all()}
+    assert "/api/v1/pet/bootstrap" in paths

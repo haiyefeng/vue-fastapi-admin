@@ -376,9 +376,43 @@ async def init_roles():
         await user_role.apis.add(*basic_apis)
 
 
+# 小程序用户能访问的 API 标签白名单。新增小程序用的路由组时，把它的 tags 加进来。
+MINIPROGRAM_API_TAGS = [
+    "基础模块",
+    "待办事项",
+    "子任务",
+    "时间块",
+    "分类",
+    "习惯",
+    "计划",
+    "项目",
+    "回顾总结",
+    "今日概览",
+    "养成猫",
+]
+
+
+async def init_miniprogram_role():
+    """幂等地维护「小程序用户」角色的 API 授权。
+
+    每次启动都跑：init_apis() 刚刷新完 Api 表，这里把新出现的业务 API 补授权给该角色，
+    否则小程序用户（非超管）会在新接口上吃 403。
+    """
+    role = await Role.filter(name=settings.MINIPROGRAM_ROLE_NAME).first()
+    if role is None:
+        role = await Role.create(
+            name=settings.MINIPROGRAM_ROLE_NAME, desc="小程序用户角色，仅含待办事项相关接口"
+        )
+
+    apis = await Api.filter(tags__in=MINIPROGRAM_API_TAGS)
+    if apis:
+        await role.apis.add(*apis)
+
+
 async def init_data():
     await init_db()
     await init_superuser()
     await init_menus()
     await init_apis()
     await init_roles()
+    await init_miniprogram_role()
