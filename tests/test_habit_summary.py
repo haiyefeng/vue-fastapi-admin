@@ -1,4 +1,4 @@
-from datetime import date, datetime
+from datetime import date, datetime, timedelta
 
 from app.controllers.habit import habit_controller
 from app.models.todo import Habit, HabitFrequencyType, QuadrantType, TodoItem
@@ -18,6 +18,21 @@ async def test_is_scheduled_day_weekly_days(db, test_user):
     )
     assert habit_controller.is_scheduled_day(habit, date(2026, 8, 24)) is True  # 周一
     assert habit_controller.is_scheduled_day(habit, date(2026, 8, 25)) is False  # 周二
+
+
+async def test_is_scheduled_day_interval_days(db, test_user):
+    """每 3 天一次：以习惯创建日为锚点，锚点当天及其后每隔 3 天为计划日"""
+    habit = await Habit.create(
+        user_id=test_user.id,
+        name="每三天",
+        frequency_type=HabitFrequencyType.INTERVAL_DAYS,
+        frequency_config={"interval": 3},
+    )
+    anchor = habit.created_at.date()
+    assert habit_controller.is_scheduled_day(habit, anchor) is True
+    assert habit_controller.is_scheduled_day(habit, anchor + timedelta(days=1)) is False
+    assert habit_controller.is_scheduled_day(habit, anchor + timedelta(days=3)) is True
+    assert habit_controller.is_scheduled_day(habit, anchor + timedelta(days=6)) is True
 
 
 async def test_summary_counts_expected_and_completed(client, test_user):
@@ -43,6 +58,19 @@ async def test_summary_counts_expected_and_completed(client, test_user):
     assert result[0]["name"] == "晨读"
     assert result[0]["expected"] == 3
     assert result[0]["completed"] == 2
+
+
+async def test_summary_left_clip_excludes_days_before_habit_created(client, test_user):
+    """习惯创建于统计窗口中间时，创建日之前的天数不计入 expected"""
+    habit = await Habit.create(user_id=test_user.id, name="半途开始", frequency_type=HabitFrequencyType.DAILY)
+    habit.created_at = datetime(2026, 8, 22, 9, 0, 0)
+    await habit.save()
+
+    # 窗口 8/20~8/23 共 4 天，但习惯 8/22 才创建，只应统计 8/22、8/23 两天
+    result = await habit_controller.summary(
+        user_id=test_user.id, start=date(2026, 8, 20), end=date(2026, 8, 23), today=date(2026, 8, 23)
+    )
+    assert result[0]["expected"] == 2
 
 
 async def test_summary_excludes_paused_and_archived(client, test_user):

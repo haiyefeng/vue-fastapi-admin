@@ -132,20 +132,17 @@ class HabitController(CRUDBase[Habit, HabitCreate, HabitUpdate]):
                     )
 
     async def should_generate_today(self, habit: Habit, today: date) -> bool:
-        config = habit.frequency_config or {}
-        if habit.frequency_type == HabitFrequencyType.DAILY:
-            return True
-        if habit.frequency_type == HabitFrequencyType.WEEKLY_DAYS:
-            return today.isoweekday() in config.get("days", [])
-        if habit.frequency_type == HabitFrequencyType.INTERVAL_DAYS:
-            interval = config.get("interval", 1)
-            anchor = habit.created_at.date()
-            return (today - anchor).days % interval == 0
+        """今天是否该为该习惯生成打卡待办。
+
+        weekly_count（每周 N 次）不绑定具体星期，要查本周已完成次数才能判定，
+        这是本方法独有的有状态分支；其余频率类型是纯粹的日期判定，
+        与 summary 逐日回溯共用 is_scheduled_day，避免两处各自维护同一套分支。
+        """
         if habit.frequency_type == HabitFrequencyType.WEEKLY_COUNT:
-            count = config.get("count", 0)
+            count = (habit.frequency_config or {}).get("count", 0)
             completed = await self.completed_this_week(habit.id, today)
             return completed < count
-        return False
+        return self.is_scheduled_day(habit, today)
 
     async def completed_this_week(self, habit_id: int, today: date) -> int:
         week_start, week_end = self.week_range(today)
