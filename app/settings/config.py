@@ -26,6 +26,7 @@ class Settings(BaseSettings):
     # 微信小程序凭据，务必通过环境变量注入，不要把真实值写进代码
     WX_APPID: str = os.getenv("WX_APPID", "")
     WX_SECRET: str = os.getenv("WX_SECRET", "")
+    MINIPROGRAM_ROLE_NAME: str = "小程序用户"
     TORTOISE_ORM: dict = {
         "connections": {
             # SQLite configuration

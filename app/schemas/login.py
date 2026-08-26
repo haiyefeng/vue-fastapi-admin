@@ -18,3 +18,7 @@ class JWTPayload(BaseModel):
     username: str
     is_superuser: bool
     exp: datetime
+
+
+class WxLoginSchema(BaseModel):
+    code: str = Field(..., description="wx.login 返回的临时登录凭证")

@@ -4,9 +4,10 @@ from typing import List, Optional
 from fastapi.exceptions import HTTPException
 
 from app.core.crud import CRUDBase
-from app.models.admin import User
+from app.models.admin import Role, User
 from app.schemas.login import CredentialsSchema
 from app.schemas.users import UserCreate, UserUpdate
+from app.settings import settings
 from app.utils.password import get_password_hash, verify_password
 
 from .role import role_controller
@@ -48,6 +49,25 @@ class UserController(CRUDBase[User, UserCreate, UserUpdate]):
         for role_id in role_ids:
             role_obj = await role_controller.get(id=role_id)
             await user.roles.add(role_obj)
+
+    async def create_wx_user(self, openid: str) -> User:
+        """为微信 openid 自动建号。
+
+        username 上限 20 字符而 openid 是 28 位，所以取后 16 位拼前缀；
+        email 是 unique 且非空，用占位域名满足约束。
+        """
+        user = await User.create(
+            username=f"wx_{openid[-16:]}",
+            email=f"{openid}@wx.local",
+            password=None,
+            openid=openid,
+            is_active=True,
+            is_superuser=False,
+        )
+        role = await Role.get_or_none(name=settings.MINIPROGRAM_ROLE_NAME)
+        if role:
+            await user.roles.add(role)
+        return user
 
     async def reset_password(self, user_id: int):
         user_obj = await self.get(id=user_id)

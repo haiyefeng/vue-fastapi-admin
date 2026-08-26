@@ -8,10 +8,12 @@ from app.core.dependency import DependAuth
 from app.models.admin import Api, Menu, Role, User
 from app.schemas.base import Fail, Success
 from app.schemas.login import *
+from app.schemas.login import WxLoginSchema
 from app.schemas.users import UpdatePassword
 from app.settings import settings
 from app.utils.jwt_utils import create_access_token
 from app.utils.password import get_password_hash, verify_password
+from app.utils.wechat import WeChatError, code2session
 
 router = APIRouter()
 
@@ -35,6 +37,37 @@ async def login_access_token(credentials: CredentialsSchema):
         username=user.username,
     )
     return Success(data=data.model_dump())
+
+
+@router.post("/wx_login", summary="微信小程序登录")
+async def wx_login(credentials: WxLoginSchema):
+    """用 wx.login 的 code 换 openid，首次调用自动建号，返回与 Web 端同一套 JWT"""
+    try:
+        session = await code2session(credentials.code)
+    except WeChatError as e:
+        return Fail(code=400, msg=f"微信登录失败: {e}")
+
+    openid = session["openid"]
+    user = await User.get_or_none(openid=openid)
+    is_new = False
+    if user is None:
+        user = await user_controller.create_wx_user(openid)
+        is_new = True
+
+    if not user.is_active:
+        return Fail(code=403, msg="用户已被禁用")
+
+    await user_controller.update_last_login(user.id)
+    expire = datetime.now(timezone.utc) + timedelta(minutes=settings.JWT_ACCESS_TOKEN_EXPIRE_MINUTES)
+    access_token = create_access_token(
+        data=JWTPayload(
+            user_id=user.id,
+            username=user.username,
+            is_superuser=user.is_superuser,
+            exp=expire,
+        )
+    )
+    return Success(data={"access_token": access_token, "username": user.username, "is_new": is_new})
 
 
 @router.get("/userinfo", summary="查看用户信息", dependencies=[DependAuth])

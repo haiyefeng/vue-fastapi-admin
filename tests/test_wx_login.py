@@ -45,3 +45,83 @@ async def test_code2session_raises_when_openid_missing():
     transport = _mock_transport({"session_key": "sk"})
     with pytest.raises(WeChatError):
         await code2session("weird-code", transport=transport)
+
+
+import jwt as pyjwt
+from httpx import ASGITransport, AsyncClient
+
+from app import app as fastapi_app
+from app.settings import settings
+from app.utils import wechat
+
+
+def _patch_code2session(monkeypatch, openid: str):
+    async def fake(code: str, *, transport=None):
+        return {"openid": openid, "session_key": "sk"}
+
+    # base.py 里是 `from app.utils.wechat import code2session` 直接引入的名字，
+    # 所以要打在 base 模块的命名空间上，打在 wechat 模块上不生效
+    import app.api.v1.base.base as base_module
+
+    monkeypatch.setattr(base_module, "code2session", fake)
+
+
+async def test_wx_login_creates_user_on_first_call(db, monkeypatch):
+    _patch_code2session(monkeypatch, "o_first_login_openid_1234")
+    transport = ASGITransport(app=fastapi_app)
+    async with AsyncClient(transport=transport, base_url="http://test") as ac:
+        resp = await ac.post("/api/v1/base/wx_login", json={"code": "any"})
+
+    assert resp.status_code == 200
+    data = resp.json()["data"]
+    assert data["is_new"] is True
+    assert data["username"] == "wx_ogin_openid_1234"  # f"wx_{openid[-16:]}"，19 字符，卡在 username 的 20 上限内
+
+    user = await User.get_or_none(openid="o_first_login_openid_1234")
+    assert user is not None
+    assert user.password is None
+    assert user.is_superuser is False
+    assert user.email == "o_first_login_openid_1234@wx.local"
+
+    payload = pyjwt.decode(data["access_token"], settings.SECRET_KEY, algorithms=[settings.JWT_ALGORITHM])
+    assert payload["user_id"] == user.id
+
+
+async def test_wx_login_reuses_existing_user(db, monkeypatch):
+    existing = await User.create(username="old_wx", email="old@wx.local", openid="o_exists")
+    _patch_code2session(monkeypatch, "o_exists")
+    transport = ASGITransport(app=fastapi_app)
+    async with AsyncClient(transport=transport, base_url="http://test") as ac:
+        resp = await ac.post("/api/v1/base/wx_login", json={"code": "any"})
+
+    data = resp.json()["data"]
+    assert data["is_new"] is False
+    assert data["username"] == "old_wx"
+    assert await User.filter(openid="o_exists").count() == 1
+
+    payload = pyjwt.decode(data["access_token"], settings.SECRET_KEY, algorithms=[settings.JWT_ALGORITHM])
+    assert payload["user_id"] == existing.id
+
+
+async def test_wx_login_returns_400_when_wechat_fails(db, monkeypatch):
+    async def fake(code: str, *, transport=None):
+        raise wechat.WeChatError("微信返回错误 40029: invalid code")
+
+    import app.api.v1.base.base as base_module
+
+    monkeypatch.setattr(base_module, "code2session", fake)
+    transport = ASGITransport(app=fastapi_app)
+    async with AsyncClient(transport=transport, base_url="http://test") as ac:
+        resp = await ac.post("/api/v1/base/wx_login", json={"code": "bad"})
+
+    assert resp.json()["code"] == 400
+
+
+async def test_wx_login_rejects_inactive_user(db, monkeypatch):
+    await User.create(username="banned", email="banned@wx.local", openid="o_banned", is_active=False)
+    _patch_code2session(monkeypatch, "o_banned")
+    transport = ASGITransport(app=fastapi_app)
+    async with AsyncClient(transport=transport, base_url="http://test") as ac:
+        resp = await ac.post("/api/v1/base/wx_login", json={"code": "any"})
+
+    assert resp.json()["code"] == 403
