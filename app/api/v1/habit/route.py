@@ -29,6 +29,19 @@ async def list_archived_habits(current_user: User = Depends(AuthControl.is_authe
     return Success(data=result)
 
 
+@router.get("/bootstrap", summary="习惯页首屏聚合（进行中 + 已归档）")
+async def bootstrap_habits(current_user: User = Depends(AuthControl.is_authed)):
+    """一次返回进行中与已归档两份列表，省掉小程序/Web 首屏的第二次往返"""
+    habits = await habit_controller.list_active_with_status(current_user.id)
+    archived = await habit_controller.get_archived_habits(current_user.id)
+    return Success(
+        data={
+            "list": [HabitOut(**h).model_dump(mode="json") for h in habits],
+            "archived": [HabitOut(**(await h.to_dict())).model_dump(mode="json") for h in archived],
+        }
+    )
+
+
 @router.post("/create", summary="创建习惯")
 async def create_habit(habit_in: HabitCreate, current_user: User = Depends(AuthControl.is_authed)):
     habit = await habit_controller.create_habit(habit_in, current_user.id)
