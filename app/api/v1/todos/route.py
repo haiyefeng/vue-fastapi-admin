@@ -169,3 +169,53 @@ async def get_quadrant_statistics(
     statistics = await todo_controller.get_quadrant_statistics(user_id=current_user.id)
 
     return Success(data=statistics.model_dump())
+
+
+@router.get("/stats-bootstrap", summary="统计页首屏聚合（每日统计 + 象限统计 + 已完成列表）")
+async def stats_bootstrap(
+    start_date: Optional[date] = Query(None, description="开始日期"),
+    end_date: Optional[date] = Query(None, description="结束日期"),
+    page: int = Query(1, description="已完成列表页码"),
+    page_size: int = Query(20, description="已完成列表每页数量"),
+    sort_by: Optional[str] = Query("completed_at", description="已完成列表排序字段"),
+    sort_order: Optional[str] = Query("desc", description="已完成列表排序方向"),
+    current_user: User = Depends(AuthControl.is_authed),
+):
+    """统计页三块数据一次返回，替代小程序原先的 3 次云函数往返"""
+    statistics = await todo_controller.get_statistics_by_date(
+        user_id=current_user.id, start_date=start_date, end_date=end_date
+    )
+    quadrant = await todo_controller.get_quadrant_statistics(user_id=current_user.id)
+    total, todos = await todo_controller.get_todos_by_user(
+        user_id=current_user.id,
+        page=page,
+        page_size=page_size,
+        is_completed=True,
+        start_date=start_date,
+        end_date=end_date,
+        sort_by=sort_by,
+        sort_order=sort_order,
+    )
+
+    todo_ids = [todo.id for todo in todos]
+    counts = await subtask_controller.get_counts_by_todo_ids(todo_ids)
+    completed_list = []
+    for todo in todos:
+        todo_dict = await todo.to_dict()
+        total_sub, completed_sub = counts.get(todo.id, (0, 0))
+        completed_list.append(
+            TodoItemOut(**todo_dict, subtask_total=total_sub, subtask_completed=completed_sub).model_dump()
+        )
+
+    return Success(
+        data={
+            "daily": [stat.model_dump() for stat in statistics],
+            "quadrant": quadrant.model_dump(),
+            "completed": {
+                "list": completed_list,
+                "total": total,
+                "page": page,
+                "page_size": page_size,
+            },
+        }
+    )

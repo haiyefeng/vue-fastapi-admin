@@ -1,4 +1,14 @@
-from app.models.todo import Category, Goal, Habit, HabitFrequencyType, Project
+from datetime import datetime
+
+from app.models.todo import (
+    Category,
+    Goal,
+    Habit,
+    HabitFrequencyType,
+    Project,
+    QuadrantType,
+    TodoItem,
+)
 
 
 async def test_habit_bootstrap_returns_active_and_archived(client, test_user):
@@ -66,3 +76,45 @@ async def test_project_bootstrap_matches_separate_endpoints(client, test_user):
 
     assert merged["list"] == projects
     assert merged["categories"] == categories
+
+
+async def test_stats_bootstrap_returns_three_sections(client, test_user):
+    await TodoItem.create(
+        title="已完成的事",
+        user_id=test_user.id,
+        quadrant_type=QuadrantType.URGENT_IMPORTANT,
+        is_completed=True,
+        completed_at=datetime(2026, 8, 20, 10, 0, 0),
+    )
+    await TodoItem.create(
+        title="没完成的事",
+        user_id=test_user.id,
+        quadrant_type=QuadrantType.IMPORTANT_NOT_URGENT,
+    )
+
+    resp = await client.get("/api/v1/todo/stats-bootstrap", params={"page": 1, "page_size": 10})
+    assert resp.status_code == 200
+    data = resp.json()["data"]
+
+    assert "daily" in data and isinstance(data["daily"], list)
+    assert "quadrant" in data and isinstance(data["quadrant"], dict)
+    assert [t["title"] for t in data["completed"]["list"]] == ["已完成的事"]
+    assert data["completed"]["total"] == 1
+    assert data["completed"]["page"] == 1
+
+
+async def test_stats_bootstrap_sections_match_separate_endpoints(client, test_user):
+    await TodoItem.create(
+        title="A",
+        user_id=test_user.id,
+        quadrant_type=QuadrantType.URGENT_IMPORTANT,
+        is_completed=True,
+        completed_at=datetime(2026, 8, 21, 9, 0, 0),
+    )
+
+    merged = (await client.get("/api/v1/todo/stats-bootstrap")).json()["data"]
+    daily = (await client.get("/api/v1/todo/statistics/daily")).json()["data"]
+    quadrant = (await client.get("/api/v1/todo/statistics/quadrant")).json()["data"]
+
+    assert merged["daily"] == daily
+    assert merged["quadrant"] == quadrant
