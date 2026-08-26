@@ -1,5 +1,6 @@
 from app.core.init_app import init_pet_config
 from app.models.pet import PetCat, PetLine, PetProfile
+from app.models.todo import QuadrantType, TodoItem
 
 
 async def test_pet_profile_defaults(db, test_user):
@@ -175,3 +176,40 @@ async def test_pet_update_creates_profile_if_missing(client, test_user):
     resp = await client.post("/api/v1/pet/update", json={"pet_name": "小橘"})
     assert resp.json()["data"]["pet_name"] == "小橘"
     assert await PetProfile.filter(user_id=test_user.id).count() == 1
+
+
+async def test_completing_todo_increments_pet_counter(client, test_user):
+    todo = await TodoItem.create(title="写周报", user_id=test_user.id, quadrant_type=QuadrantType.URGENT_IMPORTANT)
+
+    await client.post("/api/v1/todo/update", json={"id": todo.id, "is_completed": True})
+
+    profile = await PetProfile.get(user_id=test_user.id)
+    assert profile.stats.get("todo_completed") == 1
+
+
+async def test_completing_twice_only_counts_once(client, test_user):
+    todo = await TodoItem.create(title="写周报", user_id=test_user.id, quadrant_type=QuadrantType.URGENT_IMPORTANT)
+
+    await client.post("/api/v1/todo/update", json={"id": todo.id, "is_completed": True})
+    await client.post("/api/v1/todo/update", json={"id": todo.id, "is_completed": True})
+
+    profile = await PetProfile.get(user_id=test_user.id)
+    assert profile.stats.get("todo_completed") == 1, "已完成的再标记完成不应重复计数"
+
+
+async def test_uncompleting_todo_does_not_decrement(client, test_user):
+    todo = await TodoItem.create(title="写周报", user_id=test_user.id, quadrant_type=QuadrantType.URGENT_IMPORTANT)
+
+    await client.post("/api/v1/todo/update", json={"id": todo.id, "is_completed": True})
+    await client.post("/api/v1/todo/update", json={"id": todo.id, "is_completed": False})
+
+    profile = await PetProfile.get(user_id=test_user.id)
+    assert profile.stats.get("todo_completed") == 1, "计数只增不减，与云函数行为一致"
+
+
+async def test_updating_title_does_not_increment(client, test_user):
+    todo = await TodoItem.create(title="写周报", user_id=test_user.id, quadrant_type=QuadrantType.URGENT_IMPORTANT)
+
+    await client.post("/api/v1/todo/update", json={"id": todo.id, "title": "改个标题"})
+
+    assert await PetProfile.filter(user_id=test_user.id).count() == 0, "非完成动作不该建猫"

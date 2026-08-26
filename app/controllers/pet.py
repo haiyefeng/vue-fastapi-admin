@@ -8,6 +8,8 @@
 from datetime import datetime
 from typing import Any, Dict, List, Optional
 
+from tortoise.transactions import in_transaction
+
 from app.models.pet import PetCat, PetLine, PetProfile
 
 # 计数维度：新增维度时在这里加一项，解锁条件与台词条件都能直接引用
@@ -154,6 +156,26 @@ class PetController:
 
         await profile.save(update_fields=fields)
         return profile
+
+    async def increment(self, user_id: int, field: str, delta: int = 1) -> None:
+        """累加某个计数维度。只增不减。
+
+        stats 是 JSON 字段，没法用 F() 原子自增，所以整行加锁读-改-写；
+        不加锁的话，同时完成两个任务会丢计数。
+        """
+        if field not in STAT_FIELDS:
+            raise ValueError(f"未知的计数维度: {field}")
+
+        async with in_transaction():
+            profile = await PetProfile.filter(user_id=user_id).select_for_update().first()
+            if profile is None:
+                profile = await self.ensure_profile(user_id)
+                profile = await PetProfile.filter(id=profile.id).select_for_update().first()
+
+            stats = dict(profile.stats or {})
+            stats[field] = int(stats.get(field, 0) or 0) + delta
+            profile.stats = stats
+            await profile.save(update_fields=["stats", "updated_at"])
 
     def profile_out(self, profile: PetProfile) -> Dict[str, Any]:
         """客户端 saveBootstrap 消费的字段集合"""

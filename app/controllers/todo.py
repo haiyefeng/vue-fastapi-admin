@@ -5,6 +5,7 @@ from fastapi import HTTPException
 from tortoise.expressions import Q
 from tortoise.functions import Count
 
+from app.controllers.pet import pet_controller
 from app.core.crud import CRUDBase
 from app.models.todo import Goal, Project, QuadrantType, TimeBlock, TodoItem
 from app.schemas.todo import (
@@ -137,13 +138,19 @@ class TodoController(CRUDBase[TodoItem, TodoItemCreate, TodoItemUpdate]):
         update_data = obj_in.model_dump(exclude_unset=True)
 
         # 如果设置为已完成，并且之前未完成，则设置完成时间
-        if obj_in.is_completed and not todo.is_completed:
+        just_completed = bool(obj_in.is_completed) and not todo.is_completed
+        if just_completed:
             update_data["completed_at"] = datetime.now()
         # 如果设置为未完成，则清除完成时间
         elif obj_in.is_completed is False:
             update_data["completed_at"] = None
 
         await todo.update_from_dict(update_data).save()
+
+        # 养成猫计数：只在「由未完成变为已完成」时 +1，取消完成不回滚（与小程序云函数行为一致）
+        if just_completed:
+            await pet_controller.increment(user_id, "todo_completed")
+
         return todo
 
     async def delete_todo(self, todo_id: int, user_id: int) -> bool:
