@@ -32,7 +32,7 @@
 2. **`0_init` 只建 15 张表**，缺 `habit` / `goal` / `review` / `time_block` 与 pet 三张表。磁盘上缺失的 1~4 号文件无法恢复。
 3. **`aerich migrate` 生成不了基线**：迁移目录不存在时它报 `You need to run 'aerich init-db' first to initialize the database.`。生成基线只能用 `aerich init-db`。
 4. **`aerich init-db` 生成的基线是正确的**：22 条 `CREATE TABLE`、0 处反斜杠转义、关键表齐全；把它应用到另一个全新库 `aerich upgrade` 成功，之后 `aerich migrate` 报 `No changes detected`。
-5. **`aerich init-db` 会污染默认库。** 即使 `DB_NAME` 环境变量指向临时库，它**同时**也会往 `plan` 库的 `aerich` 表插一行。已受控复现：执行前 8 行 → 执行后 9 行，而临时库里也有对应记录。**`aerich upgrade` 没有这个问题**（同样受控验证过，行数不变）。
+5. **探测阶段 `plan` 库出现过两条来源不明的 aerich 记账**（`0_20260827013127_init.py` / `0_20260827013334_init.py`，均指向磁盘上不存在的文件）。当时归因为 `aerich init-db` 的副作用，但**该归因已被推翻**：Task 1 执行时跑同样的命令得到 0 行污染。现象是真的，成因未查明。因此不要预期某一步「必然」多出几行——**要守的是「没有多出预期外的行」**，任何一步发现 aerich 行数异常增长都停下来查清楚。（`aerich upgrade` 受控验证过不会污染。）
 6. `plan` 库当前状态：22 张表、`aerich` 7 行、`user` 1 行、`todo_item` 33 行；`aerich migrate` 与 `aerich upgrade` 均报无事可做。
 
 ---
@@ -243,7 +243,7 @@ asyncio.run(m())
 PY
 ```
 
-**这是已知且预期的行为**（见「已核实的现状」第 5 条）：`aerich init-db` 即使 `DB_NAME` 指向别处，也会往 `plan` 的 `aerich` 表插一行。不用现在处理——Task 2 会清空整张表。这一步只是让你确认污染的规模符合预期（多 1 行），如果多了更多行，说明有别的东西也在写库，停下来查清楚。
+预期是**行数不变**（与 Step 2 之前一致）。探测阶段这里曾出现过来源不明的多余记账（见「已核实的现状」第 5 条），成因未查明，所以这一步是道闸门而不是走过场：**多出任何行都停下来查清楚是谁写的**，不要假定「反正 Task 2 会清空」就放过去——Task 2 之后没有人再看这张表的历史。
 
 - [ ] **Step 10: 提交（此时只提交迁移文件本身，入 git 在 Task 2）**
 
