@@ -176,5 +176,90 @@ class HabitController(CRUDBase[Habit, HabitCreate, HabitUpdate]):
         week_end = week_start + timedelta(days=6)
         return week_start, week_end
 
+    def is_scheduled_day(self, habit: Habit, day: date) -> bool:
+        """某天是否是该习惯的计划日。纯函数，不查库。
+
+        与 should_generate_today 的区别：那个方法对 weekly_count 要查本周已完成次数，
+        是有状态的，没法用来逐日回溯；这里的 weekly_count 一律返回 False，
+        因为「每周 N 次」不绑定具体星期，期望次数在 summary 里按周数换算。
+        """
+        config = habit.frequency_config or {}
+        if habit.frequency_type == HabitFrequencyType.DAILY:
+            return True
+        if habit.frequency_type == HabitFrequencyType.WEEKLY_DAYS:
+            return day.isoweekday() in config.get("days", [])
+        if habit.frequency_type == HabitFrequencyType.INTERVAL_DAYS:
+            interval = config.get("interval", 1)
+            anchor = habit.created_at.date()
+            return (day - anchor).days % interval == 0
+        return False
+
+    async def summary(self, user_id: int, start: date, end: date, today: date) -> List[Dict[str, Any]]:
+        """周期内的习惯坚持度统计，供回顾总结页使用。
+
+        移植自云函数 habit.summary：
+        - weekly_count：期望 = 整周数 × 每周次数（不逐日判定）
+        - 其余频率：从 max(习惯创建日, start) 逐日走到 min(today, end)，
+          计划日计入 expected，当天打卡待办已完成则计入 completed
+        统计窗口右端夹到 today，避免把未来的计划日算成「没做到」。
+        """
+        habits = await Habit.filter(user_id=user_id, is_archived=False, is_paused=False).order_by("-created_at")
+
+        result: List[Dict[str, Any]] = []
+        for habit in habits:
+            if habit.frequency_type == HabitFrequencyType.WEEKLY_COUNT:
+                count = (habit.frequency_config or {}).get("count", 0)
+                total_days = (end - start).days + 1
+                expected = (total_days // 7) * count
+                completed = await TodoItem.filter(
+                    habit_id=habit.id,
+                    is_completed=True,
+                    generated_date__gte=start,
+                    generated_date__lte=end,
+                ).count()
+                result.append(
+                    {
+                        "habit_id": habit.id,
+                        "name": habit.name,
+                        "frequency_type": habit.frequency_type,
+                        "completed": completed,
+                        "expected": expected,
+                        "streak": None,
+                    }
+                )
+                continue
+
+            created_day = habit.created_at.date()
+            range_start = max(created_day, start)
+            range_end = min(today, end)
+
+            todos = await TodoItem.filter(habit_id=habit.id, generated_date__gte=start, generated_date__lte=end).values(
+                "generated_date", "is_completed"
+            )
+            done_map = {t["generated_date"]: t["is_completed"] for t in todos}
+
+            expected = 0
+            completed = 0
+            cursor = range_start
+            while cursor <= range_end:
+                if self.is_scheduled_day(habit, cursor):
+                    expected += 1
+                    if done_map.get(cursor):
+                        completed += 1
+                cursor += timedelta(days=1)
+
+            result.append(
+                {
+                    "habit_id": habit.id,
+                    "name": habit.name,
+                    "frequency_type": habit.frequency_type,
+                    "completed": completed,
+                    "expected": expected,
+                    "streak": await self.calc_streak(habit, today),
+                }
+            )
+
+        return result
+
 
 habit_controller = HabitController()

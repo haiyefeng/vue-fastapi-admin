@@ -1,4 +1,5 @@
 import logging
+from datetime import date
 
 from fastapi import APIRouter, Depends, HTTPException, Query
 
@@ -65,3 +66,14 @@ async def delete_habit(
     if not success:
         raise HTTPException(status_code=404, detail="习惯不存在")
     return Success(msg="删除成功")
+
+
+@router.get("/summary", summary="周期内的习惯坚持度统计")
+async def habit_summary(
+    start_date: date = Query(..., description="统计开始日期"),
+    end_date: date = Query(..., description="统计结束日期"),
+    current_user: User = Depends(AuthControl.is_authed),
+):
+    """回顾总结页用：每个进行中习惯在该周期内的应打卡次数、实际完成次数、连续天数"""
+    result = await habit_controller.summary(user_id=current_user.id, start=start_date, end=end_date, today=date.today())
+    return Success(data=result)
