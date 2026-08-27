@@ -55,6 +55,9 @@ make clean-db         # 删除本地 sqlite 数据库文件（不动 migrations/
 所以网络 / 卷不会互相覆盖；但两边的 `container_name` 与宿主端口（7777 / 3380）仍然相同，
 不要在同一台机器上同时起这两套。
 
+开发环境 / 本机容器 / NAS 三种跑法的完整步骤、`.env` 各变量分别被谁消费、以及排障，
+见 `docs/deployment.md`。
+
 NAS 侧不在本地构建镜像：`./build-image.sh <版本号>` 会构建并同时打上 `vue-fastapi-admin:<版本号>`
 与 `vue-fastapi-admin-app:latest`（后者正是 `docker-compose.nas.yml` 引用的名字），
 导出成 tar；传到 NAS 后 `docker load -i <tar>`，再 `docker compose -f docker-compose.nas.yml up -d`。

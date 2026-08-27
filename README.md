@@ -47,6 +47,9 @@
 ### 快速开始
 
 > **注意**：本项目的数据库是 MySQL（`app/settings/config.py` 里只有 mysql 连接是活的），
+> 完整的部署说明（开发环境 / 本机容器 / NAS 三种跑法、`.env` 各变量的消费者、排障）
+> 见 [`docs/deployment.md`](docs/deployment.md)。下面是最短路径。
+
 > 不再有可用的 SQLite 回退。所以 `docker run` 单起一个应用容器是**跑不起来的**——
 > 启动时 `init_db()` 连不上数据库会直接失败，配上 `--restart=always` 还会被反复拉起。
 > 请用下面的 docker compose 方式，它会一并起一个独立的 MySQL 容器。
