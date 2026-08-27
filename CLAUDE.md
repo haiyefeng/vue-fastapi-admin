@@ -23,12 +23,12 @@ make check-format    # black --check && isort --check（profile=black）
 make format          # black . && isort . --profile black
 make lint            # ruff check ./app
 
-make test            # 加载 .env 后执行：pytest -vv -s --cache-clear ./
+make test            # 加载 .env 后执行：pytest -vv -s --cache-clear ./（.env 里的 DB_* 要指向**本机** MySQL）
 pytest path/to/test_file.py::test_name -vv   # 运行单个测试
 
 make migrate          # aerich migrate（根据模型变更生成迁移文件）
 make upgrade           # aerich upgrade（应用迁移）
-make clean-db         # 清空 migrations/ 和 sqlite 数据库（破坏性操作，仅限本地开发）
+make clean-db         # 删除本地 sqlite 数据库文件（不动 migrations/——迁移已入库）
 ```
 
 格式化/lint 配置见 `pyproject.toml`：行宽 120，black 目标版本 py310/py311，ruff 忽略 `F403`/`F405`（因为 schema 模块中大量使用 `from x import *`）。
@@ -39,6 +39,7 @@ make clean-db         # 清空 migrations/ 和 sqlite 数据库（破坏性操�
 
 - 改了模型 → 必须跑 `make migrate` 生成迁移文件，并与模型变更**放进同一次提交**
 - 应用启动只会**应用**迁移（`upgrade`），不会生成，也不会删除迁移目录
+- **不要用任何脚本批量删除 `migrations/`**。`make clean-db` 只删本地 sqlite 文件，已不再碰迁移目录
 - 模型与迁移是否一致由 `tests/test_migration_consistency.py` 拦截。它是本仓库唯一需要真实 MySQL 的测试——其余测试用内存 SQLite + `generate_schemas()` 建表，那条路径绕开迁移文件，测试全绿也发现不了迁移本身的问题
 
 ### 容器部署
@@ -49,6 +50,14 @@ make clean-db         # 清空 migrations/ 和 sqlite 数据库（破坏性操�
 |---|---|
 | `docker-compose.yml` | 本机。app + mysql 跑在容器里，用独立 named volume，与本机已有的 MySQL 完全隔离（容器里是空数据） |
 | `docker-compose.nas.yml` | 群晖 NAS。默认同样是 named volume，文件里保留着 `/volume2/docker/life_plan/` 绑定挂载的注释行，部署前需手动取消注释启用 |
+
+两套编排的 compose project 名是分开的（本机 `vue-fastapi-admin`，NAS `vue-fastapi-admin-nas`），
+所以网络 / 卷不会互相覆盖；但两边的 `container_name` 与宿主端口（7777 / 3380）仍然相同，
+不要在同一台机器上同时起这两套。
+
+NAS 侧不在本地构建镜像：`./build-image.sh <版本号>` 会构建并同时打上 `vue-fastapi-admin:<版本号>`
+与 `vue-fastapi-admin-app:latest`（后者正是 `docker-compose.nas.yml` 引用的名字），
+导出成 tar；传到 NAS 后 `docker load -i <tar>`，再 `docker compose -f docker-compose.nas.yml up -d`。
 
 跑之前先 `cp .env.example .env` 并填好，其中 `WX_APPID` / `WX_SECRET` 不填不影响启动，但微信登录会返回 40013。
 
@@ -69,7 +78,7 @@ make clean-db         # 清空 migrations/ 和 sqlite 数据库（破坏性操�
 - **`app/core/middlewares.py`** — `HttpAuditLogMiddleware` 会将匹配指定方法（默认 GET/POST/PUT/DELETE，排除 `exclude_paths`）的每个请求记录到 `AuditLog` 模型，包含请求参数和大小受限的响应体。`BackGroundTaskMiddleware` + `app/core/bgtask.py` 提供响应后的后台任务队列（`BgTasks`）。
 - **`app/schemas/`** — 各资源对应的 Pydantic 请求/响应模型，在路由模块中以 `from app.schemas.<x> import *` 方式导入（因此需要 ruff 的 `F403`/`F405` 豁免）。
 - **Menu 与 Dept 的区别** — `Menu` 驱动前端的动态侧边栏/路由（`menu_type`、`component`、`path`、`parent_id`）；`Dept` 是独立的组织架构层级（配合 `DeptClosure` 做祖先/后代查询），与路由无关。
-- 默认数据库为 SQLite（仓库根目录下的 `db.sqlite3`）；MySQL/PostgreSQL/MSSQL 的连接配置已预先写好但在 `app/settings/config.py` 中被注释掉。
+- **数据库是 MySQL，不是 SQLite。** `app/settings/config.py` 里唯一活着的连接是 `mysql`（凭据从 `DB_HOST`/`DB_PORT`/`DB_USER`/`DB_PASSWORD`/`DB_NAME` 环境变量读，见 `.env.example`），`apps.models.default_connection` 也写死 `"mysql"`；SQLite / PostgreSQL / MSSQL 的配置块都是注释掉的。不配 MySQL 应用起不来。仓库根目录可能残留的 `db.sqlite3` 是历史产物，当前代码不使用。
 
 ## 前端（`web/`）
 

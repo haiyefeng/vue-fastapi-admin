@@ -74,8 +74,11 @@ test: ## Run the test suite
 	pytest -vv -s --cache-clear ./
 
 .PHONY: clean-db
-clean-db: ## 删除migrations文件夹和db.sqlite3
-	find . -type d -name "migrations" -exec rm -rf {} +
+clean-db: ## 删除本地 sqlite 数据库文件（不动 migrations/）
+	# 这里曾有一行 `find . -type d -name "migrations" -exec rm -rf {} +`。
+	# 迁移文件现已纳入版本控制、且是 schema 的唯一来源，那行的效果变成了
+	# 「递归删除版本控制里的文件」（连 .worktrees/*/migrations 一起），已移除。
+	# 确实要重建基线时，请显式地手工删除并走评审，不要藏在一个 make 目标背后。
 	rm -f db.sqlite3 db.sqlite3-shm db.sqlite3-wal
 
 .PHONY: migrate
