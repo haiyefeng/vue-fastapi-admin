@@ -25,12 +25,22 @@ web/node_modules
 .claude
 
 # Python 产物
+# 同样受上面第 2 点的裸模式限制：裸 __pycache__ 只匹配上下文根下那一个，
+# 所以每条都要补 **/ 形式，否则宿主 macOS/py3.12 的字节码会被打进 linux 镜像
+# （实测漏进去过 28 个 __pycache__ 目录 / 188 个 .pyc）。
 __pycache__
+**/__pycache__
 *.pyc
+**/*.pyc
 *.pyo
+**/*.pyo
 *.pyd
+**/*.pyd
 .Python
 .pytest_cache
+**/.pytest_cache
+.ruff_cache
+**/.ruff_cache
 
 # 本地数据库
 db.sqlite3
@@ -42,9 +52,38 @@ openspec
 tests
 .superpowers
 
-# 凭据绝不进镜像
+# 凭据绝不进镜像。裸 .env 只挡得住上下文根那一个，嵌套位置要 **/ 形式才拦得住。
 .env
+**/.env
+**/.env.*
+!.env.example
+
+# 例外：web/.env* 是构建输入，不是凭据。
+# vite.config.js 的 loadEnv 在 `npm run build` 时读 web/.env.production 取
+# VITE_BASE_API / VITE_PUBLIC_PATH / VITE_USE_COMPRESS，排掉它前端就构建不出可用产物。
+# 这三个文件里只有 VITE_* 配置、没有任何真实凭据。
+# 若将来要往 web/.env* 里放密钥，必须换成构建期注入，不能靠这条例外。
+!web/.env
+!web/.env.*
+
+# 构建/部署脚手架与文档。Dockerfile 用的是 ADD . .，不排除的话这些都会进镜像；
+# 其中 docker-compose.nas.yml 里带着 NAS 的明文口令，与「凭据绝不进镜像」直接冲突。
+Dockerfile
+.dockerignore
+docker-compose.yml
+docker-compose.nas.yml
+build-image.sh
+Makefile
+README.md
+README-en.md
+CLAUDE.md
+.gitattributes
+.DS_Store
+**/.DS_Store
 
 # 注意：migrations/ 必须保留在构建上下文里。
-# 启动流程只应用迁移、不再自动生成，镜像里没有迁移文件的话
-# 容器会带着空 schema 正常启动，直到第一次查询才失败。
+# 启动流程只应用迁移、不再自动生成；镜像里没有迁移文件的话容器会**响亮地**失败：
+# aerich 的 Migrate.get_all_version_files() 走 os.listdir(migrate_location)，
+# 目录不存在直接抛 FileNotFoundError，lifespan 里没有兜底，
+# uvicorn 打印 Application startup failed 后退出（实测建出 0 张表）。
+# 这是期望行为，不需要额外加防护。
