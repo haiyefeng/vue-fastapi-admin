@@ -1,268 +1,140 @@
 <p align="center">
-  <a href="https://github.com/mizhexiaoxiao/vue-fastapi-admin">
-    <img alt="Vue FastAPI Admin Logo" width="200" src="https://github.com/mizhexiaoxiao/vue-fastapi-admin/blob/main/deploy/sample-picture/logo.svg">
-  </a>
+  <img alt="Logo" width="200" src="./deploy/sample-picture/logo.svg">
 </p>
 
 <h1 align="center">vue-fastapi-admin</h1>
 
 [English](./README-en.md) | 简体中文
 
-基于 FastAPI + Vue3 + Naive UI 的现代化前后端分离开发平台，融合了 RBAC 权限管理、动态路由和 JWT 鉴权，助力中小型应用快速搭建，也可用于学习参考。
+基于 FastAPI + Vue3 + Naive UI 的前后端分离平台，含 RBAC 权限管理、动态路由与 JWT 鉴权。
+
+在此基础上扩展了个人效率管理相关的模块：四象限待办、习惯打卡、目标与复盘、时间块、以及配套的微信小程序端。
 
 ### 特性
-- **最流行技术栈**：基于 Python 3.11 和 FastAPI 高性能异步框架，结合 Vue3 和 Vite 等前沿技术进行开发，同时使用高效的 npm 包管理器 pnpm。
-- **代码规范**：项目内置丰富的规范插件，确保代码质量和一致性，有效提高团队协作效率。
-- **动态路由**：后端动态路由，结合 RBAC（Role-Based Access Control）权限模型，提供精细的菜单路由控制。
-- **JWT鉴权**：使用 JSON Web Token（JWT）进行身份验证和授权，增强应用的安全性。
-- **细粒度权限控制**：实现按钮和接口级别的权限控制，确保不同用户或角色在界面操作和接口访问时具有不同的权限限制。
 
-### 在线预览
-- [http://47.111.145.81:3000](http://47.111.145.81:3000)
-- username: admin
-- password: 123456
+- **技术栈**：后端 Python 3.11 + FastAPI + Tortoise ORM，前端 Vue3 + Vite + Naive UI，包管理用 pnpm
+- **动态路由**：菜单由后端下发，结合 RBAC 权限模型控制到菜单级
+- **细粒度权限**：按钮与接口级别的权限控制，前端 `v-permission` 指令与后端 `DependPermission` 一一对应
+- **JWT 鉴权**：使用 JSON Web Token 进行身份验证与授权
+- **迁移入库**：`migrations/` 纳入版本控制，schema 的唯一来源是评审过的迁移文件；模型与迁移是否一致由测试拦截
 
-### 登录页
+### 截图
 
-![image](https://github.com/mizhexiaoxiao/vue-fastapi-admin/blob/main/deploy/sample-picture/login.jpg)
-### 工作台
-
-![image](https://github.com/mizhexiaoxiao/vue-fastapi-admin/blob/main/deploy/sample-picture/workbench.jpg)
-
-### 用户管理
-
-![image](https://github.com/mizhexiaoxiao/vue-fastapi-admin/blob/main/deploy/sample-picture/user.jpg)
-### 角色管理
-
-![image](https://github.com/mizhexiaoxiao/vue-fastapi-admin/blob/main/deploy/sample-picture/role.jpg)
-
-### 菜单管理
-
-![image](https://github.com/mizhexiaoxiao/vue-fastapi-admin/blob/main/deploy/sample-picture/menu.jpg)
-
-### API管理
-
-![image](https://github.com/mizhexiaoxiao/vue-fastapi-admin/blob/main/deploy/sample-picture/api.jpg)
+| | |
+|---|---|
+| 登录页 | ![登录页](./deploy/sample-picture/login.jpg) |
+| 工作台 | ![工作台](./deploy/sample-picture/workbench.jpg) |
+| 用户管理 | ![用户管理](./deploy/sample-picture/user.jpg) |
+| 角色管理 | ![角色管理](./deploy/sample-picture/role.jpg) |
+| 菜单管理 | ![菜单管理](./deploy/sample-picture/menu.jpg) |
+| API 管理 | ![API管理](./deploy/sample-picture/api.jpg) |
 
 ### 快速开始
 
-> **注意**：本项目的数据库是 MySQL（`app/settings/config.py` 里只有 mysql 连接是活的），
-> 完整的部署说明（开发环境 / 本机容器 / NAS 三种跑法、`.env` 各变量的消费者、排障）
-> 见 [`docs/deployment.md`](docs/deployment.md)。下面是最短路径。
-
-> 不再有可用的 SQLite 回退。所以 `docker run` 单起一个应用容器是**跑不起来的**——
-> 启动时 `init_db()` 连不上数据库会直接失败，配上 `--restart=always` 还会被反复拉起。
-> 请用下面的 docker compose 方式，它会一并起一个独立的 MySQL 容器。
-
-#### 方法一（推荐）：docker compose
+> 数据库是 MySQL（`app/settings/config.py` 里只有 mysql 连接是活的），**没有可用的 SQLite 回退**。
+> 所以 `docker run` 单起一个应用容器是跑不起来的——启动时 `init_db()` 连不上数据库会直接失败，
+> 配上 `--restart=always` 还会被反复拉起。请用下面的 docker compose 方式，它会一并起一个独立的 MySQL 容器。
+>
+> 完整部署说明（开发环境 / 本机容器 / NAS 三种跑法、`.env` 各变量分别被谁消费、排障）见
+> [`docs/deployment.md`](docs/deployment.md)。下面是最短路径。
 
 ```sh
-git clone https://github.com/mizhexiaoxiao/vue-fastapi-admin.git
+git clone https://github.com/haiyefeng/vue-fastapi-admin.git
 cd vue-fastapi-admin
 
-# 填好数据库密码等配置；WX_APPID / WX_SECRET 不填不影响启动，只是微信登录会返回 40013
+# 填好数据库口令等配置；WX_APPID / WX_SECRET 不填不影响启动，只是微信登录会返回 40013
 cp .env.example .env
 
 docker compose up -d --build
 ```
 
-##### 访问
-
-http://localhost:7777
-
-用户名：admin
-
-密码：123456
-
-##### 常用操作
+访问 <http://localhost:7777>，默认账号 `admin` / `123456`。
 
 ```sh
 docker compose logs -f app     # 看应用日志（日志走 stdout，不落盘）
+docker compose ps              # 看健康状态
 docker compose down            # 停止
 docker compose down -v         # 停止并清空容器里的数据库数据
 ```
 
-#### 方法二：只构建镜像（部署到 NAS 等外部环境）
+部署到 NAS 等外部环境时，在开发机上打包镜像再传过去：
 
 ```sh
 ./build-image.sh v1.0.0        # 构建并导出 vue-fastapi-admin-v1.0.0.tar
 ```
 
-把 tar 传到目标机器后 `docker load -i vue-fastapi-admin-v1.0.0.tar`，
-再用 `docker-compose.nas.yml`（或你自己的编排）启动——应用容器需要一个可达的 MySQL，
-并通过 `DB_HOST` / `DB_PORT` / `DB_USER` / `DB_PASSWORD` / `DB_NAME` 环境变量指向它。
+目标机器上 `docker load -i vue-fastapi-admin-v1.0.0.tar`，再用 `docker-compose.nas.yml` 启动。
 
-username：admin
+### 本地开发
 
-password：123456
+需要 Python 3.11+、Node、以及一个本机 MySQL 8。
 
-### 本地启动
 #### 后端
-启动项目需要以下环境：
-- Python 3.11
-
-#### 方法一（推荐）：使用 uv 安装依赖
-1. 安装 uv
-```sh
-pip install uv
-```
-
-2. 创建并激活虚拟环境
-```sh
-uv venv
-source .venv/bin/activate  # Linux/Mac
-# 或
-.\.venv\Scripts\activate  # Windows
-```
-
-3. 安装依赖
-```sh
-uv sync
-```
-
-4. 启动服务
-```sh
-python run.py
-```
-
-#### 方法二：使用 Pip 安装依赖
-1. 创建虚拟环境
-```sh
-python3 -m venv venv
-```
-
-2. 激活虚拟环境
-```sh
-source venv/bin/activate  # Linux/Mac
-# 或
-.\venv\Scripts\activate  # Windows
-```
-
-3. 安装依赖
 
 依赖由 `pyproject.toml` + `uv.lock` 声明，用 [uv](https://github.com/astral-sh/uv) 安装：
-```sh
-uv sync
-```
-`uv sync` 会按 `uv.lock` 精确还原依赖，并自动创建 `.venv`（所以上一步的手工建 venv 可以跳过）。
-镜像里装的是 `uv sync --no-dev`，比开发环境少 black / isort / ruff / pytest 这几个工具。
 
-4. 启动服务
 ```sh
+pip install uv                 # 已安装可跳过
+uv sync                        # 自动建 .venv 并按 uv.lock 精确还原依赖
+source .venv/bin/activate      # Windows: .\.venv\Scripts\activate
+
+cp .env.example .env           # 按本机 MySQL 的实际情况填
 python run.py
 ```
 
-服务现在应该正在运行，访问 http://localhost:9999/docs 查看API文档
+接口文档在 <http://localhost:9999/docs>。
+
+镜像里装的是 `uv sync --no-dev`，比开发环境少 black / isort / ruff / pytest 这几个工具。
 
 #### 前端
-启动项目需要以下环境：
-- node v18.8.0+
 
-1. 进入前端目录
 ```sh
 cd web
-```
-
-2. 安装依赖(建议使用pnpm: https://pnpm.io/zh/installation)
-```sh
-npm i -g pnpm # 已安装可忽略
-pnpm i # 或者 npm i
-```
-
-3. 启动
-```sh
+npm i -g pnpm                  # 已安装可跳过
+pnpm i
 pnpm dev
+```
+
+起在 <http://localhost:3100>，开发模式下 `/api/v1` 由 Vite 代理转给后端。
+
+#### 常用命令
+
+```sh
+make test           # 跑测试
+make check          # 格式与 lint 检查（不修改）
+make format         # 格式化
+make migrate        # 模型改了之后生成迁移文件
+make upgrade        # 应用迁移
 ```
 
 ### 目录说明
 
 ```
-├── app                   // 应用程序目录
-│   ├── api               // API接口目录
-│   │   └── v1            // 版本1的API接口
-│   │       ├── apis      // API相关接口
-│   │       ├── base      // 基础信息接口
-│   │       ├── menus     // 菜单相关接口
-│   │       ├── roles     // 角色相关接口
-│   │       └── users     // 用户相关接口
-│   ├── controllers       // 控制器目录
-│   ├── core              // 核心功能模块
-│   ├── log               // 日志目录
-│   ├── models            // 数据模型目录
-│   ├── schemas           // 数据模式/结构定义
-│   ├── settings          // 配置设置目录
-│   └── utils             // 工具类目录
-├── deploy                // 部署相关目录
-│   └── sample-picture    // 示例图片目录
-└── web                   // 前端网页目录
-    ├── build             // 构建脚本和配置目录
-    │   ├── config        // 构建配置
-    │   ├── plugin        // 构建插件
-    │   └── script        // 构建脚本
-    ├── public            // 公共资源目录
-    │   └── resource      // 公共资源文件
-    ├── settings          // 前端项目配置
-    └── src               // 源代码目录
-        ├── api           // API接口定义
-        ├── assets        // 静态资源目录
-        │   ├── images    // 图片资源
-        │   ├── js        // JavaScript文件
-        │   └── svg       // SVG矢量图文件
-        ├── components    // 组件目录
-        │   ├── common    // 通用组件
-        │   ├── icon      // 图标组件
-        │   ├── page      // 页面组件
-        │   ├── query-bar // 查询栏组件
-        │   └── table     // 表格组件
-        ├── composables   // 可组合式功能块
-        ├── directives    // 指令目录
-        ├── layout        // 布局目录
-        │   └── components // 布局组件
-        ├── router        // 路由目录
-        │   ├── guard     // 路由守卫
-        │   └── routes    // 路由定义
-        ├── store         // 状态管理(pinia)
-        │   └── modules   // 状态模块
-        ├── styles        // 样式文件目录
-        ├── utils         // 工具类目录
-        │   ├── auth      // 认证相关工具
-        │   ├── common    // 通用工具
-        │   ├── http      // 封装axios
-        │   └── storage   // 封装localStorage和sessionStorage
-        └── views         // 视图/页面目录
-            ├── error-page // 错误页面
-            ├── login      // 登录页面
-            ├── profile    // 个人资料页面
-            ├── system     // 系统管理页面
-            └── workbench  // 工作台页面
+├── app                     // 后端
+│   ├── api/v1              // 路由层（薄），按资源分目录：
+│   │                       //   apis / auditlog / base / category / dashboard / depts
+│   │                       //   goal / habit / menus / pet / project / review
+│   │                       //   roles / subtask / timeblock / todos / users
+│   ├── controllers         // 业务逻辑，继承 core/crud.py 的 CRUDBase
+│   ├── core                // 中间件、鉴权依赖、通用 CRUD、启动初始化
+│   ├── models              // Tortoise ORM 模型：admin.py / todo.py / pet.py
+│   ├── schemas             // Pydantic 请求响应模型
+│   ├── settings            // 配置
+│   └── utils               // 工具（密码、JWT、微信接口等）
+├── web                     // 前端（Vue3 + Vite）
+│   └── src
+│       ├── api             // 后端调用统一出口
+│       ├── components      // 共享组件
+│       ├── router          // 路由与守卫（动态路由由后端菜单派生）
+│       ├── store           // Pinia：user / permission / app / tags
+│       └── views           // 页面：login / workbench / system / todo / profile
+├── weapp                   // 微信小程序端
+├── migrations              // 数据库迁移（已纳入版本控制）
+├── tests                   // 后端测试
+├── deploy                  // Dockerfile 用的 nginx 配置、entrypoint、截图
+└── docs                    // 部署与设计文档
 ```
 
-### 进群交流
-进群的条件是给项目一个star，小小的star是作者维护下去的动力。
+### 致谢
 
-你可以在群里提出任何疑问，我会尽快回复答疑。
-
-<img width="300" src="https://github.com/mizhexiaoxiao/vue-fastapi-admin/blob/main/deploy/sample-picture/group.jpg">
-
-## 打赏
-如果项目有帮助到你，可以请作者喝杯咖啡~
-
-<div style="display: flex">
-    <img src="https://github.com/mizhexiaoxiao/vue-fastapi-admin/blob/main/deploy/sample-picture/1.jpg" width="300">
-    <img src="https://github.com/mizhexiaoxiao/vue-fastapi-admin/blob/main/deploy/sample-picture/2.jpg" width="300">
-</div>
-
-## 定制开发
-如果有基于该项目的定制需求或其他合作，请添加下方微信，备注来意
-
-<img width="300" src="https://github.com/mizhexiaoxiao/vue-fastapi-admin/blob/main/deploy/sample-picture/3.jpg">
-
-### Visitors Count
-
-<img align="left" src = "https://profile-counter.glitch.me/vue-fastapi-admin/count.svg" alt="Loading">
-
-
-### 构建镜像
-
-`docker build -t vue-fastapi-admin-app:latest .`
-`docker save -o vue-fastapi-admin-app.tar vue-fastapi-admin-app:latest`
+本项目 fork 自 [mizhexiaoxiao/vue-fastapi-admin](https://github.com/mizhexiaoxiao/vue-fastapi-admin)，RBAC 与动态路由的基础框架来自该项目。
