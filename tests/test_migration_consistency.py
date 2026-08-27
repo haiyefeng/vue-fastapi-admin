@@ -88,10 +88,23 @@ def test_committed_migrations_build_schema_matching_models():
         # 若也 skip，这道唯一的迁移一致性闸门就会在开发者机器上静默失效。
         configured = os.getenv("DB_HOST")
         if configured:
+            # 连不上有两种成因，指向的变量不同，别给统一的诊断——
+            # 认证失败时叫人去改 DB_HOST 只会把人带偏。
+            if "1045" in reason or "Access denied" in reason:
+                hint = (
+                    f"服务器在 {configured!r} 上是通的，但认证没过：请核对 .env 里的 "
+                    f"DB_USER / DB_PASSWORD 是否是**本机** MySQL 的凭据。\n"
+                    f"常见误填是把 docker compose 那套容器 MySQL 的口令抄了过来——"
+                    f"编排用 DB_PASSWORD 去初始化容器里的 root，与本机 MySQL 是两台服务器。"
+                )
+            else:
+                hint = (
+                    f"请把 .env 里的 DB_HOST 填成本机地址（见 .env.example）；"
+                    f"`mysql` 这个主机名只在 docker compose 的内部网络里解析得了。"
+                )
             pytest.fail(
                 f"DB_HOST 被显式配置为 {configured!r}，但连不上——这是配置错误，不是「本机没有 MySQL」。\n"
-                f"本机开发请把 .env 里的 DB_HOST 填成本机地址（见 .env.example）；"
-                f"`mysql` 这个主机名只在 docker compose 的内部网络里解析得了。\n"
+                f"{hint}\n"
                 f"原始错误：{reason}"
             )
         pytest.skip(f"需要可达的 MySQL 才能验证迁移路径（本测试不能用 SQLite 代替）：{reason}")
