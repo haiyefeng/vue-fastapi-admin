@@ -1,3 +1,11 @@
+# 群晖 NAS 部署用。镜像不在这里构建：用 ./build-image.sh <版本号> 打包成 tar，
+# 在 NAS 上 docker load 之后由本文件按 image 名引用。
+#
+# name 必须与本机编排区分开：compose 的 project 名默认取目录名，与 -f 参数无关，
+# 不写死的话两套编排会共用 project / 网络 / 卷 / 容器名 —— 在本机对着本机编排跑一次
+# `docker compose down -v`，删掉的正是本文件声明的同名卷。
+name: vue-fastapi-admin-nas
+
 services:
   app:
     image: vue-fastapi-admin-app
@@ -14,6 +22,11 @@ services:
       - DB_USER=root
       - DB_PASSWORD=password123
       - DB_NAME=vue_fastapi_admin
+      # 微信小程序凭据。compose 只把 environment: 里列出的变量传进容器，
+      # 不列在这里的话 NAS 上无论怎么配环境变量，容器内 settings.WX_APPID 恒为空，
+      # 微信登录必然返回 40013。值本身从 NAS 侧的环境或同目录 .env 注入，不写进本文件。
+      - WX_APPID=${WX_APPID:-}
+      - WX_SECRET=${WX_SECRET:-}
     volumes:
       - app_data:/opt/vue-fastapi-admin/data
       # - /volume2/docker/life_plan/app:/opt/vue-fastapi-admin/data
