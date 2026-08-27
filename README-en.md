@@ -45,38 +45,51 @@ vue-fastapi-admin is a modern front-end and back-end separation development plat
 ### Quick Start
 Please follow the instructions below for installation and configuration:
 
-#### Method 1：dockerhub pull image
+> **Note**: this project runs on MySQL (the mysql connection is the only live one in
+> `app/settings/config.py`); there is no working SQLite fallback any more. A bare
+> `docker run` of the app image will **not** work — `init_db()` fails when it cannot reach
+> a database, and `--restart=always` just restarts it in a loop. Use docker compose below,
+> which brings up a dedicated MySQL container alongside the app.
 
-```sh
-docker pull mizhexiaoxiao/vue-fastapi-admin:latest 
-docker run -d --restart=always --name=vue-fastapi-admin -p 9999:80 mizhexiaoxiao/vue-fastapi-admin
-```
-
-#### Method 2: Build Image Using Dockerfile
-##### Install Docker
-
-```sh
-yum install -y docker-ce
-systemctl start docker
-```
-
-##### Build the Image
+#### Method 1 (recommended): docker compose
 
 ```sh
 git clone https://github.com/mizhexiaoxiao/vue-fastapi-admin.git
 cd vue-fastapi-admin
-docker build --no-cache . -t vue-fastapi-admin
-```
 
-##### Start the Container
+# Fill in the database password and friends. WX_APPID / WX_SECRET may stay empty —
+# the app still starts, WeChat login just returns 40013.
+cp .env.example .env
 
-```sh
-docker run -d --restart=always --name=vue-fastapi-admin -p 9999:80 vue-fastapi-admin
+docker compose up -d --build
 ```
 
 ##### Access the Service
 
-http://localhost:9999
+http://localhost:7777
+
+username：admin
+
+password：123456
+
+##### Everyday commands
+
+```sh
+docker compose logs -f app     # application logs (stdout only, nothing on disk)
+docker compose down            # stop
+docker compose down -v         # stop and wipe the container's database data
+```
+
+#### Method 2: Build the image only (for NAS or other external hosts)
+
+```sh
+./build-image.sh v1.0.0        # builds and exports vue-fastapi-admin-v1.0.0.tar
+```
+
+Copy the tar to the target host, `docker load -i vue-fastapi-admin-v1.0.0.tar`, then start it
+with `docker-compose.nas.yml` (or your own orchestration). The app container needs a reachable
+MySQL, pointed at through the `DB_HOST` / `DB_PORT` / `DB_USER` / `DB_PASSWORD` / `DB_NAME`
+environment variables.
 
 username：admin
 

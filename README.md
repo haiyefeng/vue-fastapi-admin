@@ -45,38 +45,49 @@
 ![image](https://github.com/mizhexiaoxiao/vue-fastapi-admin/blob/main/deploy/sample-picture/api.jpg)
 
 ### 快速开始
-#### 方法一：dockerhub拉取镜像
 
-```sh
-docker pull mizhexiaoxiao/vue-fastapi-admin:latest 
-docker run -d --restart=always --name=vue-fastapi-admin -p 9999:80 mizhexiaoxiao/vue-fastapi-admin
-```
+> **注意**：本项目的数据库是 MySQL（`app/settings/config.py` 里只有 mysql 连接是活的），
+> 不再有可用的 SQLite 回退。所以 `docker run` 单起一个应用容器是**跑不起来的**——
+> 启动时 `init_db()` 连不上数据库会直接失败，配上 `--restart=always` 还会被反复拉起。
+> 请用下面的 docker compose 方式，它会一并起一个独立的 MySQL 容器。
 
-#### 方法二：dockerfile构建镜像
-##### docker安装(版本17.05+)
-
-```sh
-yum install -y docker-ce
-systemctl start docker
-```
-
-##### 构建镜像
+#### 方法一（推荐）：docker compose
 
 ```sh
 git clone https://github.com/mizhexiaoxiao/vue-fastapi-admin.git
 cd vue-fastapi-admin
-docker build --no-cache . -t vue-fastapi-admin
-```
 
-##### 启动容器
+# 填好数据库密码等配置；WX_APPID / WX_SECRET 不填不影响启动，只是微信登录会返回 40013
+cp .env.example .env
 
-```sh
-docker run -d --restart=always --name=vue-fastapi-admin -p 9999:80 vue-fastapi-admin
+docker compose up -d --build
 ```
 
 ##### 访问
 
-http://localhost:9999
+http://localhost:7777
+
+用户名：admin
+
+密码：123456
+
+##### 常用操作
+
+```sh
+docker compose logs -f app     # 看应用日志（日志走 stdout，不落盘）
+docker compose down            # 停止
+docker compose down -v         # 停止并清空容器里的数据库数据
+```
+
+#### 方法二：只构建镜像（部署到 NAS 等外部环境）
+
+```sh
+./build-image.sh v1.0.0        # 构建并导出 vue-fastapi-admin-v1.0.0.tar
+```
+
+把 tar 传到目标机器后 `docker load -i vue-fastapi-admin-v1.0.0.tar`，
+再用 `docker-compose.nas.yml`（或你自己的编排）启动——应用容器需要一个可达的 MySQL，
+并通过 `DB_HOST` / `DB_PORT` / `DB_USER` / `DB_PASSWORD` / `DB_NAME` 环境变量指向它。
 
 username：admin
 
