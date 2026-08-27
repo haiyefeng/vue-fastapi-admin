@@ -22,13 +22,26 @@ services:
       - DB_HOST=mysql
       - DB_PORT=3306
       - DB_USER=root
-      - DB_PASSWORD=${DB_PASSWORD}
-      - DB_NAME=${DB_NAME}
+      # :? 让缺失直接在 compose 层报出人话；否则 compose 只 warning，
+      # 变量变空串，最后由 mysql 镜像的 entrypoint 报一个离根因很远的错。
+      - DB_PASSWORD=${DB_PASSWORD:?缺少 DB_PASSWORD：请先 cp .env.example .env 并填写}
+      - DB_NAME=${DB_NAME:?缺少 DB_NAME：请先 cp .env.example .env 并填写}
       - WX_APPID=${WX_APPID}
       - WX_SECRET=${WX_SECRET}
     # 不挂数据卷：本应用只往 stdout 写日志（app/log/log.py 里的文件 sink 是注释掉的，
     # settings.LOGS_ROOT 全仓无人使用），日志交给容器运行时收集即可。
     # 原编排挂的 app_data:/opt/vue-fastapi-admin/data 同样没有任何代码写入，一并去掉。
+    #
+    # 容器里 nginx 是后台 daemon、uvicorn 是 PID 1：nginx 挂掉的话进程没退出、
+    # 容器状态仍是 Up，但宿主 :7777 已经全黑。这条 healthcheck 走 nginx→uvicorn 的完整链路，
+    # 让「进程没退出但服务已死」变成可见状态（注意 docker 不会因 unhealthy 自动重启，
+    # 它只让 docker compose ps / 监控看得出来）。
+    healthcheck:
+      test: ["CMD", "curl", "-fsS", "-o", "/dev/null", "http://localhost/"]
+      interval: 30s
+      timeout: 5s
+      retries: 3
+      start_period: 60s
     networks:
       - app-network
 
@@ -39,8 +52,8 @@ services:
     ports:
       - "3380:3306"
     environment:
-      - MYSQL_ROOT_PASSWORD=${DB_PASSWORD}
-      - MYSQL_DATABASE=${DB_NAME}
+      - MYSQL_ROOT_PASSWORD=${DB_PASSWORD:?缺少 DB_PASSWORD：请先 cp .env.example .env 并填写}
+      - MYSQL_DATABASE=${DB_NAME:?缺少 DB_NAME：请先 cp .env.example .env 并填写}
     volumes:
       - mysql_data:/var/lib/mysql
     networks:
@@ -51,7 +64,7 @@ services:
       --collation-server=utf8mb4_unicode_ci
       --log-error-suppression-list="MY-013360"
     healthcheck:
-      test: ["CMD", "mysqladmin", "ping", "-h", "localhost", "-u", "root", "-p${DB_PASSWORD}"]
+      test: ["CMD", "mysqladmin", "ping", "-h", "localhost", "-u", "root", "-p${DB_PASSWORD:?缺少 DB_PASSWORD：请先 cp .env.example .env 并填写}"]
       interval: 10s
       timeout: 10s
       retries: 15
