@@ -7,7 +7,12 @@ content=get_models_describe(self.app)——即**应用迁移那一刻从当前�
 唯一可靠的判据是比对两个库的真实 schema。
 
 为什么是子进程：settings 是模块级单例，在进程内改它来切库失败过。
-本 worker 启动时会自校验两个目标库名都不是开发库。
+
+隔离防护的边界：启动时只拒绝以 "plan" 开头的库名（本仓库开发库叫 plan）。
+DB_MODELS 指向的库会被 generate_schemas() 直接建表，所以**手工调用本 worker 时
+务必传一次性库名**——若指向一个不叫 plan* 的重要库，这层防护拦不住。
+测试入口 tests/test_migration_consistency.py 传的是 migcheck_* 前缀的一次性库，
+并在 finally 里无条件 DROP。
 
 用法：DB_MIGRATIONS=<库A> DB_MODELS=<库B> python tests/_migration_check_worker.py
 
@@ -26,8 +31,27 @@ import sys
 # 以子进程方式直接运行时，项目根目录不在 sys.path 上
 sys.path.insert(0, os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
 
-SCHEMA_QUERY = """
-    SELECT table_name, column_name, data_type, is_nullable
+# 比对的列。只取 (table_name, column_name, data_type, is_nullable) 是不够的：
+# VARCHAR(30) 与 VARCHAR(300) 的 data_type 同为 'varchar'，改 max_length 不生成迁移会漏过去。
+# 补上长度/精度/默认值/键类型后，max_length、DECIMAL 精度、默认值、唯一键四类漂移一并覆盖。
+# 仍看不见的：索引名与组合、外键、列注释、表字符集（要另查 information_schema.statistics
+# 等目录表，成本更高，暂不纳入）。
+# 注意 asyncmy 的 dict 游标返回的键是 information_schema 目录里实际存的大写列名，
+# 与 SQL 里怎么写大小写无关，所以下面统一按大写取。
+SCHEMA_FIELDS = (
+    "TABLE_NAME",
+    "COLUMN_NAME",
+    "DATA_TYPE",
+    "IS_NULLABLE",
+    "CHARACTER_MAXIMUM_LENGTH",
+    "NUMERIC_PRECISION",
+    "NUMERIC_SCALE",
+    "COLUMN_DEFAULT",
+    "COLUMN_KEY",
+)
+
+SCHEMA_QUERY = f"""
+    SELECT {", ".join(f.lower() for f in SCHEMA_FIELDS)}
     FROM information_schema.columns
     WHERE table_schema = %s
 """
@@ -43,16 +67,12 @@ def _config_for(database: str) -> dict:
 
 
 async def _introspect(database: str) -> set:
-    """读该库的列结构，归一化成可比对的集合
-
-    asyncmy 的 dict 游标返回的键是 information_schema 目录里实际存的大写列名
-    （TABLE_NAME/COLUMN_NAME/...），跟 SQL 里怎么写大小写无关，所以这里按大写取。
-    """
+    """读该库的列结构，归一化成可比对的集合（每行一个 SCHEMA_FIELDS 顺序的元组）"""
     from tortoise import Tortoise
 
     conn = Tortoise.get_connection("mysql")
     rows = await conn.execute_query_dict(SCHEMA_QUERY, [database])
-    return {(r["TABLE_NAME"], r["COLUMN_NAME"], r["DATA_TYPE"], r["IS_NULLABLE"]) for r in rows}
+    return {tuple(r[field] for field in SCHEMA_FIELDS) for r in rows}
 
 
 async def _schema_from_migrations(database: str) -> set:
@@ -81,7 +101,11 @@ async def _schema_from_models(database: str) -> set:
 
 
 def _describe(diff: set, limit: int = 20) -> str:
-    items = sorted(f"{t}.{c} ({dt}, nullable={n})" for t, c, dt, n in diff)
+    def one(row: tuple) -> str:
+        attrs = ", ".join(f"{f.lower()}={v!r}" for f, v in zip(SCHEMA_FIELDS[2:], row[2:]) if v is not None)
+        return f"{row[0]}.{row[1]} ({attrs})"
+
+    items = sorted(one(row) for row in diff)
     shown = items[:limit]
     more = f"\n  ...另有 {len(items) - limit} 项" if len(items) > limit else ""
     return "\n  " + "\n  ".join(shown) + more
@@ -94,7 +118,7 @@ async def main() -> int:
         print("缺少环境变量 DB_MIGRATIONS / DB_MODELS", file=sys.stderr)
         return 2
     for name in (db_mig, db_mod):
-        if name == "plan" or name.startswith("plan"):
+        if name.startswith("plan"):
             print(f"拒绝在疑似开发库上运行：{name!r}", file=sys.stderr)
             return 2
 
