@@ -13,8 +13,8 @@ vue-fastapi-admin 是一个前后端分离的 RBAC 管理平台：后端为 Fast
 在仓库根目录执行（推荐使用 `uv` 管理依赖）：
 
 ```sh
-uv venv && source .venv/bin/activate   # 创建/激活虚拟环境
-uv add pyproject.toml                  # 安装依赖（或：make install）
+uv sync                                # 安装依赖（或：make install）——自动建 .venv 并按 uv.lock 还原
+source .venv/bin/activate
 python run.py                          # 启动开发服务器，:9999，http://localhost:9999/docs
 make run                               # 同上
 

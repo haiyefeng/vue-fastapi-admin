@@ -116,7 +116,7 @@ source .venv/bin/activate  # Linux/Mac
 
 3. Install dependencies
 ```sh
-uv add pyproject.toml
+uv sync
 ```
 
 4. Start the backend service
@@ -134,9 +134,15 @@ source venv/bin/activate  # Linux/Mac
 ```
 
 2. Install project dependencies:
+
+Dependencies are declared in `pyproject.toml` + `uv.lock`. Install them with
+[uv](https://github.com/astral-sh/uv):
 ```sh
-pip install -r requirements.txt
+uv sync
 ```
+`uv sync` restores the exact locked versions and creates `.venv` for you, so the
+manual venv step above can be skipped. The image installs `uv sync --no-dev`,
+which omits black / isort / ruff / pytest.
 
 3. Start the backend service:
 ```sh

@@ -117,7 +117,7 @@ source .venv/bin/activate  # Linux/Mac
 
 3. 安装依赖
 ```sh
-uv add pyproject.toml
+uv sync
 ```
 
 4. 启动服务
@@ -139,9 +139,13 @@ source venv/bin/activate  # Linux/Mac
 ```
 
 3. 安装依赖
+
+依赖由 `pyproject.toml` + `uv.lock` 声明，用 [uv](https://github.com/astral-sh/uv) 安装：
 ```sh
-pip install -r requirements.txt -i https://pypi.tuna.tsinghua.edu.cn/simple
+uv sync
 ```
+`uv sync` 会按 `uv.lock` 精确还原依赖，并自动创建 `.venv`（所以上一步的手工建 venv 可以跳过）。
+镜像里装的是 `uv sync --no-dev`，比开发环境少 black / isort / ruff / pytest 这几个工具。
 
 4. 启动服务
 ```sh

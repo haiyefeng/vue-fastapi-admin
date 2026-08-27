@@ -55,8 +55,8 @@ WX_SECRET=<微信小程序 AppSecret>
 ### 后端
 
 ```sh
-uv venv && source .venv/bin/activate
-uv add pyproject.toml            # 或：make install
+uv sync                          # 或：make install —— 会自动建 .venv 并按 uv.lock 装齐
+source .venv/bin/activate
 cp .env.example .env             # 然后按上一节填好
 
 python run.py                    # 或：make run
@@ -228,13 +228,25 @@ docker compose -f docker-compose.nas.yml up -d
 
 ---
 
-## 附：两份依赖清单
+## 附：依赖怎么管
 
-Dockerfile 用 `pip install -r requirements.txt` 装依赖，开发环境走 `pyproject.toml` + uv。**两份是分开维护的，没有任何机制保证它们同步。**
+`pyproject.toml` + `uv.lock` 是唯一来源，没有第二份清单。
 
-当前两边的差异是良性的，都能解释：
+```sh
+uv sync              # 开发环境：装全部，含 black / isort / ruff / pytest
+uv sync --no-dev     # 镜像里装的：只装运行时依赖
+uv add <包名>        # 加依赖，会同时更新 pyproject.toml 和 uv.lock
+```
 
-- `pytest` / `pytest-asyncio` / `pyproject-toml` 只在 `pyproject.toml` 里——测试期依赖，本就不该进运行镜像
-- `requirements.txt` 写的是 `tortoise-orm[asyncmy]`，`pyproject.toml` 写的是 `tortoise-orm` + 单列 `asyncmy`——两种写法等价
+镜像走的是 `uv sync --frozen --no-dev`：`--frozen` 表示严格按 `uv.lock` 装、不重新解析，`uv.lock` 与 `pyproject.toml` 对不上时**直接报错**，而不是悄悄装出一套与开发环境不同的依赖。所以加依赖之后 `uv.lock` 必须跟着提交，否则镜像构建会失败——这是有意的，失败比漂移好。
 
-**但加运行时依赖的时候两边都要改。** 只改 `pyproject.toml` 的话，本机跑得好好的东西进了容器会 `ImportError`，而且要等到镜像构建完、容器启动时才暴露。
+`dependencies` 里只列**直接依赖**，传递依赖交给 `uv.lock` 锁定，不要手工摊平进去。有几个包代码里不 import 但必需，删之前先看清楚注释：
+
+| 包 | 为什么必需 |
+|---|---|
+| `asyncmy` | MySQL 驱动，由 tortoise 按 engine 名动态加载，删了会在连库那一刻才失败 |
+| `email-validator` | `app/schemas/users.py` 用了 pydantic 的 `EmailStr`，缺了导入 schema 就崩 |
+| `argon2-cffi` | passlib 的 argon2 后端（`app/utils/password.py` 指定了 `schemes=["argon2"]`） |
+| `httpx` | **不是测试依赖**——`app/utils/wechat.py` 用它调微信的 `sns/jscode2session` |
+
+测试用的 sqlite 驱动 `aiosqlite` 没有单独声明，因为 `tortoise-orm` 本身就依赖它。

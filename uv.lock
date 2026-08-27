@@ -731,21 +731,6 @@ wheels = [
 ]
 
 [[package]]
-name = "pyproject-toml"
-version = "0.1.0"
-source = { registry = "https://pypi.org/simple" }
-dependencies = [
-    { name = "packaging" },
-    { name = "pydantic" },
-    { name = "setuptools" },
-    { name = "wheel" },
-]
-sdist = { url = "https://files.pythonhosted.org/packages/82/41/e530b764c413d073f2e67679dfb0079c9998e8bd60be45099465229cdc7f/pyproject_toml-0.1.0.tar.gz", hash = "sha256:7772d26113fb8a5932880cf1c998987995bb10e834f0b7be5f46f6ea89f06450", size = 10971, upload-time = "2024-11-12T09:04:44.913Z" }
-wheels = [
-    { url = "https://files.pythonhosted.org/packages/38/c1/d8dd436dc2c2e323441b98abf7bee8c51bda5ca6d066ec46d8163a1aeaa9/pyproject_toml-0.1.0-py3-none-any.whl", hash = "sha256:96bf8d47162d5cae417e7db46e7f1f51af915bcce620350e2cfae3e2478e301b", size = 5198, upload-time = "2024-11-12T09:04:41.802Z" },
-]
-
-[[package]]
 name = "pytest"
 version = "8.3.4"
 source = { registry = "https://pypi.org/simple" }
@@ -1058,138 +1043,59 @@ version = "0.1.0"
 source = { virtual = "." }
 dependencies = [
     { name = "aerich" },
-    { name = "aiosqlite" },
-    { name = "annotated-types" },
-    { name = "anyio" },
     { name = "argon2-cffi" },
-    { name = "argon2-cffi-bindings" },
-    { name = "asyncclick" },
     { name = "asyncmy" },
-    { name = "black" },
-    { name = "certifi" },
-    { name = "cffi" },
-    { name = "click" },
-    { name = "dictdiffer" },
-    { name = "dnspython" },
     { name = "email-validator" },
     { name = "fastapi" },
-    { name = "fastapi-cli" },
-    { name = "h11" },
-    { name = "httpcore" },
-    { name = "httptools" },
     { name = "httpx" },
-    { name = "idna" },
-    { name = "iso8601" },
-    { name = "isort" },
-    { name = "jinja2" },
     { name = "loguru" },
-    { name = "markdown-it-py" },
-    { name = "markupsafe" },
-    { name = "mdurl" },
-    { name = "mypy-extensions" },
-    { name = "orjson" },
-    { name = "packaging" },
     { name = "passlib" },
-    { name = "pathspec" },
-    { name = "platformdirs" },
-    { name = "pycparser" },
     { name = "pydantic" },
-    { name = "pydantic-core" },
     { name = "pydantic-settings" },
-    { name = "pygments" },
     { name = "pyjwt" },
-    { name = "pypika-tortoise" },
-    { name = "pyproject-toml" },
-    { name = "pytest" },
-    { name = "pytest-asyncio" },
-    { name = "python-dotenv" },
-    { name = "python-multipart" },
     { name = "pytz" },
-    { name = "pyyaml" },
-    { name = "rich" },
-    { name = "rich-toolkit" },
-    { name = "ruff" },
     { name = "setuptools" },
-    { name = "shellingham" },
-    { name = "sniffio" },
     { name = "starlette" },
     { name = "tortoise-orm" },
-    { name = "typer" },
-    { name = "typing-extensions" },
-    { name = "ujson" },
-    { name = "uvicorn" },
-    { name = "uvloop" },
-    { name = "watchfiles" },
-    { name = "websockets" },
+    { name = "uvicorn", extra = ["standard"] },
+]
+
+[package.dev-dependencies]
+dev = [
+    { name = "black" },
+    { name = "isort" },
+    { name = "pytest" },
+    { name = "pytest-asyncio" },
+    { name = "ruff" },
 ]
 
 [package.metadata]
 requires-dist = [
     { name = "aerich", specifier = "==0.8.1" },
-    { name = "aiosqlite", specifier = "==0.20.0" },
-    { name = "annotated-types", specifier = "==0.7.0" },
-    { name = "anyio", specifier = "==4.8.0" },
     { name = "argon2-cffi", specifier = "==23.1.0" },
-    { name = "argon2-cffi-bindings", specifier = "==21.2.0" },
-    { name = "asyncclick", specifier = "==8.1.8" },
     { name = "asyncmy", specifier = ">=0.2.13" },
-    { name = "black", specifier = "==24.10.0" },
-    { name = "certifi", specifier = "==2024.12.14" },
-    { name = "cffi", specifier = "==1.17.1" },
-    { name = "click", specifier = "==8.1.8" },
-    { name = "dictdiffer", specifier = "==0.9.0" },
-    { name = "dnspython", specifier = "==2.7.0" },
     { name = "email-validator", specifier = "==2.2.0" },
     { name = "fastapi", specifier = "==0.111.0" },
-    { name = "fastapi-cli", specifier = "==0.0.7" },
-    { name = "h11", specifier = "==0.14.0" },
-    { name = "httpcore", specifier = "==1.0.7" },
-    { name = "httptools", specifier = "==0.6.4" },
     { name = "httpx", specifier = "==0.28.1" },
-    { name = "idna", specifier = "==3.10" },
-    { name = "iso8601", specifier = "==2.1.0" },
-    { name = "isort", specifier = "==5.13.2" },
-    { name = "jinja2", specifier = "==3.1.5" },
     { name = "loguru", specifier = "==0.7.3" },
-    { name = "markdown-it-py", specifier = "==3.0.0" },
-    { name = "markupsafe", specifier = "==3.0.2" },
-    { name = "mdurl", specifier = "==0.1.2" },
-    { name = "mypy-extensions", specifier = "==1.0.0" },
-    { name = "orjson", specifier = "==3.10.14" },
-    { name = "packaging", specifier = "==24.2" },
     { name = "passlib", specifier = "==1.7.4" },
-    { name = "pathspec", specifier = "==0.12.1" },
-    { name = "platformdirs", specifier = "==4.3.6" },
-    { name = "pycparser", specifier = "==2.22" },
     { name = "pydantic", specifier = "==2.10.5" },
-    { name = "pydantic-core", specifier = "==2.27.2" },
     { name = "pydantic-settings", specifier = "==2.7.1" },
-    { name = "pygments", specifier = "==2.19.1" },
     { name = "pyjwt", specifier = "==2.10.1" },
-    { name = "pypika-tortoise", specifier = "==0.3.2" },
-    { name = "pyproject-toml", specifier = ">=0.1.0" },
-    { name = "pytest", specifier = "==8.3.4" },
-    { name = "pytest-asyncio", specifier = "==0.25.2" },
-    { name = "python-dotenv", specifier = "==1.0.1" },
-    { name = "python-multipart", specifier = "==0.0.20" },
     { name = "pytz", specifier = "==2024.2" },
-    { name = "pyyaml", specifier = "==6.0.2" },
-    { name = "rich", specifier = "==13.9.4" },
-    { name = "rich-toolkit", specifier = "==0.13.2" },
-    { name = "ruff", specifier = "==0.9.1" },
     { name = "setuptools", specifier = "==75.8.0" },
-    { name = "shellingham", specifier = "==1.5.4" },
-    { name = "sniffio", specifier = "==1.3.1" },
     { name = "starlette", specifier = "==0.37.2" },
     { name = "tortoise-orm", specifier = "==0.23.0" },
-    { name = "typer", specifier = "==0.15.1" },
-    { name = "typing-extensions", specifier = "==4.12.2" },
-    { name = "ujson", specifier = "==5.10.0" },
-    { name = "uvicorn", specifier = "==0.34.0" },
-    { name = "uvloop", specifier = "==0.21.0" },
-    { name = "uvloop", marker = "sys_platform != 'win32'", specifier = "==0.21.0" },
-    { name = "watchfiles", specifier = "==1.0.4" },
-    { name = "websockets", specifier = "==14.1" },
+    { name = "uvicorn", extras = ["standard"], specifier = "==0.34.0" },
+]
+
+[package.metadata.requires-dev]
+dev = [
+    { name = "black", specifier = "==24.10.0" },
+    { name = "isort", specifier = "==5.13.2" },
+    { name = "pytest", specifier = "==8.3.4" },
+    { name = "pytest-asyncio", specifier = "==0.25.2" },
+    { name = "ruff", specifier = "==0.9.1" },
 ]
 
 [[package]]
@@ -1281,15 +1187,6 @@ wheels = [
     { url = "https://files.pythonhosted.org/packages/b6/19/6ab716d02a3b068fbbeb6face8a7423156e12c446975312f1c7c0f4badab/websockets-14.1-cp313-cp313-win32.whl", hash = "sha256:0d4290d559d68288da9f444089fd82490c8d2744309113fc26e2da6e48b65da6", size = 162834, upload-time = "2024-11-13T07:10:49.149Z" },
     { url = "https://files.pythonhosted.org/packages/6c/fd/ab6b7676ba712f2fc89d1347a4b5bdc6aa130de10404071f2b2606450209/websockets-14.1-cp313-cp313-win_amd64.whl", hash = "sha256:8621a07991add373c3c5c2cf89e1d277e49dc82ed72c75e3afc74bd0acc446f0", size = 163277, upload-time = "2024-11-13T07:10:50.561Z" },
     { url = "https://files.pythonhosted.org/packages/b0/0b/c7e5d11020242984d9d37990310520ed663b942333b83a033c2f20191113/websockets-14.1-py3-none-any.whl", hash = "sha256:4d4fc827a20abe6d544a119896f6b78ee13fe81cbfef416f3f2ddf09a03f0e2e", size = 156277, upload-time = "2024-11-13T07:11:27.848Z" },
-]
-
-[[package]]
-name = "wheel"
-version = "0.45.1"
-source = { registry = "https://pypi.org/simple" }
-sdist = { url = "https://files.pythonhosted.org/packages/8a/98/2d9906746cdc6a6ef809ae6338005b3f21bb568bea3165cfc6a243fdc25c/wheel-0.45.1.tar.gz", hash = "sha256:661e1abd9198507b1409a20c02106d9670b2576e916d58f520316666abca6729", size = 107545, upload-time = "2024-11-23T00:18:23.513Z" }
-wheels = [
-    { url = "https://files.pythonhosted.org/packages/0b/2c/87f3254fd8ffd29e4c02732eee68a83a1d3c346ae39bc6822dcbcb697f2b/wheel-0.45.1-py3-none-any.whl", hash = "sha256:708e7481cc80179af0e556bbf0cc00b8444c7321e2700b8d8580231d13017248", size = 72494, upload-time = "2024-11-23T00:18:21.207Z" },
 ]
 
 [[package]]

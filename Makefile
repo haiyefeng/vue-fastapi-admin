@@ -33,10 +33,15 @@ targets:
 
 # Development targets
 # -------------
+#
+# 所有目标都走 `uv run`：它会按 uv.lock 解析出正确的环境再执行，
+# 不依赖调用者有没有先 `source .venv/bin/activate`。
+# 少了这一层，make test 会捡到 PATH 里的另一个 pytest（比如 homebrew 装的那个），
+# 报一个与本项目无关的 ModuleNotFoundError。
 
 .PHONY: install
 install: ## Install dependencies
-	uv add pyproject.toml
+	uv sync
 
 
 .PHONY: run
@@ -44,7 +49,7 @@ run: start
 
 .PHONY: start
 start: ## Starts the server
-	python run.py
+	uv run python run.py
 
 # Check, lint and format targets
 # ------------------------------
@@ -54,24 +59,24 @@ check: check-format lint
 
 .PHONY: check-format
 check-format: ## Dry-run code formatter
-	black ./ --check
-	isort ./ --profile black --check
+	uv run black ./ --check
+	uv run isort ./ --profile black --check
 
 .PHONY: lint
 lint: ## Run ruff
-	ruff check ./app 
+	uv run ruff check ./app 
  
 .PHONY: format
 format: ## Run code formatter
-	black ./
-	isort ./ --profile black
+	uv run black ./
+	uv run isort ./ --profile black
 
 
 .PHONY: test
 test: ## Run the test suite
 	$(eval include .env)
 	$(eval export $(sh sed 's/=.*//' .env))
-	pytest -vv -s --cache-clear ./
+	uv run pytest -vv -s --cache-clear ./
 
 .PHONY: clean-db
 clean-db: ## 删除本地 sqlite 数据库文件（不动 migrations/）
@@ -83,8 +88,8 @@ clean-db: ## 删除本地 sqlite 数据库文件（不动 migrations/）
 
 .PHONY: migrate
 migrate: ## 运行aerich migrate命令生成迁移文件
-	aerich migrate
+	uv run aerich migrate
 
 .PHONY: upgrade
 upgrade: ## 运行aerich upgrade命令应用迁移
-	aerich upgrade
+	uv run aerich upgrade

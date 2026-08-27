@@ -20,8 +20,6 @@ RUN npm run build
 FROM python:3.11-slim-bullseye
 
 WORKDIR /opt/vue-fastapi-admin
-ADD . .
-COPY /deploy/entrypoint.sh .
 
 RUN --mount=type=cache,target=/var/cache/apt,sharing=locked,id=core-apt \
     --mount=type=cache,target=/var/lib/apt,sharing=locked,id=core-apt \
@@ -32,7 +30,21 @@ RUN --mount=type=cache,target=/var/cache/apt,sharing=locked,id=core-apt \
     && apt-get update \
     && apt-get install -y --no-install-recommends gcc python3-dev bash nginx vim curl procps net-tools default-mysql-client
 
-RUN pip install -r requirements.txt -i https://pypi.tuna.tsinghua.edu.cn/simple
+# 依赖装在 uv sync 这一层，输入只有 pyproject.toml + uv.lock。
+# 单独成层是为了缓存：只改应用代码时这一层不会失效。
+# --frozen 表示严格按 uv.lock 装、不重新解析；lock 与 pyproject 不一致时直接报错，
+# 而不是悄悄装出一套与开发环境不同的依赖。
+# --no-dev 把 black / isort / ruff / pytest 挡在镜像外。
+RUN pip install uv -i https://pypi.tuna.tsinghua.edu.cn/simple
+COPY pyproject.toml uv.lock ./
+RUN UV_DEFAULT_INDEX=https://pypi.tuna.tsinghua.edu.cn/simple uv sync --frozen --no-dev
+
+# 把 venv 放进 PATH，entrypoint 里就能直接 `uvicorn`，不必套一层 `uv run`。
+ENV PATH="/opt/vue-fastapi-admin/.venv/bin:$PATH"
+
+# 应用代码放在依赖层之后：改代码不会让上面的 uv sync 层失效
+ADD . .
+COPY /deploy/entrypoint.sh .
 
 COPY --from=web /opt/vue-fastapi-admin/web/dist /opt/vue-fastapi-admin/web/dist
 ADD /deploy/web.conf /etc/nginx/sites-available/web.conf
